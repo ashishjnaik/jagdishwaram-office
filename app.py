@@ -45,61 +45,84 @@ else:
     print(f"OK: Key loaded: {ANTHROPIC_API_KEY[:12]}...{ANTHROPIC_API_KEY[-4:]}")
 
 # ─── YUDHISHTHIRA SYSTEM PROMPT ───────────────────────────────────────────────
+"""
+YUDHISHTHIRA_SYSTEM — Updated v2.0
+Replace the YUDHISHTHIRA_SYSTEM string in app.py with this.
+Two changes only:
+  1. Case title updated to Ashish Naik VS State of Maharashtra & Others
+  2. Response format: formal prose + one कृती line (no emojis, no headers)
+"""
+
 YUDHISHTHIRA_SYSTEM = """
 तुम्ही युधिष्ठिर आहात — आशिष जगदिश नाईक यांचे कायदेशीर AI सहायक.
 धर्मराज — फक्त सत्य, फक्त कायदा.
 
-प्रकरण तथ्ये:
-- मालमत्ता: जगदिश्वरम्, सर्व्हे क्र. ३९/१९, मौजे वटार, वसई, पालघर
-- अर्जदार: आशिष जगदिश नाईक (स्वयं-प्रतिनिधी)
-- प्रतिवादी: दिलीप गणपत नाईक + विलास गणपत नाईक
-- कायदेशीर आधार: ममलतदार कोर्ट्स अॅक्ट १९०६ कलम ५ | भारतीय सुविधाधिकार अधिनियम १८८२ कलम १३
+प्रकरण: आशिष जगदिश नाईक विरुद्ध महाराष्ट्र राज्य, दिलीप गणपत नाईक व इतर
+मालमत्ता: जगदिश्वरम्, सर्व्हे क्र. ३९/१९, मौजे वटार, वसई, पालघर — ४०१ ३०१
+अर्जदार: आशिष जगदिश नाईक (स्वयं-प्रतिनिधी)
+कायदेशीर आधार: ममलतदार कोर्ट्स अॅक्ट १९०६ कलम ५ | भारतीय सुविधाधिकार अधिनियम १८८२ कलम १३ | भारतीय संविधान कलम २१
 
 तीन न्यायालयीन आदेश — अर्जदाराच्या बाजूने:
-१. मा. तहसीलदार, वसई तालुका — दि.०१/०३/२०२४ (वहिवाट दावा क्र.०१/२०१७)
-   → वहिवाट हक्क कायमस्वरूपी प्रस्थापित | अडथळे हटवणे + पोलीस सहाय्य आदेश
-   → दि.२३/१२/२०२५ — अंमलबजावणी अर्ज कलम २१-२२ अंतर्गत दाखल
+१. मा. तहसीलदार न्यायालय, वसई तालुका — दि.१२/१०/२०२२ (पहिला आदेश) व दि.०१/०३/२०२४ (अंतिम आदेश)
+   → वहिवाट दावा क्र.०१/२०१७ → वहिवाट हक्क कायमस्वरूपी → अडथळे हटवणे + पोलीस सहाय्य आदेश
+   → दि.२३/१२/२०२५ — कलम २१-२२ अंतर्गत अंमलबजावणी अर्ज दाखल
 २. मा. जिल्हा न्यायालय, पालघर — MHTH230026632025
    → प्रतिवाद्यांचे इंजंक्शन नाकारले | FIR 270/2024 निराधार
-३. मा. ४थे JMFC, वसई — OMA 254/2026, CNR: MHTH250017082026, दि.१०/०३/२०२६
+३. मा. ४थे JMFC, वसई — OMA 254/2026, CNR: MHTH250017082026, दि.१०/०३/२०२६ (न्यायाधीश V.N. Gulve)
    → RPO मुंबई: पारपत्र BOS076289915525 जारी करावे
    → मा. ठाणे प्रभारी, अर्नाळा सागरी: घरपोच पडताळणी करावी
 
 FIR 270/2024 — दुर्भावनापूर्ण खटला:
-- अर्जदाराची तक्रार: दि.१६/०८/२०२४ | प्रतिवाद्यांचा FIR: दि.२४/०८/२०२४ (८ दिवसांनंतर)
-- SCC No. 63/2025, CR No. 270/2024
-- मा. जिल्हा न्यायालय: इंजंक्शन नाकारले | मा. ४थे JMFC: पारपत्रास अडथळा नाही
+अर्जदाराची तक्रार दि.१६/०८/२०२४ — त्यानंतर ८ दिवसांनी प्रतिवाद्यांचा FIR दि.२४/०८/२०२४
+SCC No. 63/2025, CR No. 270/2024
+मा. जिल्हा न्यायालयाने इंजंक्शन नाकारले | मा. ४थे JMFC: पारपत्रास कोणताही अडथळा नाही
 
-संस्थात्मक अपयश (अधिकृत नावे):
-- मा. तहसीलदार, वसई तालुका, जिल्हा पालघर [MOR]: २४+ महिने अंमलबजावणी नाही
-- मा. उपविभागीय अधिकारी, वसई उपविभाग [NPS]: RTI अपील RTS 15/2024 — बेकायदेशीर हस्तांतरण
-- मा. जिल्हाधिकारी तथा जिल्हादंडाधिकारी, पालघर [DMD]: लेखी तक्रारींना प्रतिसाद नाही
-- मा. पोलीस आयुक्त, MBVV [AGD]: प्रशासकीय निष्क्रियता
-- मा. ठाणे प्रभारी, अर्नाळा सागरी पोलीस ठाणे [EAF]: दुर्भावनापूर्ण FIR + अंमलबजावणी नाकार
-- मा. सहायक पोलीस आयुक्त, नालासोपारा विभाग [RPD]: RTI Appeal 02/2026 — ७ दिवस माहिती आदेश दि.२१/०१/२०२६
-- मा. सहायक आयुक्त, VVMC प्रभाग समिती अ [BTR]: ₹४,०४,२२९ कर — शून्य सेवा
-- मा. प्रादेशिक पारपत्र अधिकारी, मुंबई [RPO]: पारपत्र नाकारले — आदेश असूनही
+संस्थात्मक अपयश (अधिकृत नावे व Thread codes):
+मा. तहसीलदार, वसई तालुका, जिल्हा पालघर [MOR] — ३+ वर्षे अंमलबजावणी नाही
+मा. उपविभागीय अधिकारी, वसई उपविभाग, जिल्हा पालघर [NPS] — RTI अपील RTS 15/2024 बेकायदेशीर हस्तांतरण
+मा. जिल्हाधिकारी तथा जिल्हादंडाधिकारी, पालघर [DMD] — लेखी तक्रारींना प्रतिसाद नाही
+मा. पोलीस आयुक्त, MBVV, मीरा-भाईंदर-वसई-विरार [AGD] — प्रशासकीय निष्क्रियता
+मा. ठाणे प्रभारी, अर्नाळा सागरी पोलीस ठाणे [EAF] — दुर्भावनापूर्ण FIR + अंमलबजावणी नाकार
+मा. सहायक पोलीस आयुक्त, नालासोपारा विभाग [RPD] — RTI Appeal 02/2026 आदेश दि.२१/०१/२०२६
+मा. सहायक आयुक्त, VVMC प्रभाग समिती अ, वसई-विरार [BTR] — ₹४,०४,229 कर, शून्य सेवा
+मा. प्रादेशिक पारपत्र अधिकारी, मुंबई [RPO] — OMA 254/2026 असूनही पारपत्र प्रतीक्षित
 
-आर्थिक नुकसान: शेती ₹८-१०L/वर्ष | नोकरी सोडणे दि.१७/०६/२०२५ | ११ वर्षे संघर्ष जून २०१५ पासून
+आर्थिक नुकसान: शेती ₹८-१०L/वर्ष | नोकरी सोडणे दि.१७/०६/२०२५ | संघर्ष जून २०१५ पासून — ११ वर्षे
 
-प्रतिसाद स्वरूप — प्रत्येक वेळी हे चार भाग वापरावेत:
+प्रतिसाद नियम — हे काळजीपूर्वक पाळावेत:
 
-⚖️ निर्णय / स्थिती:
-[एक स्पष्ट तथ्यात्मक विधान. जास्तीत जास्त २ ओळी.]
+१. नेहमी मराठीत उत्तर द्यावे.
 
-📋 कायदेशीर आधार:
-[विशिष्ट कलम + विशिष्ट आदेश दिनांक/क्रमांक. जास्तीत जास्त २ ओळी.]
+२. उत्तर हे औपचारिक पत्राच्या भाषेत असावे — जसे एखादा अनुभवी वकील शासकीय अधिकाऱ्याला पत्र लिहितो.
+   सहज वाहणारे, परंतु कायदेशीरदृष्ट्या अचूक गद्य लिहावे.
+   विधानांमध्ये तथ्य, कायदेशीर संदर्भ आणि संदर्भ नैसर्गिकपणे गुंफावे —
+   bullet points, numbered lists किंवा emoji वापरू नयेत.
 
-🎯 तत्काळ कृती:
-[या अधिकाऱ्याने आत्ता नक्की काय करावे. क्रियापद वापरावे. जास्तीत जास्त २ ओळी.]
+३. उत्तराचे स्वरूप — नेहमी हेच दोन भाग:
 
-📁 संदर्भ दस्तावेज:
-[कोणता दस्तावेज/फोल्डर/प्रदर्शनी पाहावी. जास्तीत जास्त १ ओळ.]
+   [पहिला भाग — २ ते ३ ओळींचे औपचारिक गद्य]
+   विशिष्ट आदेश दिनांक, कायदेशीर कलम आणि प्रकरण संदर्भ नैसर्गिकपणे वापरावे.
+   अधिकाऱ्याचे पूर्ण अधिकृत नाव "मा." उपसर्गासह वापरावे.
+   प्रत्येक वाक्य तथ्यावर आधारित असावे — अनुमान नाही, अतिशयोक्ती नाही.
 
----
-सत्यमेव जयते | जगदिश्वरम् डिजिटल कार्यालय
+   कृती: [एकच स्पष्ट वाक्य — कोणत्या अधिकाऱ्याने, नक्की काय, केव्हापर्यंत करणे आवश्यक आहे.]
 
-नियम: नेहमी मराठीत. नेहमी ४ भाग. अधिकाऱ्यांचे पूर्ण अधिकृत नाव मा. सह वापरावे. विशिष्ट कलमे व तारखा. संशयास्पद असल्यास स्पष्ट सांगावे. प्रत्येक विभाग जास्तीत जास्त २ ओळी.
+   — सत्यमेव जयते | जगदिश्वरम् डिजिटल कार्यालय
+
+४. प्रत्येक विभाग जास्तीत जास्त ३ ओळी — अधिकारी मोबाईलवर वाचतो, वेळ कमी आहे.
+
+५. संशयास्पद असल्यास स्पष्टपणे सांगावे — कधीही तथ्य बनवू नये.
+
+उदाहरण उत्तर (हे स्वरूप पाळावे):
+
+प्रश्न: तहसीलदारांनी अंमलबजावणी का केली नाही?
+
+उत्तर:
+दि.०१/०३/२०२४ रोजी मा. तहसीलदार, वसई तालुका, जिल्हा पालघर यांनी वहिवाट दावा क्र.०१/२०१७ मध्ये अंतिम आदेश पारित करून वहिवाट हक्क कायमस्वरूपी प्रस्थापित केला आहे. ममलतदार कोर्ट्स अॅक्ट १९०६ कलम ५ अंतर्गत हा आदेश बंधनकारक असून अडथळे हटवणे व पोलीस सहाय्य पुरवणे अनिवार्य आहे. तथापि, दि.१२/१०/२०२२ च्या पहिल्या आदेशापासून ३+ वर्षे उलटून गेली असतानाही अंमलबजावणी झालेली नाही — दि.२३/१२/२०२५ रोजी कलम २१-२२ अंतर्गत अंमलबजावणी अर्ज दाखल करण्यात आला आहे.
+
+कृती: मा. तहसीलदार, वसई तालुका यांनी दि.२३/१२/२०२५ च्या अंमलबजावणी अर्जावर तत्काळ कार्यवाही करून वाहने MH48AK4539 व MH48CC8733 हटवावीत आणि अंमलबजावणीची लेखी नोंद ठेवावी.
+
+— सत्यमेव जयते | जगदिश्वरम् डिजिटल कार्यालय
 """
 
 # ─── PORTAL HTML ──────────────────────────────────────────────────────────────
@@ -330,124 +353,848 @@ body { font-family: var(--deva); background: var(--paper); color: var(--ink); fo
 </div>
 
 <!-- AUTHORITY THREADS -->
-<div class="sec">
-  <div class="sec-lbl">अपेक्षित कृती — सक्रिय धागे</div>
-  <div class="threads">
+<!--
+JAGDISHWARAM CHRONICLE SECTION
+"The Weight of Waiting"
+Embed this block inside PORTAL_HTML in app.py,
+between the authority threads section and Yudhishthira section.
+Replace the existing <!-- AUTHORITY THREADS --> closing </div></div> with this block first.
+-->
 
-    <div class="tgrp-lbl">महसूल प्रशासन</div>
+<!-- ═══ CHRONICLE ═══ -->
+<div class="sec" id="chronicle-sec">
+<style>
+.chr { padding: 0 0 24px; }
+.chr-banner {
+  background: #0f0f0d;
+  color: #f8f7f2;
+  padding: 20px 16px 18px;
+  border-bottom: 1px solid #2a2a28;
+}
+.chr-vs {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: #6a6a62;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.chr-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.chr-petitioner {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 17px;
+  font-weight: 300;
+  font-style: italic;
+  color: #f0efe8;
+}
+.chr-vs-word {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #6a6a62;
+  padding: 2px 6px;
+  border: 1px solid #3a3a36;
+  border-radius: 2px;
+}
+.chr-respondent {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 17px;
+  font-weight: 300;
+  font-style: italic;
+  color: #d44;
+}
+.chr-sub {
+  font-size: 11px;
+  color: #6a6a62;
+  line-height: 1.6;
+}
+.chr-sub strong { color: #9a9a90; font-weight: 500; }
 
-    <div class="thread">
-      <div>
-        <div class="thread-name">मा. तहसीलदार, वसई तालुका, जिल्हा पालघर</div>
-        <div class="thread-code">कार्यालय: तहसील कार्यालय, वसई · Thread MOR</div>
-        <div class="thread-action">दि.०१/०३/२०२४ च्या अंतिम आदेशाची तत्काळ अंमलबजावणी करावी · वाहने MH48AK4539 व MH48CC8733 हटवावीत · अंमलबजावणी अर्ज दि.२३/१२/२०२५ प्रलंबित आहे</div>
-        <div class="thread-foot">
-          <span class="thread-date">शेवटचा पत्रव्यवहार: डिसेंबर २०२५</span>
-          <a class="thread-doc" href="{{ d.MOR }}" target="_blank">📁 दस्तावेज</a>
-        </div>
-      </div>
-      <div class="chips">
-        <span class="chip chip-r">उल्लंघन</span>
-        <span class="chip chip-r">२४+ महिने</span>
-      </div>
+.chr-anchor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-anchor-left {
+  padding: 20px 16px;
+  border-right: 1px solid #e2e0d8;
+}
+.chr-anchor-right {
+  padding: 20px 16px;
+}
+.chr-big-num {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 56px;
+  font-weight: 300;
+  font-style: italic;
+  color: #8b1a1a;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.chr-big-unit {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #7a7a72;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.chr-big-sub {
+  font-size: 11.5px;
+  color: #3a3a36;
+  line-height: 1.6;
+}
+.chr-big-sub em {
+  font-style: normal;
+  color: #8b1a1a;
+  font-weight: 500;
+}
+.chr-ledger { display: flex; flex-direction: column; gap: 10px; }
+.chr-ledger-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-ledger-row:last-child { border-bottom: none; padding-bottom: 0; }
+.chr-ledger-amt {
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: #8b1a1a;
+}
+.chr-ledger-lbl {
+  font-size: 11px;
+  color: #5f5e5a;
+  line-height: 1.4;
+}
+
+.chr-article {
+  margin: 0 16px 0;
+  padding: 14px 0;
+  border-bottom: 1px solid #e2e0d8;
+  text-align: center;
+}
+.chr-article-text {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 300;
+  color: #3a3a36;
+  line-height: 1.7;
+}
+.chr-article-cite {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #7a7a72;
+  margin-top: 6px;
+  letter-spacing: 0.06em;
+}
+
+.chr-timeline-wrap {
+  padding: 14px 16px 0;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-tl-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #7a7a72;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.chr-tl {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 14px;
+  position: relative;
+}
+.chr-tl::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: #e2e0d8;
+}
+.chr-tl-item {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 6px 0;
+  position: relative;
+}
+.chr-tl-pip {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  margin-top: 3px;
+  flex-shrink: 0;
+  border: 2px solid white;
+  position: relative;
+  z-index: 1;
+}
+.pip-green { background: #1a5c1a; }
+.pip-red   { background: #8b1a1a; }
+.pip-gray  { background: #b4b2a9; }
+.pip-amber { background: #854f0b; }
+.chr-tl-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #7a7a72;
+  margin-bottom: 1px;
+}
+.chr-tl-event { font-size: 12.5px; font-weight: 500; color: #0f0f0d; }
+.chr-tl-note  { font-size: 11px; color: #5f5e5a; margin-top: 1px; line-height: 1.5; }
+.chr-tl-badge {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-top: 3px;
+  font-weight: 500;
+}
+.tl-badge-g { background: #f2f8f2; color: #1a5c1a; border: 1px solid #b8d8b8; }
+.tl-badge-r { background: #fdf4f4; color: #8b1a1a; border: 1px solid #e8c0c0; }
+.tl-badge-a { background: #fdf8ee; color: #7a4a00; border: 1px solid #e8d8aa; }
+
+.chr-hierarchy-wrap {
+  padding: 14px 16px 0;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-hier-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #7a7a72;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.chr-hier-note {
+  font-size: 11px;
+  color: #7a7a72;
+  font-style: italic;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.chr-hier-rows { display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; }
+.chr-hier-row {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 0;
+  border-left: 2px solid transparent;
+}
+.hier-breach {
+  background: #fdf4f4;
+  border-left-color: #8b1a1a;
+}
+.hier-pending {
+  background: #fdf8ee;
+  border-left-color: #854f0b;
+}
+.hier-ok {
+  background: #f2f8f2;
+  border-left-color: #1a5c1a;
+}
+.chr-hier-indent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b4b2a9;
+  font-size: 10px;
+}
+.chr-hier-body {}
+.chr-hier-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #0f0f0d;
+  margin-bottom: 1px;
+}
+.chr-hier-duty {
+  font-size: 10.5px;
+  color: #5f5e5a;
+  line-height: 1.4;
+}
+.chr-hier-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+.hs-r { background: #fdf4f4; color: #8b1a1a; border: 1px solid #e8c0c0; }
+.hs-a { background: #fdf8ee; color: #7a4a00; border: 1px solid #e8d8aa; }
+.hs-g { background: #f2f8f2; color: #1a5c1a; border: 1px solid #b8d8b8; }
+
+.chr-orders-wrap {
+  padding: 14px 16px 0;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-orders-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #7a7a72;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.chr-orders-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+}
+.chr-order-card {
+  border: 1px solid #b8d8b8;
+  border-left: 3px solid #1a5c1a;
+  border-radius: 0 4px 4px 0;
+  background: #f2f8f2;
+  padding: 10px 12px;
+}
+.chr-order-head {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #5f5e5a;
+  margin-bottom: 3px;
+}
+.chr-order-body {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #0f0f0d;
+  margin-bottom: 2px;
+}
+.chr-order-result {
+  font-size: 11px;
+  color: #1a5c1a;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.chr-order-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #8b1a1a;
+  background: #fdf4f4;
+  border: 1px solid #e8c0c0;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+.chr-order-counter strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.chr-statutory-wrap {
+  padding: 14px 16px 0;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-stat-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #7a7a72;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.chr-stat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-bottom: 14px;
+}
+.chr-stat-table th {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: #7a7a72;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  padding: 4px 8px 6px;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-stat-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #f0ede5;
+  vertical-align: top;
+  line-height: 1.45;
+}
+.chr-stat-table tr:last-child td { border-bottom: none; }
+.chr-stat-table .auth { font-weight: 500; color: #0f0f0d; font-size: 11.5px; }
+.chr-stat-table .law { color: #5f5e5a; font-family: 'DM Mono', monospace; font-size: 10px; }
+.chr-stat-table .breach { color: #8b1a1a; font-weight: 500; }
+.chr-stat-table .ok { color: #1a5c1a; font-weight: 500; }
+.chr-stat-table .pending { color: #7a4a00; font-weight: 500; }
+
+.chr-mirror-wrap {
+  padding: 14px 16px 0;
+  border-bottom: 1px solid #e2e0d8;
+}
+.chr-mirror-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #7a7a72;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.chr-mirror-body {
+  font-size: 12.5px;
+  color: #3a3a36;
+  line-height: 1.85;
+  margin-bottom: 12px;
+}
+.chr-mirror-legal {
+  font-size: 11.5px;
+  color: #5f5e5a;
+  line-height: 1.75;
+  padding: 10px 12px;
+  border-left: 2px solid #e2e0d8;
+  margin-bottom: 12px;
+}
+.chr-mirror-legal strong { color: #3a3a36; font-weight: 500; }
+.chr-mirror-question {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 300;
+  color: #8b1a1a;
+  line-height: 1.6;
+  text-align: center;
+  padding: 12px 0 14px;
+}
+
+.chr-satyam {
+  padding: 16px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #7a7a72;
+  border-top: 1px solid #e2e0d8;
+}
+.chr-satyam strong {
+  display: block;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 300;
+  color: #0f0f0d;
+  letter-spacing: 0;
+  margin-bottom: 4px;
+}
+</style>
+
+<div class="sec-lbl" style="padding-bottom:10px;">प्रकरण आढावा — संस्थात्मक उत्तरदायित्व</div>
+
+<div class="chr">
+
+  <!-- BANNER: Case title -->
+  <div class="chr-banner">
+    <div class="chr-vs">प्रकरण — वहिवाट दावा क्र. 01/2017 | Article 21 | Maharashtra</div>
+    <div class="chr-title-row">
+      <span class="chr-petitioner">आशिष जगदिश नाईक</span>
+      <span class="chr-vs-word">विरुद्ध</span>
+      <span class="chr-respondent">महाराष्ट्र राज्य व इतर</span>
     </div>
-
-    <div class="thread">
-      <div>
-        <div class="thread-name">मा. उपविभागीय अधिकारी, वसई उपविभाग, जिल्हा पालघर</div>
-        <div class="thread-code">कार्यालय: उपविभागीय कार्यालय, वसई · Thread NPS</div>
-        <div class="thread-action">RTI अपील RTS Appeal No.15/2024 वर निर्णय द्यावा · वहिवाट फेरतपासणी दावा क्र.५६/२०२२ संदर्भात बेकायदेशीर हस्तांतरण रद्द करावे</div>
-        <div class="thread-foot">
-          <span class="thread-date">शेवटचा पत्रव्यवहार: २०२४</span>
-          <a class="thread-doc" href="{{ d.NPS }}" target="_blank">📁 दस्तावेज</a>
-        </div>
-      </div>
-      <div class="chips">
-        <span class="chip chip-r">उल्लंघन</span>
-      </div>
+    <div class="chr-sub">
+      <strong>अर्जदार:</strong> स्वयं-प्रतिनिधी · Vasai, Palghar · 401 301 &nbsp;|&nbsp;
+      <strong>प्रतिवादी:</strong> राज्य यंत्रणा, दिलीप गणपत नाईक व इतर
     </div>
-
-    <div class="thread">
-      <div>
-        <div class="thread-name">मा. जिल्हाधिकारी तथा जिल्हादंडाधिकारी, पालघर</div>
-        <div class="thread-code">कार्यालय: जिल्हाधिकारी कार्यालय, पालघर · Thread DMD</div>
-        <div class="thread-action">मा. तहसीलदार व मा. उपविभागीय अधिकारी यांच्या अपयशावर पर्यवेक्षी कारवाई करावी · उच्चस्तरीय लेखी अर्ज दाखल</div>
-        <div class="thread-foot">
-          <span class="thread-date">शेवटचा पत्रव्यवहार: २०२५</span>
-          <a class="thread-doc" href="{{ d.DMD }}" target="_blank">📁 दस्तावेज</a>
-        </div>
-      </div>
-      <div class="chips">
-        <span class="chip chip-a">प्रतीक्षित</span>
-      </div>
-    </div>
-
-    <div class="tgrp-lbl">पोलीस प्रशासन</div>
-
-    <div class="thread">
-      <div>
-        <div class="thread-name">मा. पोलीस आयुक्त, MBVV, मीरा-भाईंदर-वसई-विरार</div>
-        <div class="thread-code">कार्यालय: पोलीस आयुक्तालय, MBVV · Thread AGD</div>
-        <div class="thread-action">तहसील आदेश दि.०१/०३/२०२४ च्या अंमलबजावणीसाठी अधीनस्थ अधिकाऱ्यांना निर्देश द्यावेत · पोलीस संरक्षण व तत्काळ कारवाई करावी</div>
-        <div class="thread-foot">
-          <span class="thread-date">शेवटचा पत्रव्यवहार: २०२५</span>
-          <a class="thread-doc" href="{{ d.AGD }}" target="_blank">📁 दस्तावेज</a>
-        </div>
-      </div>
-      <div class="chips">
-        <span class="chip chip-a">प्रतीक्षित</span>
-      </div>
-    </div>
-
-    <div class="thread">
-      <div>
-        <div class="thread-name">मा. ठाणे प्रभारी, अर्नाळा सागरी पोलीस ठाणे</div>
-        <div class="thread-code">कार्यालय: अर्नाळा सागरी पोलीस ठाणे · Thread EAF</div>
-        <div class="thread-action">OMA 254/2026 नुसार घरपोच पडताळणी तत्काळ करावी · दि.०१/०३/२०२४ तहसील आदेशाची अंमलबजावणी करावी · RPO मुंबईस पारपत्र प्रकरणात सहकार्य करावे</div>
-        <div class="thread-foot">
-          <span class="thread-date">शेवटचा पत्रव्यवहार: १९ मार्च २०२६</span>
-          <a class="thread-doc" href="{{ d.EAF }}" target="_blank">📁 दस्तावेज</a>
-        </div>
-      </div>
-      <div class="chips">
-        <span class="chip chip-r">उल्लंघन</span>
-      </div>
-    </div>
-
-    <div class="thread">
-      <div>
-        <div class="thread-name">मा. सहायक पोलीस आयुक्त, नालासोपारा विभाग</div>
-        <div class="thread-code">कार्यालय: ACP कार्यालय, नालासोपारा · Thread RPD</div>
-        <div class="thread-action">RTI Appeal 02/2026 आदेश दि.२१/०१/२०२६ नुसार ७ दिवसांत माहिती पुरवण्याचे पालन सुनिश्चित करावे</div>
-        <div class="thread-foot">
-          <span class="thread-date">शेवटचा पत्रव्यवहार: २१ जानेवारी २०२६</span>
-          <a class="thread-doc" href="{{ d.RPD }}" target="_blank">📁 दस्तावेज</a>
-        </div>
-      </div>
-      <div class="chips">
-        <span class="chip chip-t">निर्णय प्राप्त</span>
-      </div>
-    </div>
-
-    <div class="tgrp-lbl">महानगरपालिका</div>
-
-    <div class="thread">
-      <div>
-        <div class="thread-name">मा. सहायक आयुक्त, VVMC प्रभाग समिती अ, वसई-विरार</div>
-        <div class="thread-code">कार्यालय: VVMC प्रभाग समिती अ कार्यालय · Thread BTR</div>
-        <div class="thread-action">₹४,०४,२२९ कर मागणी नोटिशीवर लेखी प्रतिवाद स्वीकारावा · Spot Inspection Report सादर करावा · शून्य सेवा वितरण नोंद VT02/338 विचारात घ्यावी</div>
-        <div class="thread-foot">
-          <span class="thread-date">शेवटचा पत्रव्यवहार: २०२५</span>
-          <a class="thread-doc" href="{{ d.BTR }}" target="_blank">📁 दस्तावेज</a>
-        </div>
-      </div>
-      <div class="chips">
-        <span class="chip chip-r">उल्लंघन</span>
-      </div>
-    </div>
-
   </div>
+
+  <!-- ANCHOR: The numbers that cannot be ignored -->
+  <div class="chr-anchor">
+    <div class="chr-anchor-left">
+      <div class="chr-big-num" id="days-counter">—</div>
+      <div class="chr-big-unit">दिवस प्रतीक्षा</div>
+      <div class="chr-big-sub">
+        मा. तहसीलदारांचा पहिला आदेश: <em>१२ ऑक्टोबर २०२२</em><br>
+        अंतिम आदेश: <em>०१ मार्च २०२४</em><br>
+        आजपर्यंत अंमलबजावणी: <em>शून्य</em>
+      </div>
+    </div>
+    <div class="chr-anchor-right">
+      <div class="chr-ledger">
+        <div class="chr-ledger-row">
+          <div class="chr-ledger-amt">₹८–१०L</div>
+          <div class="chr-ledger-lbl">शेती नुकसान प्रतिवर्ष<br>जून २०१५ पासून</div>
+        </div>
+        <div class="chr-ledger-row">
+          <div class="chr-ledger-amt">₹४,०४,229</div>
+          <div class="chr-ledger-lbl">VVMC कर मागणी<br>शून्य सेवा वितरण</div>
+        </div>
+        <div class="chr-ledger-row">
+          <div class="chr-ledger-amt">१७/०६/२०२५</div>
+          <div class="chr-ledger-lbl">नोकरी सोडण्याची तारीख<br>न्यायासाठी पूर्णवेळ संघर्ष</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARTICLE 21 DECLARATION -->
+  <div class="chr-article">
+    <div class="chr-article-text">
+      "प्रत्येक व्यक्तीस जीवन आणि व्यक्तिस्वातंत्र्याचा हक्क आहे —<br>
+      कायद्याने स्थापित प्रक्रियेशिवाय त्यापासून वंचित करता येणार नाही."
+    </div>
+    <div class="chr-article-cite">भारतीय संविधान, कलम २१ · Right to Life and Personal Liberty</div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="chr-timeline-wrap">
+    <div class="chr-tl-lbl">कालक्रम — संघर्षाचा इतिहास</div>
+    <div class="chr-tl">
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-gray"></div>
+        <div>
+          <div class="chr-tl-date">जून २०१५</div>
+          <div class="chr-tl-event">संघर्षाची सुरुवात</div>
+          <div class="chr-tl-note">घर बांधणी सुरू — प्रतिवाद्यांनी ६०+ वर्षांचा वहिवाट रस्ता अडवण्यास सुरुवात</div>
+          <span class="chr-tl-badge tl-badge-a">कारण प्रारंभ</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-gray"></div>
+        <div>
+          <div class="chr-tl-date">२०१५–२०१७</div>
+          <div class="chr-tl-event">दिवाणी न्यायालय, वसई</div>
+          <div class="chr-tl-note">पहिली कायदेशीर लढाई — तहसील न्यायालयाकडे हस्तांतरण</div>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-gray"></div>
+        <div>
+          <div class="chr-tl-date">२०१७–ऑक्टोबर २०२२</div>
+          <div class="chr-tl-event">वहिवाट दावा क्र. ०१/२०१७ — तहसील सुनावणी</div>
+          <div class="chr-tl-note">५ वर्षे सुनावणी · Spot Inspection · साक्षीदार जबाब · पुरावे</div>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-green"></div>
+        <div>
+          <div class="chr-tl-date">१२ ऑक्टोबर २०२२</div>
+          <div class="chr-tl-event">मा. तहसीलदार — पहिला आदेश</div>
+          <div class="chr-tl-note">अर्जदाराच्या बाजूने निर्णय · वहिवाट हक्क प्रस्थापित</div>
+          <span class="chr-tl-badge tl-badge-g">आदेश — बाजूने</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-amber"></div>
+        <div>
+          <div class="chr-tl-date">ऑक्टोबर २०२२–ऑगस्ट २०२३</div>
+          <div class="chr-tl-event">SDO वसई — फेरतपासणी अर्ज क्र. ५६/२०२२</div>
+          <div class="chr-tl-note">प्रतिवाद्यांनी अपील दाखल · SDO ने "जैसे थे" आदेश · अंतिम निर्णय ०८/०८/२०२३</div>
+          <span class="chr-tl-badge tl-badge-a">व्यवस्थेचा गैरवापर</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-green"></div>
+        <div>
+          <div class="chr-tl-date">०१ मार्च २०२४</div>
+          <div class="chr-tl-event">मा. तहसीलदार — अंतिम आदेश</div>
+          <div class="chr-tl-note">वहिवाट हक्क कायमस्वरूपी · अडथळे हटवणे + पोलीस सहाय्य आदेश</div>
+          <span class="chr-tl-badge tl-badge-g">अंतिम आदेश — बाजूने</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-red"></div>
+        <div>
+          <div class="chr-tl-date">२४ ऑगस्ट २०२४</div>
+          <div class="chr-tl-event">FIR 270/2024 — दुर्भावनापूर्ण</div>
+          <div class="chr-tl-note">अर्जदाराच्या तक्रारीनंतर (१६/०८) ८ दिवसांनी प्रतिवाद्यांचा FIR · SCC 63/2025</div>
+          <span class="chr-tl-badge tl-badge-r">राज्ययंत्रणेचा दुरुपयोग</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-green"></div>
+        <div>
+          <div class="chr-tl-date">२०२५ — MHTH230026632025</div>
+          <div class="chr-tl-event">मा. जिल्हा न्यायालय — इंजंक्शन नाकारले</div>
+          <div class="chr-tl-note">FIR 270/2024 आधारे स्थगिती नाकारली · FIR निराधार</div>
+          <span class="chr-tl-badge tl-badge-g">आदेश — बाजूने</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-amber"></div>
+        <div>
+          <div class="chr-tl-date">२१ जानेवारी २०२६</div>
+          <div class="chr-tl-event">RPO मुंबई — पारपत्र नाकारले</div>
+          <div class="chr-tl-note">App BOS076289915525 · FIR चा हवाला देऊन नकार · न्यायालय आदेश असूनही</div>
+          <span class="chr-tl-badge tl-badge-r">मूलभूत हक्क उल्लंघन</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-green"></div>
+        <div>
+          <div class="chr-tl-date">१० मार्च २०२६ — OMA 254/2026</div>
+          <div class="chr-tl-event">मा. ४थे JMFC, वसई — पारपत्र आदेश</div>
+          <div class="chr-tl-note">RPO: पारपत्र जारी करावे · अर्नाळा पोलीस: घरपोच पडताळणी · CNR: MHTH250017082026</div>
+          <span class="chr-tl-badge tl-badge-g">तिसरा आदेश — बाजूने</span>
+        </div>
+      </div>
+
+      <div class="chr-tl-item">
+        <div class="chr-tl-pip pip-red"></div>
+        <div>
+          <div class="chr-tl-date">आजपर्यंत</div>
+          <div class="chr-tl-event">तीन आदेश · शून्य अंमलबजावणी</div>
+          <div class="chr-tl-note">प्रत्येक आदेशानंतर पुन्हा तेच चक्र — अर्ज, प्रतीक्षा, मौन</div>
+          <span class="chr-tl-badge tl-badge-r">व्यवस्थेचे अपयश</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INSTITUTIONAL HIERARCHY -->
+  <div class="chr-hierarchy-wrap">
+    <div class="chr-hier-lbl">संस्थात्मक उत्तरदायित्व श्रेणी</div>
+    <div class="chr-hier-note">प्रत्येक अधिकाऱ्याचे कायदेशीर कर्तव्य स्पष्ट आहे — तरीही साखळी संपूर्णपणे तुटली.</div>
+    <div class="chr-hier-rows">
+
+      <div class="chr-hier-row hier-pending">
+        <div class="chr-hier-indent">↑</div>
+        <div class="chr-hier-body">
+          <div class="chr-hier-name">मा. जिल्हाधिकारी तथा जिल्हादंडाधिकारी, पालघर</div>
+          <div class="chr-hier-duty">पर्यवेक्षी प्राधिकरण · तहसीलदार व SDO वर नियंत्रण</div>
+        </div>
+        <div class="chr-hier-status hs-a">प्रतीक्षित</div>
+      </div>
+
+      <div class="chr-hier-row hier-breach">
+        <div class="chr-hier-indent">↓</div>
+        <div class="chr-hier-body">
+          <div class="chr-hier-name">मा. उपविभागीय अधिकारी, वसई उपविभाग</div>
+          <div class="chr-hier-duty">RTI अपील प्राधिकरण · तहसील आदेश पर्यवेक्षण · RTS 15/2024 प्रलंबित</div>
+        </div>
+        <div class="chr-hier-status hs-r">उल्लंघन</div>
+      </div>
+
+      <div class="chr-hier-row hier-breach">
+        <div class="chr-hier-indent">↓</div>
+        <div class="chr-hier-body">
+          <div class="chr-hier-name">मा. तहसीलदार, वसई तालुका</div>
+          <div class="chr-hier-duty">स्वतःच्या आदेशाची अंमलबजावणी · MCA 1906 S.5 · <span id="mor-days-inline"></span></div>
+        </div>
+        <div class="chr-hier-status hs-r">३+ वर्षे</div>
+      </div>
+
+      <div class="chr-hier-row hier-pending" style="margin-top:8px;">
+        <div class="chr-hier-indent">↑</div>
+        <div class="chr-hier-body">
+          <div class="chr-hier-name">मा. पोलीस आयुक्त, MBVV</div>
+          <div class="chr-hier-duty">अधीनस्थ पोलीस दलावर नियंत्रण · तहसील आदेश अंमलबजावणी सहाय्य</div>
+        </div>
+        <div class="chr-hier-status hs-a">प्रतीक्षित</div>
+      </div>
+
+      <div class="chr-hier-row hier-pending">
+        <div class="chr-hier-indent">↓</div>
+        <div class="chr-hier-body">
+          <div class="chr-hier-name">मा. सहायक पोलीस आयुक्त, नालासोपारा</div>
+          <div class="chr-hier-duty">RTI First Appellate Authority · Appeal 02/2026 आदेश दि.२१/०१/२०२६</div>
+        </div>
+        <div class="chr-hier-status hs-g">निर्णय प्राप्त</div>
+      </div>
+
+      <div class="chr-hier-row hier-breach">
+        <div class="chr-hier-indent">↓</div>
+        <div class="chr-hier-body">
+          <div class="chr-hier-name">मा. ठाणे प्रभारी, अर्नाळा सागरी पोलीस ठाणे</div>
+          <div class="chr-hier-duty">FIR 270/2024 नोंद · OMA 254/2026 पडताळणी थांबवली · तहसील आदेश दुर्लक्षित</div>
+        </div>
+        <div class="chr-hier-status hs-r">उल्लंघन</div>
+      </div>
+
+      <div class="chr-hier-row hier-breach" style="margin-top:8px;">
+        <div class="chr-hier-indent">—</div>
+        <div class="chr-hier-body">
+          <div class="chr-hier-name">मा. सहायक आयुक्त, VVMC प्रभाग समिती अ</div>
+          <div class="chr-hier-duty">शून्य सेवा असताना ₹४,०४,229 कर मागणी · Spot Inspection प्रतीक्षित</div>
+        </div>
+        <div class="chr-hier-status hs-r">उल्लंघन</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COURT ORDERS WITH LIVE COUNTER -->
+  <div class="chr-orders-wrap">
+    <div class="chr-orders-lbl">न्यायालयीन आदेश — अंमलबजावणी स्थिती</div>
+    <div class="chr-orders-grid">
+
+      <div class="chr-order-card">
+        <div class="chr-order-head">०१ मार्च २०२४ · मा. तहसीलदार न्यायालय, वसई तालुका</div>
+        <div class="chr-order-body">वहिवाट हक्क कायमस्वरूपी प्रस्थापित — अंतिम आदेश</div>
+        <div class="chr-order-result">MCA 1906 S.5 · अडथळे हटवणे + पोलीस सहाय्य · वहिवाट दावा क्र. ०१/२०१७</div>
+        <div class="chr-order-counter">
+          अंमलबजावणी नाही —
+          <strong id="order1-days">—</strong> दिवस
+        </div>
+      </div>
+
+      <div class="chr-order-card">
+        <div class="chr-order-head">२०२५ · मा. जिल्हा न्यायालय, पालघर · MHTH230026632025</div>
+        <div class="chr-order-body">प्रतिवाद्यांचे इंजंक्शन नाकारले — FIR 270/2024 निराधार</div>
+        <div class="chr-order-result">FIR आधारे स्थगिती नाकारली · FIR दुर्भावनापूर्ण असल्याचे नोंद</div>
+        <div class="chr-order-counter">
+          पालन स्थिती — <strong>अंशतः</strong>
+        </div>
+      </div>
+
+      <div class="chr-order-card">
+        <div class="chr-order-head">१० मार्च २०२६ · मा. ४थे JMFC, वसई · OMA 254/2026</div>
+        <div class="chr-order-body">पारपत्र + घरपोच पडताळणी आदेश</div>
+        <div class="chr-order-result">CNR: MHTH250017082026 · RPO: BOS076289915525 · अर्नाळा पोलीस: पडताळणी</div>
+        <div class="chr-order-counter">
+          अंमलबजावणी नाही —
+          <strong id="order3-days">—</strong> दिवस
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STATUTORY DUTY TABLE -->
+  <div class="chr-statutory-wrap">
+    <div class="chr-stat-lbl">कायदेशीर कर्तव्य — उल्लंघन नोंद</div>
+    <table class="chr-stat-table">
+      <thead>
+        <tr>
+          <th>प्राधिकरण</th>
+          <th>कायदेशीर कर्तव्य</th>
+          <th>स्थिती</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="auth">मा. तहसीलदार, वसई</span><br><span class="law">MCA 1906 S.5</span></td>
+          <td>स्वतःच्या आदेशाची अंमलबजावणी</td>
+          <td><span class="breach">उल्लंघन · ३+ वर्षे</span></td>
+        </tr>
+        <tr>
+          <td><span class="auth">मा. SDO, वसई</span><br><span class="law">RTI Act S.19</span></td>
+          <td>RTS Appeal 15/2024 निर्णय</td>
+          <td><span class="breach">उल्लंघन</span></td>
+        </tr>
+        <tr>
+          <td><span class="auth">मा. जिल्हाधिकारी, पालघर</span><br><span class="law">Maharashtra Land Revenue Code</span></td>
+          <td>पर्यवेक्षी कारवाई</td>
+          <td><span class="pending">प्रतीक्षित</span></td>
+        </tr>
+        <tr>
+          <td><span class="auth">मा. पोलीस आयुक्त, MBVV</span><br><span class="law">CrPC S.149</span></td>
+          <td>न्यायालय आदेश अंमलबजावणी सहाय्य</td>
+          <td><span class="pending">प्रतीक्षित</span></td>
+        </tr>
+        <tr>
+          <td><span class="auth">मा. ठाणे प्रभारी, अर्नाळा</span><br><span class="law">OMA 254/2026</span></td>
+          <td>घरपोच पडताळणी + तहसील आदेश</td>
+          <td><span class="breach">उल्लंघन</span></td>
+        </tr>
+        <tr>
+          <td><span class="auth">RPO मुंबई</span><br><span class="law">Passport Act 1967 S.6</span></td>
+          <td>OMA 254/2026 नुसार पारपत्र जारी</td>
+          <td><span class="breach">उल्लंघन</span></td>
+        </tr>
+        <tr>
+          <td><span class="auth">मा. VVMC सहायक आयुक्त</span><br><span class="law">Municipal Corporation Act</span></td>
+          <td>Spot Inspection + कर पुनर्विचार</td>
+          <td><span class="breach">उल्लंघन</span></td>
+        </tr>
+        <tr>
+          <td><span class="auth">मा. ACP, नालासोपारा</span><br><span class="law">RTI Act S.19(3)</span></td>
+          <td>Appeal 02/2026 आदेश पालन</td>
+          <td><span class="ok">निर्णय प्राप्त</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- THE BROADER MIRROR -->
+  <div class="chr-mirror-wrap">
+    <div class="chr-mirror-lbl">व्यापक प्रश्न — महाराष्ट्राचे वास्तव</div>
+    <div class="chr-mirror-body">
+      वहिवाट दावा जगदिश्वरम् हे केवळ एका कुटुंबाचे प्रकरण नाही. महाराष्ट्रातील हजारो शेतकरी, छोटे जमीनधारक आणि स्वयं-प्रतिनिधी अर्जदार याच संस्थात्मक निष्क्रियतेचा सामना रोज करत आहेत — न्यायालयाचे आदेश असूनही अंमलबजावणी नाही, RTI वर उत्तर नाही, वरिष्ठ अधिकारी मौन.
+    </div>
+    <div class="chr-mirror-legal">
+      <strong>भारतीय संविधान कलम २१</strong> — जगण्याचा आणि व्यक्तिस्वातंत्र्याचा मूलभूत हक्क.<br>
+      <strong>RTI Act 2005 कलम ७(१)</strong> — जीव व स्वातंत्र्याशी संबंधित माहिती ४८ तासांत द्यावी.<br>
+      <strong>Contempt of Courts Act 1971 S.2(b)</strong> — न्यायालय आदेशाची जाणीवपूर्वक अवज्ञा हा अवमान आहे.<br>
+      <strong>Mahesh Kumar Agrawal v. State</strong> — स्वातंत्र्य हे राज्याचे प्रथम कर्तव्य आहे.
+    </div>
+    <div class="chr-mirror-question">
+      महाराष्ट्रात आज किती कुटुंबे याच प्रतीक्षेत आहेत?<br>
+      किती आदेश धुळीत पडले आहेत?<br>
+      व्यवस्था उत्तर देईल का?
+    </div>
+  </div>
+
+  <!-- SATYAMEVA JAYATE -->
+  <div class="chr-satyam">
+    <strong>सत्यमेव जयते</strong>
+    JAGDISHWARAM DIGITAL OFFICE · VASAI · PALGHAR · MAHARASHTRA
+  </div>
+
 </div>
+</div>
+
+<script>
+(function() {
+  function daysSince(dateStr) {
+    var parts = dateStr.split('/');
+    var d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+    var now = new Date();
+    now.setHours(0,0,0,0);
+    return Math.floor((now - d) / 86400000);
+  }
+
+  var d1 = daysSince('12/10/2022');
+  var d2 = daysSince('01/03/2024');
+  var d3 = daysSince('10/03/2026');
+
+  var el = document.getElementById('days-counter');
+  if (el) el.textContent = d1.toLocaleString('mr-IN');
+
+  var el2 = document.getElementById('order1-days');
+  if (el2) el2.textContent = d2;
+
+  var el3 = document.getElementById('order3-days');
+  if (el3) el3.textContent = d3;
+
+  var inline = document.getElementById('mor-days-inline');
+  if (inline) inline.textContent = d1 + ' दिवसांपासून अंमलबजावणी नाही';
+})();
+</script>
+
 
 <!-- YUDHISHTHIRA -->
 <div class="sec">
