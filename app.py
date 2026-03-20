@@ -9,6 +9,7 @@ Serves:
 - /chronicle            → Saraswati API (field notes)
 - /capture              → Evidence capture API
 - /health               → Health check
+- /debug                → API key validation (token-safe)
 """
 
 import os
@@ -25,6 +26,15 @@ app = Flask(__name__)
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
 DRIVE_FOLDER_URL  = "https://drive.google.com/drive/folders/1TyYJPzRcvm1Xw6pkzcePL7TYEwhYWrmY"
+
+# ─── STARTUP VALIDATION ───────────────────────────────────────────────────────
+if not ANTHROPIC_API_KEY:
+    print("⚠️  WARNING: ANTHROPIC_API_KEY is not set. Yudhishthira will not function.")
+elif not ANTHROPIC_API_KEY.startswith("sk-ant-"):
+    print("⚠️  WARNING: ANTHROPIC_API_KEY format looks incorrect. Expected sk-ant-...")
+else:
+    masked = ANTHROPIC_API_KEY[:12] + "..." + ANTHROPIC_API_KEY[-4:]
+    print(f"✅ ANTHROPIC_API_KEY loaded: {masked}")
 
 # ─── CASE CONTEXT ─────────────────────────────────────────────────────────────
 YUDHISHTHIRA_SYSTEM = """
@@ -137,7 +147,9 @@ PORTAL_HTML = """<!DOCTYPE html>
   .ask-btn:disabled { background: #9c9a92; }
   .answer-box { margin-top: 10px; background: #f0ede5;
                 border-radius: 8px; padding: 12px;
-                font-size: 13px; line-height: 1.7; display: none; }
+                font-size: 13px; line-height: 1.7; display: none;
+                white-space: pre-wrap; }
+  .answer-box.error { background: #fde8e8; color: #8b1a1a; }
   .drive-link { display: block; text-align: center; padding: 12px;
                 background: white; border-radius: 10px;
                 border: 1px solid #e5e3db; color: #185fa5;
@@ -146,6 +158,10 @@ PORTAL_HTML = """<!DOCTYPE html>
             color: #9c9a92; }
   .loading { display: none; text-align: center; color: #5f5e5a;
              font-size: 13px; padding: 10px; }
+  .quick-questions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .quick-btn { background: #f0ede5; border: 1px solid #d3d1c7; border-radius: 6px;
+               padding: 5px 10px; font-size: 11px; cursor: pointer; color: #1a1a18; }
+  .quick-btn:hover { background: #e5e3db; }
 </style>
 </head>
 <body>
@@ -235,12 +251,18 @@ PORTAL_HTML = """<!DOCTYPE html>
 <div class="section">
   <div class="section-title">युधिष्ठिराला विचारा — Ask in Marathi</div>
   <div class="ask-box">
+    <div class="quick-questions">
+      <button class="quick-btn" onclick="setQ('या प्रकरणाचा मुख्य आदेश काय आहे?')">मुख्य आदेश</button>
+      <button class="quick-btn" onclick="setQ('FIR 270/2024 बद्दल सांगा')">FIR 270/2024</button>
+      <button class="quick-btn" onclick="setQ('पारपत्र प्रकरण काय आहे?')">पारपत्र</button>
+      <button class="quick-btn" onclick="setQ('तहसीलदारांनी काय केले पाहिजे?')">तहसीलदार</button>
+    </div>
     <textarea id="question" rows="3"
       placeholder="तुमचा प्रश्न मराठीत लिहा... (Type your question in Marathi or English)"></textarea>
     <button class="ask-btn" onclick="askYudhishthira()" id="askBtn">
       युधिष्ठिराला विचारा ⚖️
     </button>
-    <div class="loading" id="loading">उत्तर मिळवत आहे...</div>
+    <div class="loading" id="loading">युधिष्ठिर उत्तर तयार करत आहे...</div>
     <div class="answer-box" id="answer"></div>
   </div>
 </div>
@@ -259,19 +281,25 @@ PORTAL_HTML = """<!DOCTYPE html>
 </div>
 
 <script>
+function setQ(text) {
+  document.getElementById('question').value = text;
+  document.getElementById('question').focus();
+}
+
 async function askYudhishthira() {
   const q = document.getElementById('question').value.trim();
   if (!q) return;
-  
+
   const btn = document.getElementById('askBtn');
   const loading = document.getElementById('loading');
   const answerBox = document.getElementById('answer');
-  
+
   btn.disabled = true;
   btn.textContent = 'विचारत आहे...';
   loading.style.display = 'block';
   answerBox.style.display = 'none';
-  
+  answerBox.className = 'answer-box';
+
   try {
     const response = await fetch('/ask', {
       method: 'POST',
@@ -279,17 +307,31 @@ async function askYudhishthira() {
       body: JSON.stringify({ question: q })
     });
     const data = await response.json();
-    answerBox.textContent = data.answer || data.error || 'उत्तर मिळाले नाही';
+
+    if (data.error) {
+      answerBox.textContent = data.error;
+      answerBox.classList.add('error');
+    } else {
+      answerBox.textContent = data.answer || 'उत्तर मिळाले नाही';
+    }
     answerBox.style.display = 'block';
   } catch(e) {
-    answerBox.textContent = 'त्रुटी आली. पुन्हा प्रयत्न करा.';
+    answerBox.textContent = 'नेटवर्क त्रुटी. पुन्हा प्रयत्न करा.';
+    answerBox.classList.add('error');
     answerBox.style.display = 'block';
   }
-  
+
   btn.disabled = false;
   btn.textContent = 'युधिष्ठिराला विचारा ⚖️';
   loading.style.display = 'none';
 }
+
+// Allow Enter key (Ctrl+Enter) to submit
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('question').addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') askYudhishthira();
+  });
+});
 </script>
 </body>
 </html>"""
@@ -304,8 +346,31 @@ def portal():
 
 @app.route('/health')
 def health():
-    return jsonify({'status': 'ok', 'office': 'Jagdishwaram Digital Office',
-                    'satyamev': 'jayate'})
+    key_status = "not_set"
+    if ANTHROPIC_API_KEY:
+        key_status = "set" if ANTHROPIC_API_KEY.startswith("sk-ant-") else "invalid_format"
+    return jsonify({
+        'status': 'ok',
+        'office': 'Jagdishwaram Digital Office',
+        'satyamev': 'jayate',
+        'api_key_status': key_status,
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/debug')
+def debug():
+    """Safe key validation — shows only first 12 + last 4 chars"""
+    if not ANTHROPIC_API_KEY:
+        return jsonify({'api_key': 'NOT SET', 'status': 'error',
+                        'message': 'Set ANTHROPIC_API_KEY in Render environment variables'}), 500
+    masked = ANTHROPIC_API_KEY[:12] + "..." + ANTHROPIC_API_KEY[-4:]
+    valid_format = ANTHROPIC_API_KEY.startswith("sk-ant-")
+    return jsonify({
+        'api_key_masked': masked,
+        'format_valid': valid_format,
+        'key_length': len(ANTHROPIC_API_KEY),
+        'status': 'ready' if valid_format else 'format_error'
+    })
 
 @app.route('/ask', methods=['POST'])
 def ask():
@@ -314,6 +379,9 @@ def ask():
         question = data.get('question', '').strip()
         if not question:
             return jsonify({'error': 'प्रश्न रिकामा आहे'}), 400
+
+        if not ANTHROPIC_API_KEY:
+            return jsonify({'error': 'API की सेट नाही. Render dashboard मध्ये ANTHROPIC_API_KEY तपासा.'}), 500
 
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         message = client.messages.create(
@@ -329,6 +397,15 @@ def ask():
             'timestamp': datetime.now().isoformat(),
             'agent': 'Yudhishthira — युधिष्ठिर'
         })
+
+    except anthropic.AuthenticationError:
+        return jsonify({'error': 'API की चुकीची आहे. Render मध्ये ANTHROPIC_API_KEY पुन्हा तपासा.'}), 401
+    except anthropic.BadRequestError as e:
+        if 'credit' in str(e).lower():
+            return jsonify({'error': 'Anthropic क्रेडिट संपले आहेत. console.anthropic.com वर रिचार्ज करा.'}), 402
+        return jsonify({'error': f'अनुरोध त्रुटी: {str(e)}'}), 400
+    except anthropic.RateLimitError:
+        return jsonify({'error': 'API rate limit. एक मिनिट थांबा आणि पुन्हा प्रयत्न करा.'}), 429
     except Exception as e:
         return jsonify({'error': f'त्रुटी: {str(e)}'}), 500
 
