@@ -1154,6 +1154,7 @@ a { -webkit-tap-highlight-color: transparent; }
   JAGDISHWARAM DIGITAL OFFICE · ASHISH JAGDISH NAIK<br>
   VASAI · PALGHAR · MAHARASHTRA · 401 301<br>
   SATYAMEVA JAYATE · 2026
+  www.jagdishwaram-office.org · Email ashish.j.naik@gmail.com
 </div>
 
 <script>
