@@ -133,6 +133,22 @@ SCC No. 63/2025, CR No. 270/2024 — मा. जिल्हा न्याय�
    — सत्यमेव जयते | जगदिश्वरम् डिजिटल कार्यालय
 ५. प्रत्येक विभाग जास्तीत जास्त ३ ओळी.
 ६. संशयास्पद असल्यास स्पष्टपणे सांगावे.
+
+
+# CASE FILE INDEX AND DEFINITIONS
+## Critical Exhibit Reference Table:
+This table maps short-code identifiers to the definitive legal documents and file IDs within the Google Drive. ALWAYS use these references when citing facts.
+
+| Short Code | Document Title & Date | Google Drive File ID |
+| :--------- | :---------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------- |
+| Exhibit-19 | Enforcement Petition (Filed 23 December 2025) - [Content is Current] | 1K5FXmCsNEhbPM-YA1l9ZZO66_NL-PzCF/view?usp=drive_link |
+| Exhibit-20 | Current Status Folder (Ongoing Status Reports) - [Content is Ongoing] | 1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8 |
+| Exhibit-10-5| Tehsil Submission (Filed 09 November 2023) - [Key Founding Document] | 1MuH1Fat2nUVmi_KDuJ9dXBl628MR4ySG |
+| मूळ धागा  | Final Order on Vahivat Dawa (Dated 01 March 2024) - [The Undisputed Legal Right] | 146cKWWYrSP7mHhZiZne6oe1l9l7PFey0 |
+## Core Strategic Failures:
+- **Dual-Capacity Failure:** The authority's documented failure to act in their primary (administrative) capacity and their secondary (RTI Appellate) capacity, creating a system deadlock.
+- **4th Demand (Technology Adoption):** The formal demand requiring the authority to use modern, documented digital tools (like this portal) to manage public records, as mandated by the e-governance policy.
+
 """
 
 # ─── PORTAL HTML ──────────────────────────────────────────────────────────────
@@ -1107,7 +1123,7 @@ a { -webkit-tap-highlight-color: transparent; }
           <div class="demand-title">तंत्रज्ञान अंगीकार</div>
           <div class="demand-sub">शासन व न्यायव्यवस्थेत AI व डिजिटल साधनांचा अनिवार्य वापर — पारदर्शकता, उत्तरदायित्व आणि कार्यक्षमता निर्माण करण्यासाठी</div>
         </div>
-        <div class="demand-4-new">अभूतपूर्व मागणी</div>
+        <div class="demand-4-new">अपरक्राम्य मागणी</div>
       </div>
     </div>
   </div>
