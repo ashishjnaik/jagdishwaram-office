@@ -1145,16 +1145,12 @@ a { -webkit-tap-highlight-color: transparent; }
       placeholder="तुमचा प्रश्न मराठीत किंवा इंग्रजीत लिहा..."></textarea>
     <button class="ask-btn" onclick="ask()" id="askBtn">युधिष्ठिराला विचारा →</button>
     <div class="loader" id="loader"></div>
-    <div class="ans-box" id="ansBox">
-      <div class="ans-head" id="ansHead">युधिष्ठिर उत्तर · जगदिश्वरम् डिजिटल कार्यालय</div>
-      <div class="ans-body" id="ansBody"></div>
-      <div class="ans-box" id="ansBox">
+    <div class="ans-box" id="ansBox" style="display:none;">
       <div class="ans-head" id="ansHead">युधिष्ठिर उत्तर · जगदिश्वरम् डिजिटल कार्यालय</div>
       <div class="ans-body" id="ansBody"></div>
       <button class="ask-btn" onclick="printAnswer()" style="margin-top:0; border-radius:0 0 var(--r8) var(--r8);">🖨️ ही माहिती छापणे (Print/PDF)</button>
-      </div>
     </div>
-  </div>
+    </div>
 </div>
 
 <!-- ═══ DRIVE ═══ -->
@@ -1176,7 +1172,6 @@ a { -webkit-tap-highlight-color: transparent; }
   VASAI · PALGHAR · MAHARASHTRA · 401 301<br>
   SATYAMEVA JAYATE · 2026
   www.jagdishwaram-office.org · Email ashish.j.naik@gmail.com
-  <img src="Jagdishwaram-Office-Website-QR.png" alt="QR Code" style="width:100px; height:100px;"> 
 </div>
 
 <script>
