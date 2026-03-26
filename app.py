@@ -1237,7 +1237,7 @@ async function ask() {
       box.classList.add('err');
       head.textContent = 'त्रुटी';
     } else {
-      body.innerHTML = data.answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') || 'उत्तर मिळाले नाही';
+      body.innerHTML = data.answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
       const ts = new Date().toLocaleTimeString('mr-IN', {hour: '2-digit', minute: '2-digit'});
       head.textContent = 'युधिष्ठिर उत्तर · ' + ts;
     }
