@@ -1296,7 +1296,12 @@ def ask():
     try:
         data = request.get_json()
         question = data.get('question', '').strip()
-        
+
+        # Two-tier token budget based on question length
+        # Short focused questions (preset buttons) = 1200 tokens, fast response
+        # Long detailed questions = 2500 tokens, fuller answer
+      max_tok = 2500 if len(question) > 120 else 1200
+      
         if not question:
             return jsonify({'error': 'प्रश्न रिकामा आहे'}), 400
             
@@ -1309,7 +1314,7 @@ def ask():
         # --- API Call ---
         msg = client.messages.create(
             model="claude-haiku-4-5-20251001",
-            max_tokens=2000,
+            max_tokens=max_tok,
             system=YUDHISHTHIRA_SYSTEM,
             messages=[{"role": "user", "content": question}]
         )
