@@ -1327,7 +1327,7 @@ def ask():
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         
         # --- API Call — two-tier token budget ---
-        max_tok = 2500 if len(question) > 120 else 1200
+        max_tok = 3000 if len(question) > 120 else 2000
         msg = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=max_tok,
