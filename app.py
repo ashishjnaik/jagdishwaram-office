@@ -1307,7 +1307,7 @@ def ask():
         # --- Generic Error Handling (MODIFIED FOR UAT) ---
         print(f"Generic Error during API call: {e}") # Log the error for internal tracking
         # Return a 500 error, but with a specific, actionable message for the user
-        return jsonify({'error': "API Error: Response too complex or internal limit exceeded. Please rephrase the question for a shorter, focused answer."}), 500
+        return jsonify({'error': "प्रश्न खूप विस्तृत आहे. कृपया एक विशिष्ट, छोटा प्रश्न विचारा."}), 500
 
 @app.route('/chronicle', methods=['POST'])
 def chronicle():
