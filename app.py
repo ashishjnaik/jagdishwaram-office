@@ -1242,7 +1242,7 @@ async function ask() {
       head.textContent = 'युधिष्ठिर उत्तर · ' + ts;
     }
   } catch(e) {
-    body.textContent = 'प्रश्न खूप मोठा आहे. कृपया एक छोटा, विशिष्ट प्रश्न विचारा.';
+    body.textContent = "प्रश्न खूप मोठा आहे. कृपया एक छोटा, विशिष्ट प्रश्न विचारा.";
     box.classList.add('err');
     head.textContent = 'त्रुटी';
   }
