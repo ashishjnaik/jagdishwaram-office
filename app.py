@@ -1148,6 +1148,11 @@ a { -webkit-tap-highlight-color: transparent; }
     <div class="ans-box" id="ansBox">
       <div class="ans-head" id="ansHead">युधिष्ठिर उत्तर · जगदिश्वरम् डिजिटल कार्यालय</div>
       <div class="ans-body" id="ansBody"></div>
+      <div class="ans-box" id="ansBox">
+      <div class="ans-head" id="ansHead">युधिष्ठिर उत्तर · जगदिश्वरम् डिजिटल कार्यालय</div>
+      <div class="ans-body" id="ansBody"></div>
+      <button class="ask-btn" onclick="printAnswer()" style="margin-top:0; border-radius:0 0 var(--r8) var(--r8);">🖨️ ही माहिती छापणे (Print/PDF)</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1171,6 +1176,7 @@ a { -webkit-tap-highlight-color: transparent; }
   VASAI · PALGHAR · MAHARASHTRA · 401 301<br>
   SATYAMEVA JAYATE · 2026
   www.jagdishwaram-office.org · Email ashish.j.naik@gmail.com
+  html <img src="Jagdishwaram-Office-Website-QR.png" alt="QR Code" style="width:100px; height:100px;"> 
 </div>
 
 <script>
@@ -1222,6 +1228,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') ask();
   });
 });
+javascript function printAnswer() { window.print(); } 
 </script>
 </body>
 </html>"""
@@ -1261,33 +1268,50 @@ def ask():
     try:
         data = request.get_json()
         question = data.get('question', '').strip()
+        
         if not question:
             return jsonify({'error': 'प्रश्न रिकामा आहे'}), 400
+            
+        # ANTHROPIC_API_KEY and client initialization assumed here
         if not ANTHROPIC_API_KEY:
             return jsonify({'error': 'API की सेट नाही. Render dashboard तपासा.'}), 500
+            
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        
+        # --- API Call ---
         msg = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=4096,
             system=YUDHISHTHIRA_SYSTEM,
             messages=[{"role": "user", "content": question}]
         )
+        
+        # --- Success Response with new timestamp format (STEP 1: ADDED) ---
+        ts_str = datetime.now().strftime('%d/%m/%Y · %I:%M %p IST')
         return jsonify({
             'answer': msg.content[0].text,
             'question': question,
             'timestamp': datetime.now().isoformat(),
-            'agent': 'Yudhishthira — युधिष्ठिर'
+            'agent': 'Yudhishthira — युधिष्ठिर',
+            'display_timestamp': ts_str  # <--- NEW FIELD ADDED
         })
+        
     except anthropic.AuthenticationError:
         return jsonify({'error': 'API की चुकीची आहे. Render मध्ये ANTHROPIC_API_KEY तपासा.'}), 401
+        
     except anthropic.BadRequestError as e:
         if 'credit' in str(e).lower():
             return jsonify({'error': 'Anthropic क्रेडिट संपले. console.anthropic.com वर रिचार्ज करा.'}), 402
         return jsonify({'error': f'अनुरोध त्रुटी: {str(e)}'}), 400
+        
     except anthropic.RateLimitError:
         return jsonify({'error': 'Rate limit. एक मिनिट थांबा.'}), 429
+        
     except Exception as e:
-        return jsonify({'error': f'त्रुटी: {str(e)}'}), 500
+        # --- Generic Error Handling (STEP 2: MODIFIED FOR UAT) ---
+        print(f"Generic Error during API call: {e}") # Log the error for internal tracking
+        # Return a 500 error, but with a specific, actionable message for the user
+        return jsonify({'error': "API Error: Response too complex or internal limit exceeded. Please rephrase the question for a shorter, focused answer."}), 500
 
 @app.route('/chronicle', methods=['POST'])
 def chronicle():
