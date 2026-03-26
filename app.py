@@ -65,6 +65,27 @@ elif not ANTHROPIC_API_KEY.startswith("sk-ant-"):
 else:
     print(f"OK: {ANTHROPIC_API_KEY[:12]}...{ANTHROPIC_API_KEY[-4:]}")
 
+# ─── EXHIBIT SUMMARIES — Drive link injection ─────────────────────────────────
+import json as _json
+import re as _re
+_EXHIBIT_INDEX = {}
+try:
+    with open("exhibit_summaries.json", "r", encoding="utf-8") as _f:
+        for _item in _json.load(_f):
+            _EXHIBIT_INDEX[_item["code"].lower()] = _item
+    print(f"OK: {len(_EXHIBIT_INDEX)} exhibit records loaded.")
+except Exception as _e:
+    print(f"WARNING: exhibit_summaries.json not loaded: {_e}")
+
+def _inject_links(text):
+    def _replace(m):
+        code = m.group(0)
+        rec = _EXHIBIT_INDEX.get(code.lower())
+        if rec and rec.get("drive_link"):
+            return f'{code} (<a href="{rec["drive_link"]}" target="_blank" rel="noopener">Drive ↗</a>)'
+        return code
+    return _re.sub(r'Exhibit-[\w\-]+', _replace, text)
+
 # ─── YUDHISHTHIRA v4 ──────────────────────────────────────────────────────────
 YUDHISHTHIRA_SYSTEM = """
 तुम्ही युधिष्ठिर आहात — आशिष जगदिश नाईक यांचे कायदेशीर AI सहायक.
@@ -1295,13 +1316,7 @@ def debug():
 def ask():
     try:
         data = request.get_json()
-        question = data.get('question', '').strip()
-
-        # Two-tier token budget based on question length
-        # Short focused questions (preset buttons) = 1200 tokens, fast response
-        # Long detailed questions = 2500 tokens, fuller answer
-      max_tok = 2500 if len(question) > 120 else 1200
-      
+        question = data.get('question', '').strip()      
         if not question:
             return jsonify({'error': 'प्रश्न रिकामा आहे'}), 400
             
@@ -1311,7 +1326,8 @@ def ask():
             
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         
-        # --- API Call ---
+        # --- API Call — two-tier token budget ---
+        max_tok = 2500 if len(question) > 120 else 1200
         msg = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=max_tok,
@@ -1319,16 +1335,17 @@ def ask():
             messages=[{"role": "user", "content": question}]
         )
         
-        # --- Success Response with new timestamp format (STEP 1: ADDED) ---
+        # --- Inject Drive links + build response ---
+        answer = _inject_links(msg.content[0].text)
         ts_str = datetime.now().strftime('%d/%m/%Y · %I:%M %p IST')
         return jsonify({
-            'answer': msg.content[0].text,
+            'answer': answer,
             'question': question,
             'timestamp': datetime.now().isoformat(),
             'agent': 'Yudhishthira — युधिष्ठिर',
-            'display_timestamp': ts_str  # <--- NEW FIELD ADDED
+            'display_timestamp': ts_str
         })
-        
+      
     except anthropic.AuthenticationError:
         return jsonify({'error': 'API की चुकीची आहे. Render मध्ये ANTHROPIC_API_KEY तपासा.'}), 401
         
