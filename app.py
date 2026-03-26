@@ -133,6 +133,7 @@ SCC No. 63/2025, CR No. 270/2024 — मा. जिल्हा न्याय�
    — सत्यमेव जयते | जगदिश्वरम् डिजिटल कार्यालय
 ५. प्रत्येक विभाग जास्तीत जास्त ३ ओळी.
 ६. संशयास्पद असल्यास स्पष्टपणे सांगावे.
+७. प्रत्येक उत्तर जास्तीत जास्त ३ परिच्छेद — कधीही ४ पेक्षा जास्त नाही.
 
 
 # CASE FILE INDEX AND DEFINITIONS
@@ -1209,7 +1210,7 @@ async function ask() {
       head.textContent = 'युधिष्ठिर उत्तर · ' + ts;
     }
   } catch(e) {
-    body.textContent = 'नेटवर्क त्रुटी. पुन्हा प्रयत्न करा.';
+    body.textContent = 'प्रश्न खूप मोठा आहे. कृपया एक छोटा, विशिष्ट प्रश्न विचारा.';
     box.classList.add('err');
     head.textContent = 'त्रुटी';
   }
@@ -1276,7 +1277,7 @@ def ask():
         # --- API Call ---
         msg = client.messages.create(
             model="claude-haiku-4-5-20251001",
-            max_tokens=3000,
+            max_tokens=2000,
             system=YUDHISHTHIRA_SYSTEM,
             messages=[{"role": "user", "content": question}]
         )
