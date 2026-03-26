@@ -1176,7 +1176,7 @@ a { -webkit-tap-highlight-color: transparent; }
   VASAI · PALGHAR · MAHARASHTRA · 401 301<br>
   SATYAMEVA JAYATE · 2026
   www.jagdishwaram-office.org · Email ashish.j.naik@gmail.com
-  html <img src="Jagdishwaram-Office-Website-QR.png" alt="QR Code" style="width:100px; height:100px;"> 
+  <img src="Jagdishwaram-Office-Website-QR.png" alt="QR Code" style="width:100px; height:100px;"> 
 </div>
 
 <script>
@@ -1228,7 +1228,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') ask();
   });
 });
-javascript function printAnswer() { window.print(); } 
+function printAnswer() { window.print(); } 
 </script>
 </body>
 </html>"""
@@ -1308,7 +1308,7 @@ def ask():
         return jsonify({'error': 'Rate limit. एक मिनिट थांबा.'}), 429
         
     except Exception as e:
-        # --- Generic Error Handling (STEP 2: MODIFIED FOR UAT) ---
+        # --- Generic Error Handling (MODIFIED FOR UAT) ---
         print(f"Generic Error during API call: {e}") # Log the error for internal tracking
         # Return a 500 error, but with a specific, actionable message for the user
         return jsonify({'error': "API Error: Response too complex or internal limit exceeded. Please rephrase the question for a shorter, focused answer."}), 500
