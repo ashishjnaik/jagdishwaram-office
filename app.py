@@ -72,8 +72,15 @@ _EXHIBIT_INDEX = {}
 try:
     with open("exhibit_summaries.json", "r", encoding="utf-8") as _f:
         for _item in _json.load(_f):
-            _EXHIBIT_INDEX[_item["code"].lower()] = _item
-    print(f"OK: {len(_EXHIBIT_INDEX)} exhibit records loaded.")
+            # Primary index: drive_id
+            if _item.get("drive_id"):
+                _EXHIBIT_INDEX[_item["drive_id"]] = _item
+            # Secondary index: exhibit_ref (backward compatible with Yudhishthira answers)
+            if _item.get("exhibit_ref"):
+                _EXHIBIT_INDEX[_item["exhibit_ref"].lower()] = _item
+    print(f"OK: {len(_EXHIBIT_INDEX)} exhibit index entries loaded.")
+except Exception as _e:
+    print(f"WARNING: exhibit_summaries.json not loaded: {_e}")
 except Exception as _e:
     print(f"WARNING: exhibit_summaries.json not loaded: {_e}")
 
@@ -1194,6 +1201,8 @@ a { -webkit-tap-highlight-color: transparent; }
       <button class="q-btn" onclick="setQ('OMA 254/2026 आदेशानुसार RPO व अर्नाळा पोलिसांनी काय करणे बंधनकारक आहे?')">OMA 254/2026</button>
       <button class="q-btn" onclick="setQ('FIR 270/2024 च्या दुर्भावनाबाबत न्यायालयांनी काय सांगितले?')">FIR स्थिती</button>
       <button class="q-btn" onclick="setQ('उच्च न्यायालयात Article 226 याचिका दाखल करण्यासाठी कोणती कारणे आहेत?')">उच्च न्यायालय</button>
+      <button class="q-btn" onclick="setQ('अर्जदाराला ११ वर्षांत झालेले आर्थिक, व्यावसायिक आणि मानसिक नुकसान कायदेशीरदृष्ट्या कसे मांडावे?')">अपूरणीय नुकसान</button>
+      <button class="q-btn" onclick="setQ('शासन व न्यायव्यवस्थेत AI आणि डिजिटल साधनांचा अनिवार्य वापर — महाराष्ट्र शासन परिपत्रक आणि कायदेशीर आधार काय आहे?')">तंत्रज्ञान अंगीकार</button>
     </div>
     <textarea class="ask-ta" id="qta" rows="3"
       placeholder="तुमचा प्रश्न मराठीत किंवा इंग्रजीत लिहा..."></textarea>
