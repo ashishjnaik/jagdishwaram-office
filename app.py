@@ -841,12 +841,20 @@ a { -webkit-tap-highlight-color: transparent; }
 <body>
 
 <!-- ═══ HEADER ═══ -->
-<div class="hd">
+  <div class="hd">
+    <div class="hd">
   <div class="hd-eyebrow">वहिवाट दावा क्र. 01/2017 · Survey No. 39/19 · Mouje Watar · Vasai, Palghar</div>
   <div class="hd-title">जगदिश्वरम् डिजिटल कार्यालय</div>
   <div class="hd-case">
     <strong>अर्जदार:</strong> आशिष जगदिश नाईक (स्वयं-प्रतिनिधी) · Vasai 401 301
   </div>
+    <div style="margin-top: 10px;">
+        <a href="https://docs.google.com/document/d/1a5oBJX-o_pHnttclNKew1wRjyWVG1ys2GBWOBtMdc7o/edit?usp=drive_link" 
+           target="_blank" style="color: #5a9a5a; font-family: var(--mono); font-size: 11px; text-decoration: none; border-bottom: 1px dotted;">
+           📄 Foundation Document (v1.0)
+        </a>
+    </div>
+</div>
   <div class="hd-vs">
     <span class="hd-petitioner">आशिष जगदिश नाईक</span>
     <span class="hd-vs-pill">विरुद्ध</span>
@@ -1231,10 +1239,16 @@ a { -webkit-tap-highlight-color: transparent; }
 
 <!-- ═══ FOOTER ═══ -->
 <div class="pg-foot">
-  JAGDISHWARAM DIGITAL OFFICE · ASHISH JAGDISH NAIK<br>
-  VASAI · PALGHAR · MAHARASHTRA · 401 301<br>
-  SATYAMEVA JAYATE · 2026
-  www.jagdishwaram-office.org · Email ashish.j.naik@gmail.com
+    <div style="margin-bottom: 15px;">
+        <img src="{{ url_for('static', filename='Jagdishwaram-Office-Website-QR.png') }}" 
+             alt="QR Code" style="width: 80px; height: 80px; border: 1px solid var(--rule); padding: 4px; background: white;">
+        <p style="font-size: 9px; margin-top: 4px;">SCAN FOR PORTAL ACCESS</p>
+    </div>
+    WWW.JAGDISHWARAM-OFFICE.ORG (Scan QR)<br>
+    JAGDISHWARAM DIGITAL OFFICE · ASHISH JAGDISH NAIK<br>
+    VASAI · PALGHAR · MAHARASHTRA · 401 301<br>
+    EMAIL: ASHISH.J.NAIK@GMAIL.COM<br>
+    SATYAMEVA JAYATE · 2026<br>
 </div>
 
 <script>
