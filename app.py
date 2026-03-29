@@ -1240,11 +1240,11 @@ a { -webkit-tap-highlight-color: transparent; }
 <!-- ═══ FOOTER ═══ -->
 <div class="pg-foot">
     <div style="margin-bottom: 15px;">
-        <img src="{{ url_for('static', filename='Jagdishwaram-Office-Website-QR.png') }}" 
+        <img src="{{ url_for('static', filename='QR_जगदिश्वरम्_डिजिटल_कार्यालय_Jagdishwaram-Office.Org_Web_Service.png') }}" 
              alt="QR Code" style="width: 80px; height: 80px; border: 1px solid var(--rule); padding: 4px; background: white;">
         <p style="font-size: 9px; margin-top: 4px;">SCAN FOR PORTAL ACCESS</p>
     </div>
-    WWW.JAGDISHWARAM-OFFICE.ORG (Scan QR)<br>
+    WWW.JAGDISHWARAM-OFFICE.ORG<br>
     JAGDISHWARAM DIGITAL OFFICE · ASHISH JAGDISH NAIK<br>
     VASAI · PALGHAR · MAHARASHTRA · 401 301<br>
     EMAIL: ASHISH.J.NAIK@GMAIL.COM<br>
