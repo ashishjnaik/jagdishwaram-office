@@ -119,7 +119,7 @@ def _write_to_inbox(text_content: str, filename: str) -> dict:
             mimetype="text/plain",
             resumable=False
         )
-        f = service.files().create(body=meta, media_body=media, fields="id,name").execute()
+        f = service.files().create(body=meta, media_body=media, fields="id,name", supportsAllDrives=True).execute()
         return {"ok": True, "file_id": f.get("id"), "file_name": f.get("name")}
     except Exception as e:
         print(f"ERROR: Drive inbox write failed: {e}")
@@ -140,7 +140,7 @@ def _upload_photo_to_inbox(photo_bytes: bytes, filename: str, content_type: str)
             mimetype=content_type or "image/jpeg",
             resumable=False
         )
-        service.files().create(body=meta, media_body=media, fields="id").execute()
+        service.files().create(body=meta, media_body=meta, fields="id", supportsAllDrives=True).execute()
         return True
     except Exception as e:
         print(f"WARNING: Photo upload failed (non-fatal): {e}")
