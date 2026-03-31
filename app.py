@@ -33,7 +33,6 @@ try:
 except ImportError:
     _DRIVE_LIBS_OK = False
     print("WARNING: google-api-python-client not installed. /field will run without Drive.")
-"""
 
 app = Flask(__name__)
 
@@ -158,7 +157,6 @@ def _upload_photo_to_inbox(photo_bytes: bytes, filename: str, content_type: str)
     except Exception as e:
         print(f"WARNING: Photo upload failed (non-fatal): {e}")
         return False
-"""
 
 # ─── STARTUP CHECK ────────────────────────────────────────────────────────────
 if not ANTHROPIC_API_KEY:
@@ -182,8 +180,6 @@ try:
             if _item.get("exhibit_ref"):
                 _EXHIBIT_INDEX[_item["exhibit_ref"].lower()] = _item
     print(f"OK: {len(_EXHIBIT_INDEX)} exhibit index entries loaded.")
-except Exception as _e:
-    print(f"WARNING: exhibit_summaries.json not loaded: {_e}")
 except Exception as _e:
     print(f"WARNING: exhibit_summaries.json not loaded: {_e}")
 
