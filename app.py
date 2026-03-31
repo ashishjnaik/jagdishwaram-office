@@ -47,6 +47,16 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
+# --- OAuth Configuration ---
+client_config = {
+    "web": {
+        "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
+        "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+    }
+}
+
 # ─── DRIVE URLS — Sprint 1 verified ──────────────────────────────────────────
 # Parent folders
 # Subfolder convention: KEY_A = administrative track, KEY_R = RTI track
@@ -1818,17 +1828,8 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    client_config = {
-        "web": {
-            "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
-            "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-        }
-    }
     # Hard-code the URI strictly for this test to bypass Env Var issues
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    
     flow = Flow.from_client_config(
         client_config, 
         scopes=SCOPES, 
@@ -1839,15 +1840,15 @@ def login():
 
 @app.route('/callback')
 def callback():
-    client_config = {
-        "web": {
-            "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
-            "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
-            "token_uri": "https://oauth2.googleapis.com/token"
-        }
-    }
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    
+    flow = Flow.from_client_config(
+        client_config, 
+        scopes=SCOPES, 
+        redirect_uri=r_uri
+    )
+    flow.fetch_token(authorization_response=request.url)
+    return f"Authenticated! COPY THIS: <br><br>{flow.credentials.to_json()}"
+  
     flow = Flow.from_client_config(
         client_config, 
         scopes=SCOPES, 
