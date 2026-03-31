@@ -32,6 +32,9 @@ try:
     from googleapiclient.discovery import build as _gdrive_build
     from googleapiclient.http import MediaIoBaseUpload as _MediaUpload
     from google.auth.transport.requests import Request
+    from google_auth_oauthlib.flow import Flow
+    from google.oauth2.credentials import Credentials
+
     _DRIVE_LIBS_OK = True
 except ImportError:
     _DRIVE_LIBS_OK = False
