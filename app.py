@@ -37,6 +37,7 @@ except ImportError:
     print("WARNING: google-api-python-client not installed. /field will run without Drive.")
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "XdfsUrBfhSjn67F4HfbDth3DudfN")
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
@@ -1813,20 +1814,22 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    # Ensure CLIENT_CONFIG is populated from your GOOGLE_CLIENT_ID/SECRET env vars
     client_config = {
         "web": {
             "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
             "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
-            "redirect_uris": [os.environ.get("REDIRECT_URI", "https://jagdishwaram-office.onrender.com/callback")]
         }
     }
-    flow = Flow.from_client_config(client_config, scopes=['https://www.googleapis.com/auth/drive.file'], 
-                                  redirect_uri=client_config["web"]["redirect_uris"][0])
+    # Use the variable from Render directly
+    redirect_uri = os.environ.get("REDIRECT_URI")
     
-    # Surgical Fix: Added prompt='consent' to ensure a refresh_token is issued
+    flow = Flow.from_client_config(
+        client_config, 
+        scopes=SCOPES, 
+        redirect_uri=redirect_uri
+    )
     auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
     return redirect(auth_url)
 
