@@ -82,24 +82,27 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
     "1roP01xjVD0yxYoSbAI8tpZknffX8n1bZ"   # ← update this with your real folder ID
 )
  
+from google.auth.transport.requests import Request
+
 def _get_drive_service():
-  
-    if not _DRIVE_LIBS_OK:
-        return None
-    sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
-    if not sa_json:
-        return None
     try:
-        sa_info = _json_field.loads(sa_json)
-        creds = _sa.Credentials.from_service_account_info(
-            sa_info,
-            scopes=["https://www.googleapis.com/auth/drive"]
-        )
-        return _gdrive_build("drive", "v3", credentials=creds, cache_discovery=False)
+        token_json = os.environ.get("GOOGLE_USER_TOKEN")
+        if not token_json:
+            return None
+            
+        creds_data = _json.loads(token_json)
+        creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
+        
+        # Surgical Fix: Auto-refresh the token if expired
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            # Note: Updated token stays in memory; for permanent fix, 
+            # you must manually update the Render Env Var with the refreshed JSON.
+            
+        return _gdrive_build('drive', 'v3', credentials=creds)
     except Exception as e:
-        print(f"WARNING: Drive service account init failed: {e}")
-        return None
- 
+        print(f"ERROR: _get_drive_service: {e}")
+        return None 
  
 def _write_to_inbox(text_content: str, filename: str) -> dict:
     service = _get_drive_service()
@@ -1805,6 +1808,41 @@ def chronicle():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/login')
+def login():
+    # Ensure CLIENT_CONFIG is populated from your GOOGLE_CLIENT_ID/SECRET env vars
+    client_config = {
+        "web": {
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
+            "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [os.environ.get("REDIRECT_URI", "https://jagdishwaram-office.onrender.com/callback")]
+        }
+    }
+    flow = Flow.from_client_config(client_config, scopes=['https://www.googleapis.com/auth/drive.file'], 
+                                  redirect_uri=client_config["web"]["redirect_uris"][0])
+    
+    # Surgical Fix: Added prompt='consent' to ensure a refresh_token is issued
+    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
+    return redirect(auth_url)
+
+@app.route('/callback')
+def callback():
+    client_config = {
+        "web": {
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
+            "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
+            "token_uri": "https://oauth2.googleapis.com/token"
+        }
+    }
+    flow = Flow.from_client_config(client_config, scopes=['https://www.googleapis.com/auth/drive.file'], 
+                                  redirect_uri=os.environ.get("REDIRECT_URI", "https://jagdishwaram-office.onrender.com/callback"))
+    flow.fetch_token(authorization_response=request.url)
+    
+    # This string is what you MUST copy into the GOOGLE_USER_TOKEN Render Env Var
+    return f"Authenticated! COPY THIS ENTIRE STRING TO RENDER GOOGLE_USER_TOKEN: <br><br>{flow.credentials.to_json()}"
 
 @app.route('/capture', methods=['POST'])
 def capture():
