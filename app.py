@@ -1917,7 +1917,6 @@ def field_submit():
     except Exception as e:
         print(f"ERROR /field/submit: {e}")
         return jsonify({'ok': False, 'error': str(e)}), 500
-'''
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
