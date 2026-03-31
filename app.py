@@ -18,6 +18,22 @@ import os
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template_string
 import anthropic
+import io
+import json as _json_field   # alias to avoid conflict with existing json import
+ 
+# ── Google Drive (Service Account — no OAuth popup on Render) ──────────────
+# Add to requirements.txt:
+#   google-auth==2.29.0
+#   google-api-python-client==2.126.0
+try:
+    from google.oauth2 import service_account as _sa
+    from googleapiclient.discovery import build as _gdrive_build
+    from googleapiclient.http import MediaIoBaseUpload as _MediaUpload
+    _DRIVE_LIBS_OK = True
+except ImportError:
+    _DRIVE_LIBS_OK = False
+    print("WARNING: google-api-python-client not installed. /field will run without Drive.")
+"""
 
 app = Flask(__name__)
 
@@ -56,6 +72,93 @@ DRIVE = {
     "RPD_R": "https://drive.google.com/drive/folders/1t9rknxkJ9jBSJYf2xCT9y-rr-jBkDDeV",
     "BTR_R": "https://drive.google.com/drive/folders/1BgBxxhmj0qt3FWS5sddQH4XKO7CWamrp",
 }
+
+# ─── HANUMAN — CHRONICLE INBOX CONFIG ────────────────────────────────────────
+# The folder Hanuman watches. Get this ID from your Drive URL:
+# Open Chronicle Inbox folder → copy the ID from the URL
+# e.g. https://drive.google.com/drive/folders/1n-tiveid-XJTAvum1VEA3gcEnt4GGePp
+#                                                              ^^^^^^^^^^^^^^^^^^^^^^^
+HANUMAN_INBOX_FOLDER_ID = os.environ.get(
+    "HANUMAN_INBOX_FOLDER_ID",
+    "1n-tiveid-XJTAvum1VEA3gcEnt4GGePp"   # ← update this with your real folder ID
+)
+ 
+def _get_drive_service():
+    \"\"\"
+    Returns Google Drive service using service account credentials.
+    Credentials stored in GOOGLE_SERVICE_ACCOUNT_JSON env var.
+    Returns None if not configured (graceful degradation).
+    \"\"\"
+    if not _DRIVE_LIBS_OK:
+        return None
+    sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+    if not sa_json:
+        return None
+    try:
+        sa_info = _json_field.loads(sa_json)
+        creds = _sa.Credentials.from_service_account_info(
+            sa_info,
+            scopes=["https://www.googleapis.com/auth/drive"]
+        )
+        return _gdrive_build("drive", "v3", credentials=creds, cache_discovery=False)
+    except Exception as e:
+        print(f"WARNING: Drive service account init failed: {e}")
+        return None
+ 
+ 
+def _write_to_inbox(text_content: str, filename: str) -> dict:
+    \"\"\"
+    Writes a .txt file to the Chronicle Inbox folder.
+    Returns: {'ok': True/False, 'file_name': ..., 'error': ...}
+    \"\"\"
+    service = _get_drive_service()
+    if not service:
+        # Graceful degradation — log locally, note not written to Drive
+        print(f"[HANUMAN LOCAL FALLBACK] {filename}")
+        print(text_content[:300])
+        return {"ok": False, "error": "Drive not configured — note stored locally only"}
+    try:
+        meta = {
+            "name": filename,
+            "parents": [HANUMAN_INBOX_FOLDER_ID],
+            "mimeType": "text/plain"
+        }
+        media = _MediaUpload(
+            io.BytesIO(text_content.encode("utf-8")),
+            mimetype="text/plain",
+            resumable=False
+        )
+        f = service.files().create(body=meta, media_body=media, fields="id,name").execute()
+        return {"ok": True, "file_id": f.get("id"), "file_name": f.get("name")}
+    except Exception as e:
+        print(f"ERROR: Drive inbox write failed: {e}")
+        return {"ok": False, "error": str(e)}
+ 
+ 
+def _upload_photo_to_inbox(photo_bytes: bytes, filename: str, content_type: str) -> bool:
+    \"\"\"
+    Uploads a photo file to the Chronicle Inbox folder.
+    Returns True if successful, False otherwise.
+    \"\"\"
+    service = _get_drive_service()
+    if not service:
+        return False
+    try:
+        meta = {
+            "name": filename,
+            "parents": [HANUMAN_INBOX_FOLDER_ID]
+        }
+        media = _MediaUpload(
+            io.BytesIO(photo_bytes),
+            mimetype=content_type or "image/jpeg",
+            resumable=False
+        )
+        service.files().create(body=meta, media_body=media, fields="id").execute()
+        return True
+    except Exception as e:
+        print(f"WARNING: Photo upload failed (non-fatal): {e}")
+        return False
+"""
 
 # ─── STARTUP CHECK ────────────────────────────────────────────────────────────
 if not ANTHROPIC_API_KEY:
@@ -1305,6 +1408,323 @@ function printAnswer() { window.print(); }
 </body>
 </html>"""
 
+FIELD_HTML = """<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>हनुमान — क्षेत्र नोंद</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Devanagari',sans-serif;
+  background:#f0ede5;color:#1a1a18;min-height:100vh;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+}
+ 
+/* ── Header ── */
+.hdr{
+  background:#1a1a18;color:#f0efe8;
+  padding:16px 16px 16px;
+  padding-top:max(16px,env(safe-area-inset-top));
+  position:sticky;top:0;z-index:20;
+}
+.hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:3px}
+.hdr h1{font-size:16px;font-weight:600;color:#f0efe8}
+.hdr-sub{font-size:10px;color:#5a5a50;letter-spacing:.04em}
+ 
+/* ── Body ── */
+.body{padding:14px;max-width:480px;margin:0 auto}
+ 
+/* ── Timestamp ── */
+.ts-pill{
+  display:inline-block;background:#1a1a18;color:#7a7a70;
+  font-size:10px;padding:5px 11px;border-radius:20px;margin-bottom:14px;
+  letter-spacing:.03em;
+}
+ 
+/* ── Field groups ── */
+.fg{margin-bottom:13px}
+.fl{
+  display:block;font-size:10px;font-weight:600;color:#5f5e5a;
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;
+}
+.req{color:#c0392b}
+ 
+textarea,input[type=text],select{
+  width:100%;background:#fff;border:1.5px solid #d3d1c7;
+  border-radius:10px;padding:11px 12px;font-size:15px;
+  font-family:inherit;color:#1a1a18;outline:none;
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .15s;
+}
+textarea:focus,input:focus,select:focus{
+  border-color:#1a1a18;box-shadow:0 0 0 3px rgba(26,26,24,.07);
+}
+textarea{resize:none}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f5e5a'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:30px;
+}
+.hint{font-size:11px;color:#9c9a92;margin-top:4px;line-height:1.5}
+ 
+/* ── Photo ── */
+.photo-area{
+  background:#fff;border:1.5px dashed #ccc;border-radius:10px;
+  padding:18px 16px;text-align:center;cursor:pointer;
+  transition:border-color .15s;
+}
+.photo-area:active{border-color:#1a1a18}
+.photo-icon{font-size:26px;margin-bottom:5px}
+.photo-label{font-size:13px;color:#5f5e5a}
+.photo-sub{font-size:11px;color:#9c9a92;margin-top:2px}
+#photoInput{display:none}
+.photo-preview{display:none;margin-top:10px}
+.photo-preview img{width:100%;max-height:200px;object-fit:cover;border-radius:8px}
+.photo-fname{font-size:11px;color:#3b6d11;font-weight:500;margin-top:4px}
+ 
+/* ── Error ── */
+#errBar{
+  display:none;background:#fde8e8;color:#8b1a1a;
+  border:1px solid #f0b8b8;border-radius:10px;
+  padding:11px 12px;font-size:13px;margin-bottom:12px;line-height:1.5;
+}
+ 
+/* ── Submit ── */
+.sbtn{
+  width:100%;background:#1a1a18;color:#fff;border:none;
+  border-radius:12px;padding:15px;font-size:15px;font-weight:600;
+  cursor:pointer;margin-top:6px;display:flex;align-items:center;
+  justify-content:center;gap:8px;transition:opacity .15s;
+}
+.sbtn:disabled{opacity:.45}
+.sbtn:active{opacity:.8}
+ 
+/* ── Success ── */
+#successSc{display:none;text-align:center;padding:40px 20px}
+.suc-icon{font-size:52px;margin-bottom:16px}
+.suc-title{font-size:20px;font-weight:600;margin-bottom:8px}
+.suc-sub{font-size:13px;color:#5f5e5a;line-height:1.7;margin-bottom:22px}
+.suc-ref{
+  background:#fff;border:1px solid #e5e3db;border-radius:10px;
+  padding:12px;font-size:12px;color:#5f5e5a;
+  margin-bottom:22px;word-break:break-all;text-align:left;
+}
+.suc-ref strong{display:block;color:#1a1a18;font-size:11px;
+  text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.suc-ref .ok{color:#3b6d11;font-weight:500}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-sec{
+  padding:11px 20px;background:#fff;border:1.5px solid #1a1a18;
+  border-radius:10px;font-size:13px;font-weight:500;
+  text-decoration:none;color:#1a1a18;cursor:pointer;
+}
+.btn-pri{
+  padding:11px 20px;background:#1a1a18;border:none;
+  border-radius:10px;font-size:13px;font-weight:500;
+  color:#fff;cursor:pointer;
+}
+ 
+.spacer{height:28px}
+</style>
+</head>
+<body>
+ 
+<div class="hdr">
+  <div class="hdr-row">
+    <span style="font-size:20px">🙏</span>
+    <h1>हनुमान — क्षेत्र नोंद</h1>
+  </div>
+  <div class="hdr-sub">JAGDISHWARAM DIGITAL OFFICE · CHRONICLE INBOX</div>
+</div>
+ 
+<!-- FORM SCREEN -->
+<div class="body" id="formSc">
+  <div style="height:12px"></div>
+  <div class="ts-pill" id="tsPill">⏱ लोड होत आहे...</div>
+  <div id="errBar"></div>
+ 
+  <!-- NOTE — Required -->
+  <div class="fg">
+    <label class="fl" for="noteText">आजची नोंद <span class="req">*</span></label>
+    <textarea id="noteText" rows="5"
+      placeholder="आज काय झाले? कुठे गेलात? कोणाला भेटलात? काय पाहिले?&#10;(What happened? Where? Who? What did you observe?)"></textarea>
+    <div class="hint">मराठी किंवा इंग्रजीत. जितके तपशील तितके उत्तम.</div>
+  </div>
+ 
+  <!-- THREAD -->
+  <div class="fg">
+    <label class="fl" for="threadSel">संबंधित धागा (Thread)</label>
+    <select id="threadSel">
+      <option value="">-- निवडा (Optional) --</option>
+      <option value="MOR">MOR — मा. तहसीलदार न्यायालय, वसई</option>
+      <option value="NPS">NPS — मा. उपविभागीय अधिकारी, वसई</option>
+      <option value="DMD">DMD — मा. जिल्हाधिकारी, पालघर</option>
+      <option value="EAF">EAF — अर्नाळा पोलीस ठाणे</option>
+      <option value="AGD">AGD — मा. पोलीस आयुक्त, MBVV</option>
+      <option value="RPD">RPD — मा. ACP, नालासोपारा</option>
+      <option value="BTR">BTR — VVMC</option>
+      <option value="RPO">RPO — मा. प्रादेशिक पारपत्र अधिकारी, मुंबई</option>
+      <option value="JUD">JUD — न्यायालय (Court)</option>
+      <option value="GENERAL">GENERAL — सर्वसाधारण नोंद</option>
+    </select>
+  </div>
+ 
+  <!-- LEGAL REF -->
+  <div class="fg">
+    <label class="fl" for="legalRef">कायदेशीर संदर्भ (Optional)</label>
+    <input type="text" id="legalRef"
+      placeholder="e.g. तहसीलदार आदेश 01/03/2024 | Exhibit-102 | OMA 254/2026">
+    <div class="hint">कोणत्या आदेश, अर्ज किंवा कागदपत्राशी संबंधित?</div>
+  </div>
+ 
+  <!-- PHOTO -->
+  <div class="fg">
+    <label class="fl">छायाचित्र (Optional)</label>
+    <div class="photo-area" onclick="document.getElementById('photoInput').click()">
+      <div class="photo-icon">📷</div>
+      <div class="photo-label">फोटो जोडा — Camera किंवा Gallery</div>
+      <div class="photo-sub">JPG · PNG · HEIC · Max 10 MB</div>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" capture="environment"
+           onchange="handlePhoto(this)">
+    <div class="photo-preview" id="photoPreview">
+      <img id="previewImg" src="" alt="Preview">
+      <div class="photo-fname" id="photoFname"></div>
+    </div>
+  </div>
+ 
+  <!-- ANNOTATION -->
+  <div class="fg">
+    <label class="fl" for="annotation">वेद व्यासांची टिप्पणी (Your Annotation)</label>
+    <textarea id="annotation" rows="3"
+      placeholder="हे पुरावे कशाचे आहेत? न्यायालयीन संदर्भात काय महत्त्व?&#10;(What does this evidence prove? Context only you know.)"></textarea>
+  </div>
+ 
+  <!-- SUBMIT -->
+  <button class="sbtn" id="sbtn" onclick="doSubmit()">
+    <span id="sicon">🙏</span>
+    <span id="stxt">हनुमानाला पाठवा — Send to Inbox</span>
+  </button>
+  <div class="spacer"></div>
+</div>
+ 
+<!-- SUCCESS SCREEN -->
+<div class="body" id="successSc">
+  <div class="suc-icon">✅</div>
+  <div class="suc-title">हनुमान ने नोंद घेतली</div>
+  <div class="suc-sub">
+    Chronicle Inbox मध्ये नोंद सुरक्षित झाली.<br>
+    पुढील Hanuman sync मध्ये Saraswati प्रक्रिया करेल.
+  </div>
+  <div class="suc-ref" id="sucRef">
+    <strong>संदर्भ क्रमांक</strong>
+    <span id="sucRefVal">लोड होत आहे...</span>
+  </div>
+  <div class="btn-row">
+    <a href="/" class="btn-sec">← पोर्टल</a>
+    <button class="btn-pri" onclick="resetForm()">+ नवी नोंद</button>
+  </div>
+</div>
+ 
+<script>
+// ── Timestamp (IST) ────────────────────────────────────────────
+function updateTS(){
+  const n=new Date();
+  const s=n.toLocaleString('mr-IN',{
+    timeZone:'Asia/Kolkata',day:'2-digit',month:'long',
+    year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true
+  });
+  document.getElementById('tsPill').textContent='⏱ '+s+' IST';
+}
+updateTS();setInterval(updateTS,30000);
+ 
+// ── Photo preview ──────────────────────────────────────────────
+function handlePhoto(inp){
+  const f=inp.files[0];if(!f)return;
+  if(f.size>10*1024*1024){showErr('फोटो 10MB पेक्षा मोठा आहे.');inp.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    document.getElementById('previewImg').src=e.target.result;
+    document.getElementById('photoFname').textContent='✓ '+f.name;
+    document.getElementById('photoPreview').style.display='block';
+  };
+  r.readAsDataURL(f);
+}
+ 
+// ── Error helpers ──────────────────────────────────────────────
+function showErr(m){
+  const el=document.getElementById('errBar');
+  el.textContent=m;el.style.display='block';window.scrollTo(0,0);
+}
+function clearErr(){document.getElementById('errBar').style.display='none';}
+ 
+// ── Submit ─────────────────────────────────────────────────────
+async function doSubmit(){
+  clearErr();
+  const note=document.getElementById('noteText').value.trim();
+  if(!note){showErr('कृपया आजची नोंद लिहा. ही रकाना अनिवार्य आहे.');return;}
+ 
+  const btn=document.getElementById('sbtn');
+  btn.disabled=true;
+  document.getElementById('sicon').textContent='⏳';
+  document.getElementById('stxt').textContent='पाठवत आहे...';
+ 
+  const fd=new FormData();
+  fd.append('note',note);
+  fd.append('thread',document.getElementById('threadSel').value);
+  fd.append('legal_ref',document.getElementById('legalRef').value.trim());
+  fd.append('annotation',document.getElementById('annotation').value.trim());
+  const ph=document.getElementById('photoInput').files[0];
+  if(ph)fd.append('photo',ph,ph.name);
+ 
+  try{
+    const res=await fetch('/field/submit',{method:'POST',body:fd});
+    const d=await res.json();
+    if(d.ok){
+      document.getElementById('sucRefVal').innerHTML=
+        '<strong>'+d.ref+'</strong>'
+        +(d.drive_file?'<br><span class="ok">✓ Drive: '+d.drive_file+'</span>':'')
+        +(d.photo_ok?'<br><span class="ok">✓ Photo: '+d.photo_name+'</span>':'');
+      document.getElementById('formSc').style.display='none';
+      document.getElementById('successSc').style.display='block';
+      window.scrollTo(0,0);
+    }else{
+      showErr('त्रुटी: '+(d.error||'अज्ञात त्रुटी. पुन्हा प्रयत्न करा.'));
+      btn.disabled=false;
+      document.getElementById('sicon').textContent='🙏';
+      document.getElementById('stxt').textContent='हनुमानाला पाठवा — Send to Inbox';
+    }
+  }catch(e){
+    showErr('नेटवर्क त्रुटी. इंटरनेट तपासा आणि पुन्हा प्रयत्न करा.');
+    btn.disabled=false;
+    document.getElementById('sicon').textContent='🙏';
+    document.getElementById('stxt').textContent='हनुमानाला पाठवा — Send to Inbox';
+  }
+}
+ 
+// ── Reset ──────────────────────────────────────────────────────
+function resetForm(){
+  ['noteText','legalRef','annotation'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('threadSel').value='';
+  document.getElementById('photoInput').value='';
+  document.getElementById('photoPreview').style.display='none';
+  document.getElementById('formSc').style.display='block';
+  document.getElementById('successSc').style.display='none';
+  document.getElementById('sbtn').disabled=false;
+  document.getElementById('sicon').textContent='🙏';
+  document.getElementById('stxt').textContent='हनुमानाला पाठवा — Send to Inbox';
+  clearErr();updateTS();window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>"""
+
+
 # ─── ROUTES ───────────────────────────────────────────────────────────────────
 @app.route('/')
 def portal():
@@ -1415,6 +1835,89 @@ def capture():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ─── HANUMAN — /field GET ─────────────────────────────────────────────────────
+@app.route('/field', methods=['GET'])
+def field():
+    """Hanuman field note form — mobile-first, PIN-free, direct to Chronicle Inbox."""
+    return render_template_string(FIELD_HTML)
+ 
+ 
+# ─── HANUMAN — /field/submit POST ────────────────────────────────────────────
+@app.route('/field/submit', methods=['POST'])
+def field_submit():
+    """
+    Receives the Hanuman field form and writes to Google Drive Chronicle Inbox.
+    Option A: No AI processing at submission time. Saraswati processes later.
+    """
+    try:
+        note       = request.form.get('note', '').strip()
+        thread     = request.form.get('thread', 'GENERAL').strip() or 'GENERAL'
+        legal_ref  = request.form.get('legal_ref', '').strip()
+        annotation = request.form.get('annotation', '').strip()
+        photo_file = request.files.get('photo')
+ 
+        if not note:
+            return jsonify({'ok': False, 'error': 'नोंद रिकामी आहे'}), 400
+ 
+        # ── Timestamp ──
+        now       = datetime.now()
+        ts_file   = now.strftime('%Y%m%d_%H%M%S')
+        ts_display= now.strftime('%d %B %Y | %I:%M %p IST')
+ 
+        # ── Reference number: HAN-YYYYMMDD-HHMMSS-THREAD ──
+        ref       = f"HAN-{ts_file}-{thread}"
+        txt_fname = f"{ref}.txt"
+ 
+        # ── Build .txt content for Chronicle Inbox ──
+        lines = [
+            f"{'═'*56}",
+            f"HANUMAN FIELD NOTE",
+            f"Reference : {ref}",
+            f"Timestamp : {ts_display}",
+            f"Thread    : {thread}",
+            f"{'═'*56}",
+            "",
+            "## नोंद (Field Observation)",
+            note,
+            "",
+        ]
+        if legal_ref:
+            lines += ["## कायदेशीर संदर्भ (Legal Reference)", legal_ref, ""]
+        if annotation:
+            lines += ["## वेद व्यासांची टिप्पणी (Annotation by Veda Vyasa)", annotation, ""]
+        if photo_file and photo_file.filename:
+            lines += [f"## छायाचित्र (Photo Attached)", f"Filename: {photo_file.filename}", ""]
+        lines += ["─"*56, "जय हनुमान। सत्यमेव जयते।", "─"*56]
+ 
+        txt_content = "\\n".join(lines)
+ 
+        # ── Write text note to Drive inbox ──
+        result = _write_to_inbox(txt_content, txt_fname)
+ 
+        # ── Upload photo if attached ──
+        photo_ok   = False
+        photo_name = ""
+        if photo_file and photo_file.filename and result.get('ok'):
+            ph_bytes = photo_file.read()
+            ph_fname = f"HAN-{ts_file}-{photo_file.filename}"
+            ph_ctype = photo_file.content_type or 'image/jpeg'
+            photo_ok   = _upload_photo_to_inbox(ph_bytes, ph_fname, ph_ctype)
+            photo_name = ph_fname if photo_ok else ""
+ 
+        return jsonify({
+            'ok'        : result.get('ok', False),
+            'ref'       : ref,
+            'drive_file': result.get('file_name', ''),
+            'photo_ok'  : photo_ok,
+            'photo_name': photo_name,
+            'error'     : result.get('error', '')
+        })
+ 
+    except Exception as e:
+        print(f"ERROR /field/submit: {e}")
+        return jsonify({'ok': False, 'error': str(e)}), 500
+'''
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
