@@ -83,11 +83,7 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
 )
  
 def _get_drive_service():
-    \"\"\"
-    Returns Google Drive service using service account credentials.
-    Credentials stored in GOOGLE_SERVICE_ACCOUNT_JSON env var.
-    Returns None if not configured (graceful degradation).
-    \"\"\"
+  
     if not _DRIVE_LIBS_OK:
         return None
     sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
@@ -106,10 +102,6 @@ def _get_drive_service():
  
  
 def _write_to_inbox(text_content: str, filename: str) -> dict:
-    \"\"\"
-    Writes a .txt file to the Chronicle Inbox folder.
-    Returns: {'ok': True/False, 'file_name': ..., 'error': ...}
-    \"\"\"
     service = _get_drive_service()
     if not service:
         # Graceful degradation — log locally, note not written to Drive
@@ -135,10 +127,6 @@ def _write_to_inbox(text_content: str, filename: str) -> dict:
  
  
 def _upload_photo_to_inbox(photo_bytes: bytes, filename: str, content_type: str) -> bool:
-    \"\"\"
-    Uploads a photo file to the Chronicle Inbox folder.
-    Returns True if successful, False otherwise.
-    \"\"\"
     service = _get_drive_service()
     if not service:
         return False
