@@ -1828,31 +1828,43 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    # Keep your existing client_config
+    client_config = {
+        "web": {
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
+            "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    }
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
     flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=r_uri)
     
-    # Surgical Fix: Hard-code a state string for UAT stability
-    auth_url, state = flow.authorization_url(prompt='consent', access_type='offline', state="JAGDISHWARAM_UAT")
+    # Surgical Fix: Hard-code state and force HTTPS scheme
+    auth_url, state = flow.authorization_url(
+        prompt='consent', 
+        access_type='offline', 
+        state="JAGDISHWARAM_UAT"
+    )
+    
+    if auth_url.startswith('http://'):
+        auth_url = auth_url.replace('http://', 'https://', 1)
+        
     return redirect(auth_url)
-
+  
 @app.route('/callback')
 def callback():
     # Keep your existing client_config
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=r_uri)
-    
-    # Surgical Fix: Fetch token using the fixed state to bypass session loss
-    flow.fetch_token(authorization_response=request.url)
-    return f"Authenticated! COPY THIS: <br><br>{flow.credentials.to_json()}"
-  
     flow = Flow.from_client_config(
         client_config, 
         scopes=SCOPES, 
         redirect_uri=r_uri
     )
+    
+    # Surgical Fix: Fetch token using the fixed state to bypass session loss
     flow.fetch_token(authorization_response=request.url)
     return f"Authenticated! COPY THIS: <br><br>{flow.credentials.to_json()}"
+  
 
 @app.route('/capture', methods=['POST'])
 def capture():
