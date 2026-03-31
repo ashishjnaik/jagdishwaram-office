@@ -40,6 +40,7 @@ app = Flask(__name__)
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 # ─── DRIVE URLS — Sprint 1 verified ──────────────────────────────────────────
 # Parent folders
@@ -93,7 +94,7 @@ def _get_drive_service():
             return None
             
         # Use the correct json reference
-        creds_data = json.loads(token_json) 
+        creds_data = _json_field.loads(token_json) 
         creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
         
         if creds and creds.expired and creds.refresh_token:
