@@ -15,6 +15,7 @@ Routes:
 """
 
 import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template_string
 import anthropic
