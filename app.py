@@ -20,6 +20,7 @@ from flask import Flask, request, jsonify, render_template_string
 import anthropic
 import io
 import json as _json_field   # alias to avoid conflict with existing json import
+import json
  
 # ── Google Drive (Service Account — no OAuth popup on Render) ──────────────
 # Add to requirements.txt:
@@ -29,6 +30,7 @@ try:
     from google.oauth2 import service_account as _sa
     from googleapiclient.discovery import build as _gdrive_build
     from googleapiclient.http import MediaIoBaseUpload as _MediaUpload
+    from google.auth.transport.requests import Request
     _DRIVE_LIBS_OK = True
 except ImportError:
     _DRIVE_LIBS_OK = False
@@ -82,28 +84,27 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
     "1roP01xjVD0yxYoSbAI8tpZknffX8n1bZ"   # ← update this with your real folder ID
 )
  
-from google.auth.transport.requests import Request
 
 def _get_drive_service():
     try:
         token_json = os.environ.get("GOOGLE_USER_TOKEN")
         if not token_json:
+            print("DEBUG: GOOGLE_USER_TOKEN is missing")
             return None
             
-        creds_data = _json.loads(token_json)
+        # Use the correct json reference
+        creds_data = json.loads(token_json) 
         creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
         
-        # Surgical Fix: Auto-refresh the token if expired
         if creds and creds.expired and creds.refresh_token:
+            from google.auth.transport.requests import Request
             creds.refresh(Request())
-            # Note: Updated token stays in memory; for permanent fix, 
-            # you must manually update the Render Env Var with the refreshed JSON.
             
         return _gdrive_build('drive', 'v3', credentials=creds)
     except Exception as e:
         print(f"ERROR: _get_drive_service: {e}")
-        return None 
- 
+        return None
+      
 def _write_to_inbox(text_content: str, filename: str) -> dict:
     service = _get_drive_service()
     if not service:
