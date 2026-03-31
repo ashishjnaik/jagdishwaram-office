@@ -57,6 +57,15 @@ client_config = {
     }
 }
 
+# ─── VALIDATE OAUTH CREDENTIALS ──────────────────────────────────────────────────
+if not os.environ.get("GOOGLE_CLIENT_ID") or not os.environ.get("GOOGLE_CLIENT_SECRET"):
+    print("\n⚠️  WARNING: OAuth credentials not configured!")
+    print("   GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing from Render env vars")
+    print("   /login endpoint will fail until these are set.\n")
+else:
+    print("✅ OAuth credentials configured. /login and /callback ready.")
+
+
 # ─── DRIVE URLS — Sprint 1 verified ──────────────────────────────────────────
 # Parent folders
 # Subfolder convention: KEY_A = administrative track, KEY_R = RTI track
@@ -1828,14 +1837,6 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    client_config = {
-        "web": {
-            "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
-            "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-        }
-    }
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
     flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=r_uri)
     
@@ -1853,18 +1854,38 @@ def login():
   
 @app.route('/callback')
 def callback():
-    # Keep your existing client_config
-    r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    flow = Flow.from_client_config(
-        client_config, 
-        scopes=SCOPES, 
-        redirect_uri=r_uri
-    )
-    
-    # Surgical Fix: Fetch token using the fixed state to bypass session loss
-    flow.fetch_token(authorization_response=request.url)
-    return f"Authenticated! COPY THIS: <br><br>{flow.credentials.to_json()}"
-  
+    try:
+        r_uri = "https://jagdishwaram-office.onrender.com/callback"
+        flow = Flow.from_client_config(
+            client_config, 
+            scopes=SCOPES, 
+            redirect_uri=r_uri
+        )
+        
+        # Surgical Fix: Fetch token using the fixed state to bypass session loss
+        flow.fetch_token(authorization_response=request.url)
+        token_json = flow.credentials.to_json()
+        
+        # Return as plain HTML so user can copy the JSON
+        return f"""
+        <html><head><title>जगदिश्वरम् — Token Captured</title></head>
+        <body style="font-family: monospace; margin: 20px;">
+        <h2>✅ Authenticated Successfully!</h2>
+        <p>Copy everything below and paste into Render env var <code>GOOGLE_USER_TOKEN</code>:</p>
+        <textarea style="width: 100%; height: 300px; border: 1px solid #ccc; padding: 10px;">{token_json}</textarea>
+        <p><strong>Then:</strong> Redeploy on Render and visit <code>/field</code></p>
+        </body>
+        </html>
+        """
+    except Exception as e:
+        return f"""
+        <html><body style="font-family: sans-serif; margin: 20px;">
+        <h2>❌ Authentication Failed</h2>
+        <p><strong>Error:</strong> {str(e)}</p>
+        <p><a href="/login">Try Again</a></p>
+        </body>
+        </html>
+        """, 400  
 
 @app.route('/capture', methods=['POST'])
 def capture():
