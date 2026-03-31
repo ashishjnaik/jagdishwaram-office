@@ -1823,13 +1823,13 @@ def login():
             "token_uri": "https://oauth2.googleapis.com/token",
         }
     }
-    # Use the variable from Render directly
-    redirect_uri = os.environ.get("REDIRECT_URI")
+    # Hard-code the URI strictly for this test to bypass Env Var issues
+    r_uri = "https://jagdishwaram-office.onrender.com/callback"
     
     flow = Flow.from_client_config(
         client_config, 
         scopes=SCOPES, 
-        redirect_uri=redirect_uri
+        redirect_uri=r_uri
     )
     auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
     return redirect(auth_url)
@@ -1843,12 +1843,15 @@ def callback():
             "token_uri": "https://oauth2.googleapis.com/token"
         }
     }
-    flow = Flow.from_client_config(client_config, scopes=['https://www.googleapis.com/auth/drive.file'], 
-                                  redirect_uri=os.environ.get("REDIRECT_URI", "https://jagdishwaram-office.onrender.com/callback"))
-    flow.fetch_token(authorization_response=request.url)
+    r_uri = "https://jagdishwaram-office.onrender.com/callback"
     
-    # This string is what you MUST copy into the GOOGLE_USER_TOKEN Render Env Var
-    return f"Authenticated! COPY THIS ENTIRE STRING TO RENDER GOOGLE_USER_TOKEN: <br><br>{flow.credentials.to_json()}"
+    flow = Flow.from_client_config(
+        client_config, 
+        scopes=SCOPES, 
+        redirect_uri=r_uri
+    )
+    flow.fetch_token(authorization_response=request.url)
+    return f"Authenticated! COPY THIS: <br><br>{flow.credentials.to_json()}"
 
 @app.route('/capture', methods=['POST'])
 def capture():
