@@ -41,7 +41,7 @@ except ImportError:
     print("WARNING: google-api-python-client not installed. /field will run without Drive.")
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "XdfsUrBfhSjn67F4HfbDth3DudfN")
+app.secret_key = "JAGDISHWARAM_UAT_2026"
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
@@ -1828,24 +1828,21 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    # Hard-code the URI strictly for this test to bypass Env Var issues
+    # Keep your existing client_config
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    flow = Flow.from_client_config(
-        client_config, 
-        scopes=SCOPES, 
-        redirect_uri=r_uri
-    )
-    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
+    flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=r_uri)
+    
+    # Surgical Fix: Hard-code a state string for UAT stability
+    auth_url, state = flow.authorization_url(prompt='consent', access_type='offline', state="JAGDISHWARAM_UAT")
     return redirect(auth_url)
 
 @app.route('/callback')
 def callback():
+    # Keep your existing client_config
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    flow = Flow.from_client_config(
-        client_config, 
-        scopes=SCOPES, 
-        redirect_uri=r_uri
-    )
+    flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=r_uri)
+    
+    # Surgical Fix: Fetch token using the fixed state to bypass session loss
     flow.fetch_token(authorization_response=request.url)
     return f"Authenticated! COPY THIS: <br><br>{flow.credentials.to_json()}"
   
