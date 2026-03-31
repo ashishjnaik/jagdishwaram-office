@@ -1844,7 +1844,8 @@ def login():
     auth_url, state = flow.authorization_url(
         prompt='consent', 
         access_type='offline', 
-        state="JAGDISHWARAM_UAT"
+        state="JAGDISHWARAM_UAT",
+        code_challenge_method=None
     )
     
     if auth_url.startswith('http://'):
