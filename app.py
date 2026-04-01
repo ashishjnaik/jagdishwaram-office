@@ -1837,16 +1837,26 @@ def chronicle():
 
 @app.route('/login')
 def login():
+    # Use global client_config (defined at module level, line 51)
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=r_uri)
-    
-    # Surgical Fix: Hard-code state and force HTTPS scheme
-    auth_url, state = flow.authorization_url(
-        prompt='consent', 
-        access_type='offline', 
+    flow = Flow.from_client_config(
+        client_config, 
+        scopes=SCOPES, 
+        redirect_uri=r_uri,
         state="JAGDISHWARAM_UAT"
     )
     
+    # Generate authorization URL
+    auth_url, state = flow.authorization_url(
+        prompt='consent', 
+        access_type='offline'
+    )
+    
+    # Store the flow in session to retrieve in /callback
+    from flask import session
+    session['flow_state'] = state
+    
+    # Ensure HTTPS (Render runs on HTTPS)
     if auth_url.startswith('http://'):
         auth_url = auth_url.replace('http://', 'https://', 1)
         
@@ -1855,37 +1865,57 @@ def login():
 @app.route('/callback')
 def callback():
     try:
+        from flask import session
+        
+        # Recreate the same flow object with the same parameters as /login
         r_uri = "https://jagdishwaram-office.onrender.com/callback"
         flow = Flow.from_client_config(
             client_config, 
             scopes=SCOPES, 
-            redirect_uri=r_uri
+            redirect_uri=r_uri,
+            state=session.get('flow_state', 'JAGDISHWARAM_UAT')
         )
         
-        # Surgical Fix: Fetch token using the fixed state to bypass session loss
+        # Exchange the authorization code for a token
         flow.fetch_token(authorization_response=request.url)
         token_json = flow.credentials.to_json()
         
         # Return as plain HTML so user can copy the JSON
         return f"""
-        <html><head><title>जगदिश्वरम् — Token Captured</title></head>
-        <body style="font-family: monospace; margin: 20px;">
-        <h2>✅ Authenticated Successfully!</h2>
-        <p>Copy everything below and paste into Render env var <code>GOOGLE_USER_TOKEN</code>:</p>
-        <textarea style="width: 100%; height: 300px; border: 1px solid #ccc; padding: 10px;">{token_json}</textarea>
-        <p><strong>Then:</strong> Redeploy on Render and visit <code>/field</code></p>
+        <html><head><title>जगदिश्वरम् — Token Captured</title>
+        <meta charset="UTF-8"></head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; max-width: 800px;">
+        <h2 style="color: #2d5016;">✅ Authenticated Successfully!</h2>
+        <p>Copy everything in the box below and paste into Render environment variable <code>GOOGLE_USER_TOKEN</code>:</p>
+        <textarea style="width: 100%; height: 400px; border: 1px solid #ccc; padding: 10px; font-family: monospace; font-size: 12px;">{token_json}</textarea>
+        <p style="margin-top: 20px;">
+        <strong>Next steps:</strong><br>
+        1. Copy the JSON above<br>
+        2. Go to Render Dashboard → Environment → Add variable<br>
+        3. Key: <code>GOOGLE_USER_TOKEN</code> | Value: [paste JSON]<br>
+        4. Save and Redeploy<br>
+        5. Visit <a href="/field">/field</a> to test photo + note upload
+        </p>
         </body>
         </html>
         """
     except Exception as e:
         return f"""
-        <html><body style="font-family: sans-serif; margin: 20px;">
-        <h2>❌ Authentication Failed</h2>
+        <html><head><title>Authentication Error</title>
+        <meta charset="UTF-8"></head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px;">
+        <h2 style="color: #8b1a1a;">❌ Authentication Failed</h2>
         <p><strong>Error:</strong> {str(e)}</p>
-        <p><a href="/login">Try Again</a></p>
+        <p>This usually means:</p>
+        <ul>
+        <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing from Render env</li>
+        <li>The redirect URI doesn't match what's in Google Cloud Console</li>
+        <li>The auth code expired (try again)</li>
+        </ul>
+        <p><a href="/login">🔄 Try Again</a></p>
         </body>
         </html>
-        """, 400  
+        """, 400
 
 @app.route('/capture', methods=['POST'])
 def capture():
