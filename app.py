@@ -2037,24 +2037,31 @@ def field_submit():
  
         # ── Write text note to Drive inbox ──
         result = _write_to_inbox(txt_content, txt_fname)
- 
+
         # ── Upload photo if attached ──
         photo_ok = False
         photo_name = ""
         if photo_file and photo_file.filename and result.get('ok'):
-        photo_ok = _upload_photo_to_inbox(photo_file.read(), f"HAN-{ts_file}-{photo_file.filename}", photo_file.content_type or 'image/jpeg')
-        photo_name = f"HAN-{ts_file}-{photo_file.filename}" if photo_ok else ""
+            ph_bytes = photo_file.read() # Read once to avoid empty stream
+            ph_fname = f"HAN-{ts_file}-{photo_file.filename}"
+            ph_ctype = photo_file.content_type or 'image/jpeg'
+            photo_ok = _upload_photo_to_inbox(ph_bytes, ph_fname, ph_ctype)
+            photo_name = ph_fname if photo_ok else ""
 
+        # ── Upload audio/video if attached ──
         if audio_file and audio_file.filename and result.get('ok'):
-        _upload_photo_to_inbox(audio_file.read(), f"HAN-{ts_file}-{audio_file.filename}", audio_file.content_type or 'audio/mpeg')
- 
+            au_bytes = audio_file.read()
+            au_fname = f"HAN-{ts_file}-{audio_file.filename}"
+            au_ctype = audio_file.content_type or 'audio/mpeg'
+            _upload_photo_to_inbox(au_bytes, au_fname, au_ctype)
+
         return jsonify({
-            'ok'        : result.get('ok', False),
-            'ref'       : ref,
+            'ok' : result.get('ok', False),
+            'ref' : ref,
             'drive_file': result.get('file_name', ''),
-            'photo_ok'  : photo_ok,
+            'photo_ok' : photo_ok,
             'photo_name': photo_name,
-            'error'     : result.get('error', '')
+            'error' : result.get('error', '')
         })
  
     except Exception as e:
