@@ -1618,7 +1618,7 @@ select{
       <div class="photo-label">ऑडिओ/व्हिडिओ जोडा — अपनी फाइल से</div>
       <div class="photo-sub">MP3 · MP4 · WAV · Max 50 MB</div>
     </div>
-    <input type="file" id="audioInput" accept="audio/*,video/*"
+    <input type="file" id="audioInput" accept="audio/*,video/*,,video/*,.m4a,.mp3,.wav"
            onchange="handleAudio(this)">
     <div class="photo-preview" id="audioPreview">
       <div style="padding: 10px; text-align: center;">
