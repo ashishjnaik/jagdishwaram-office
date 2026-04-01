@@ -1737,6 +1737,20 @@ function resetForm(){
 </body>
 </html>"""
 
+# ─── OAUTH FLOW CACHE (server memory, not session) ───────────────────────────────
+import uuid
+oauth_flows = {}  # { flow_id: flow_object }
+
+def save_flow(flow):
+    """Store flow in memory, return the ID"""
+    flow_id = str(uuid.uuid4())
+    oauth_flows[flow_id] = flow
+    return flow_id
+
+def get_flow(flow_id):
+    """Retrieve flow from memory"""
+    return oauth_flows.pop(flow_id, None)  # Remove after use
+
 
 # ─── ROUTES ───────────────────────────────────────────────────────────────────
 @app.route('/')
@@ -1837,14 +1851,17 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    # Use global client_config (defined at module level, line 51)
     r_uri = "https://jagdishwaram-office.onrender.com/callback"
+    
+    # Create flow (PKCE disabled by default when client_secret is present)
     flow = Flow.from_client_config(
         client_config, 
         scopes=SCOPES, 
-        redirect_uri=r_uri,
-        state="JAGDISHWARAM_UAT"
+        redirect_uri=r_uri
     )
+    
+    # Store flow in server memory
+    flow_id = save_flow(flow)
     
     # Generate authorization URL
     auth_url, state = flow.authorization_url(
@@ -1852,31 +1869,24 @@ def login():
         access_type='offline'
     )
     
-    # Store the flow in session to retrieve in /callback
-    from flask import session
-    session['flow_state'] = state
-    
-    # Ensure HTTPS (Render runs on HTTPS)
-    if auth_url.startswith('http://'):
-        auth_url = auth_url.replace('http://', 'https://', 1)
-        
-    return redirect(auth_url)
+    # Append flow_id to redirect URL so /callback can retrieve it
+    return redirect(f"{auth_url}&flow_id={flow_id}")
   
 @app.route('/callback')
 def callback():
     try:
-        from flask import session
+        flow_id = request.args.get('flow_id')
         
-        # Recreate the same flow object with the same parameters as /login
-        r_uri = "https://jagdishwaram-office.onrender.com/callback"
-        flow = Flow.from_client_config(
-            client_config, 
-            scopes=SCOPES, 
-            redirect_uri=r_uri,
-            state=session.get('flow_state', 'JAGDISHWARAM_UAT')
-        )
+        if not flow_id:
+            raise ValueError("Missing flow_id in callback URL")
         
-        # Exchange the authorization code for a token
+        # Retrieve the Flow object from server memory
+        flow = get_flow(flow_id)
+        
+        if not flow:
+            raise ValueError("Flow expired or not found")
+        
+        # Exchange authorization code for token
         flow.fetch_token(authorization_response=request.url)
         token_json = flow.credentials.to_json()
         
@@ -1908,15 +1918,16 @@ def callback():
         <p><strong>Error:</strong> {str(e)}</p>
         <p>This usually means:</p>
         <ul>
-        <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing from Render env</li>
-        <li>The redirect URI doesn't match what's in Google Cloud Console</li>
+        <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing or incorrect</li>
+        <li>The redirect URI doesn't match Google Cloud Console settings</li>
         <li>The auth code expired (try again)</li>
+        <li>Flow ID was lost (Render instance restarted — try again)</li>
         </ul>
         <p><a href="/login">🔄 Try Again</a></p>
         </body>
         </html>
         """, 400
-
+      
 @app.route('/capture', methods=['POST'])
 def capture():
     try:
