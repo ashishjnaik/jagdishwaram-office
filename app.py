@@ -1849,42 +1849,24 @@ def chronicle():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/login')
-def login():
-    r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    
-    # Create flow (PKCE disabled by default when client_secret is present)
-    flow = Flow.from_client_config(
-        client_config, 
-        scopes=SCOPES, 
-        redirect_uri=r_uri
-    )
-    
-    # Store flow in server memory
-    flow_id = save_flow(flow)
-    
-    # Generate authorization URL
-    auth_url, state = flow.authorization_url(
-        prompt='consent', 
-        access_type='offline'
-    )
-    
-    # Append flow_id to redirect URL so /callback can retrieve it
-    return redirect(f"{auth_url}&flow_id={flow_id}")
-  
+
+
+
 @app.route('/callback')
 def callback():
+    """Handle OAuth callback. Retrieve flow from memory using state parameter."""
     try:
-        flow_id = request.args.get('flow_id')
+        # Google returns the state parameter we set in /login
+        state_id = request.args.get('state')
         
-        if not flow_id:
-            raise ValueError("Missing flow_id in callback URL")
+        if not state_id:
+            raise ValueError("Missing state parameter in callback URL")
         
-        # Retrieve the Flow object from server memory
-        flow = get_flow(flow_id)
+        # Retrieve the Flow object from /login using state_id
+        if not hasattr(login, 'flows') or state_id not in login.flows:
+            raise ValueError("Flow expired or not found. Try /login again.")
         
-        if not flow:
-            raise ValueError("Flow expired or not found")
+        flow = login.flows.pop(state_id)  # Remove after retrieving
         
         # Exchange authorization code for token
         flow.fetch_token(authorization_response=request.url)
@@ -1918,10 +1900,10 @@ def callback():
         <p><strong>Error:</strong> {str(e)}</p>
         <p>This usually means:</p>
         <ul>
-        <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing or incorrect</li>
-        <li>The redirect URI doesn't match Google Cloud Console settings</li>
-        <li>The auth code expired (try again)</li>
-        <li>Flow ID was lost (Render instance restarted — try again)</li>
+        <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is incorrect</li>
+        <li>The redirect URI doesn't match Google Cloud Console</li>
+        <li>You waited too long before completing auth (try again)</li>
+        <li>Render instance restarted (try /login again)</li>
         </ul>
         <p><a href="/login">🔄 Try Again</a></p>
         </body>
