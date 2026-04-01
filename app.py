@@ -1603,11 +1603,27 @@ select{
       <div class="photo-label">फोटो जोडा — Camera किंवा Gallery</div>
       <div class="photo-sub">JPG · PNG · HEIC · Max 10 MB</div>
     </div>
-    <input type="file" id="photoInput" accept="image/*" capture="environment"
+    <input type="file" id="photoInput" accept="image/*"
            onchange="handlePhoto(this)">
     <div class="photo-preview" id="photoPreview">
       <img id="previewImg" src="" alt="Preview">
       <div class="photo-fname" id="photoFname"></div>
+    </div>
+  </div>
+
+  <div class="fg">
+    <label class="fl">ऑडिओ किंवा व्हिडिओ नोंद (Optional)</label>
+    <div class="photo-area" onclick="document.getElementById('audioInput').click()" style="border-style: dashed;">
+      <div class="photo-icon">🎙️</div>
+      <div class="photo-label">ऑडिओ/व्हिडिओ जोडा — अपनी फाइल से</div>
+      <div class="photo-sub">MP3 · MP4 · WAV · Max 50 MB</div>
+    </div>
+    <input type="file" id="audioInput" accept="audio/*,video/*"
+           onchange="handleAudio(this)">
+    <div class="photo-preview" id="audioPreview">
+      <div style="padding: 10px; text-align: center;">
+        <div id="audioFname" style="font-size: 13px; color: #5f5e5a;"></div>
+      </div>
     </div>
   </div>
  
@@ -1668,7 +1684,15 @@ function handlePhoto(inp){
   };
   r.readAsDataURL(f);
 }
- 
+
+// ── Audio preview ──────────────────────────────────────────────
+function handleAudio(inp){
+  const f=inp.files[0];if(!f)return;
+  if(f.size>50*1024*1024){showErr('ऑडिओ/व्हिडिओ 50MB पेक्षा मोठे आहेत.');inp.value='';return;}
+  document.getElementById('audioFname').textContent='✓ '+f.name+' ('+Math.round(f.size/1024/1024)+'MB)';
+  document.getElementById('audioPreview').style.display='block';
+}
+
 // ── Error helpers ──────────────────────────────────────────────
 function showErr(m){
   const el=document.getElementById('errBar');
@@ -1694,7 +1718,9 @@ async function doSubmit(){
   fd.append('annotation',document.getElementById('annotation').value.trim());
   const ph=document.getElementById('photoInput').files[0];
   if(ph)fd.append('photo',ph,ph.name);
- 
+  const au=document.getElementById('audioInput').files[0];
+  if(au)fd.append('audio',au,au.name);
+  
   try{
     const res=await fetch('/field/submit',{method:'POST',body:fd});
     const d=await res.json();
