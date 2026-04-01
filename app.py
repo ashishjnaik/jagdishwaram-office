@@ -2046,7 +2046,7 @@ def field_submit():
         photo_name = f"HAN-{ts_file}-{photo_file.filename}" if photo_ok else ""
 
         if audio_file and audio_file.filename and result.get('ok'):
-    _upload_photo_to_inbox(audio_file.read(), f"HAN-{ts_file}-{audio_file.filename}", audio_file.content_type or 'audio/mpeg')
+        _upload_photo_to_inbox(audio_file.read(), f"HAN-{ts_file}-{audio_file.filename}", audio_file.content_type or 'audio/mpeg')
  
         return jsonify({
             'ok'        : result.get('ok', False),
