@@ -1849,8 +1849,36 @@ def chronicle():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-
+@app.route('/login')
+def login():
+    """Initiate OAuth flow. Store flow object in memory with a state ID."""
+    import uuid
+    
+    r_uri = "https://jagdishwaram-office.onrender.com/callback"
+    
+    # Create flow (no PKCE — we have client_secret)
+    flow = Flow.from_client_config(
+        client_config, 
+        scopes=SCOPES, 
+        redirect_uri=r_uri
+    )
+    
+    # Generate a unique state ID
+    state_id = str(uuid.uuid4())
+    
+    # Store the flow object in memory using state_id as key
+    if not hasattr(login, 'flows'):
+        login.flows = {}
+    login.flows[state_id] = flow
+    
+    # Generate authorization URL with our custom state
+    auth_url, _ = flow.authorization_url(
+        prompt='consent', 
+        access_type='offline',
+        state=state_id  # ← Pass our state_id instead of letting Google generate it
+    )
+    
+    return redirect(auth_url)
 
 @app.route('/callback')
 def callback():
