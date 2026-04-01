@@ -1998,6 +1998,7 @@ def field_submit():
         legal_ref  = request.form.get('legal_ref', '').strip()
         annotation = request.form.get('annotation', '').strip()
         photo_file = request.files.get('photo')
+        audio_file = request.files.get('audio')
  
         if not note:
             return jsonify({'ok': False, 'error': 'नोंद रिकामी आहे'}), 400
@@ -2038,14 +2039,14 @@ def field_submit():
         result = _write_to_inbox(txt_content, txt_fname)
  
         # ── Upload photo if attached ──
-        photo_ok   = False
+        photo_ok = False
         photo_name = ""
         if photo_file and photo_file.filename and result.get('ok'):
-            ph_bytes = photo_file.read()
-            ph_fname = f"HAN-{ts_file}-{photo_file.filename}"
-            ph_ctype = photo_file.content_type or 'image/jpeg'
-            photo_ok   = _upload_photo_to_inbox(ph_bytes, ph_fname, ph_ctype)
-            photo_name = ph_fname if photo_ok else ""
+        photo_ok = _upload_photo_to_inbox(photo_file.read(), f"HAN-{ts_file}-{photo_file.filename}", photo_file.content_type or 'image/jpeg')
+        photo_name = f"HAN-{ts_file}-{photo_file.filename}" if photo_ok else ""
+
+        if audio_file and audio_file.filename and result.get('ok'):
+    _upload_photo_to_inbox(audio_file.read(), f"HAN-{ts_file}-{audio_file.filename}", audio_file.content_type or 'audio/mpeg')
  
         return jsonify({
             'ok'        : result.get('ok', False),
