@@ -17,6 +17,7 @@ Routes:
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 from datetime import datetime
+import pytz
 from flask import Flask, request, jsonify, render_template_string, redirect
 import anthropic
 import io
@@ -2003,11 +2004,12 @@ def field_submit():
         if not note:
             return jsonify({'ok': False, 'error': 'नोंद रिकामी आहे'}), 400
  
-        # ── Timestamp ──
-        now       = datetime.now()
-        ts_file   = now.strftime('%Y%m%d_%H%M%S')
-        ts_display= now.strftime('%d %B %Y | %I:%M %p IST')
- 
+        # ── Timestamp (Strict IST Enforcement) ──
+        ist = pytz.timezone('Asia/Kolkata')
+        now_ist = datetime.now(ist)
+        ts_file = now_ist.strftime('%Y%m%d_%H%M%S')
+        ts_display = now_ist.strftime('%d %B %Y | %I:%M %p IST')
+      
         # ── Reference number: HAN-YYYYMMDD-HHMMSS-THREAD ──
         ref       = f"HAN-{ts_file}-{thread}"
         txt_fname = f"{ref}.txt"
