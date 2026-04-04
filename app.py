@@ -14,6 +14,7 @@ Routes:
   /debug     API key validation
 """
 
+import io
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 from datetime import datetime
