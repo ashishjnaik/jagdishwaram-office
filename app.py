@@ -1928,14 +1928,15 @@ def callback():
         # Retrieve the Flow object from /login using state_id
         if not hasattr(login, 'flows') or state_id not in login.flows:
             raise ValueError("Flow expired or not found. Try /login again.")
-        
-        flow = login.flows.pop(state_id)  # Remove after retrieving
-        
-        # Exchange authorization code for token
-        r_uri = os.environ.get('REDIRECT_URI')
-        flow.fetch_token(
-        authorization_response=request.url
-        )
+
+        flow = login.flows.pop(state_id) # Remove after retrieving
+
+        # Re-set the redirect_uri explicitly on the flow object before fetching token
+        # This ensures Google is happy without causing the "multiple values" error
+        flow.redirect_uri = os.environ.get('REDIRECT_URI')
+
+        # Execute token exchange
+        flow.fetch_token(authorization_response=request.url)
         token_json = flow.credentials.to_json()
         
         # Return as plain HTML so user can copy the JSON
@@ -1944,12 +1945,12 @@ def callback():
         <meta charset="UTF-8"></head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; max-width: 800px;">
         <h2 style="color: #2d5016;">✅ Authenticated Successfully!</h2>
-        <p>Copy everything in the box below and paste into Render environment variable <code>GOOGLE_USER_TOKEN</code>:</p>
+        <p>Copy everything in the box below and paste into Railways environment variable <code>GOOGLE_USER_TOKEN</code>:</p>
         <textarea style="width: 100%; height: 400px; border: 1px solid #ccc; padding: 10px; font-family: monospace; font-size: 12px;">{token_json}</textarea>
         <p style="margin-top: 20px;">
         <strong>Next steps:</strong><br>
         1. Copy the JSON above<br>
-        2. Go to Render Dashboard → Environment → Add variable<br>
+        2. Go to Railway Dashboard → Environment → Add variable<br>
         3. Key: <code>GOOGLE_USER_TOKEN</code> | Value: [paste JSON]<br>
         4. Save and Redeploy<br>
         5. Visit <a href="/field">/field</a> to test photo + note upload
@@ -1969,7 +1970,7 @@ def callback():
         <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is incorrect</li>
         <li>The redirect URI doesn't match Google Cloud Console</li>
         <li>You waited too long before completing auth (try again)</li>
-        <li>Render instance restarted (try /login again)</li>
+        <li>Railway instance restarted (try /login again)</li>
         </ul>
         <p><a href="/login">🔄 Try Again</a></p>
         </body>
