@@ -175,10 +175,13 @@ def _get_drive_service():
         return _final_build('drive', 'v3', credentials=creds)
     except Exception as e:
         print(f"CRITICAL ERROR in _get_drive_service: {str(e)}")
-        return None
+        return f"AUTH_ERROR: {str(e)}"
       
 def _write_to_inbox(text_content: str, filename: str) -> dict:
     service = _get_drive_service()
+  # New check: If service is a string, it contains the actual error message
+    if isinstance(service, str) and "AUTH_ERROR" in service:
+        return {"ok": False, "error": service}  
     if not service:
         # Graceful degradation — log locally, note not written to Drive
         print(f"[HANUMAN LOCAL FALLBACK] {filename}")
