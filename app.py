@@ -1928,9 +1928,11 @@ def chronicle():
 @app.route('/login')
 def login():
     flow = get_google_flow()
+    # Adding prompt='consent' is the key to getting a refresh_token
     authorization_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true'
+        include_granted_scopes='true',
+        prompt='consent' 
     )
     
     if not hasattr(login, 'flows'):
