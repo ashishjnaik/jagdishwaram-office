@@ -1920,24 +1920,24 @@ def login():
 def callback():
     """Handle OAuth callback. Retrieve flow from memory using state parameter."""
   try:
-        state_id = session.get('state')
-        incoming_state = request.args.get('state')
+      state_id = session.get('state')
+      incoming_state = request.args.get('state')
 
-        if not state_id or state_id != incoming_state:
-        return "State mismatch or session expired. Please restart /login.", 400
+      if not state_id or state_id != incoming_state:
+      return "State mismatch or session expired. Please restart /login.", 400
           
-        # Retrieve the flow and set the URI before fetching the token
-        flow = login.flows.pop(state_id)
-        flow.redirect_uri = os.environ.get('REDIRECT_URI')
+      # Retrieve the flow and set the URI before fetching the token
+      flow = login.flows.pop(state_id)
+      flow.redirect_uri = os.environ.get('REDIRECT_URI')
 
-        credentials = flow.credentials
+      credentials = flow.credentials
 
-        # Execute token exchange
-        flow.fetch_token(authorization_response=request.url)
-        token_json = flow.credentials.to_json()
+      # Execute token exchange
+      flow.fetch_token(authorization_response=request.url)
+      token_json = flow.credentials.to_json()
         
-        # Return as plain HTML so user can copy the JSON
-        return f"""
+      # Return as plain HTML so user can copy the JSON
+      return f"""
         <html><head><title>जगदिश्वरम् — Token Captured</title>
         <meta charset="UTF-8"></head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; max-width: 800px;">
