@@ -18,7 +18,7 @@ import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 from datetime import datetime
 import pytz
-from flask import Flask, request, jsonify, render_template_string, redirect
+from flask import Flask, request, jsonify, render_template, render_template_string, redirect, session, url_for
 import anthropic
 import io
 import json as _json_field   # alias to avoid conflict with existing json import
@@ -42,7 +42,7 @@ except ImportError:
     print("WARNING: google-api-python-client not installed. /field will run without Drive.")
 
 app = Flask(__name__)
-app.secret_key = "JAGDISHWARAM_UAT_2026"
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'a_reliable_fallback_secret_for_dev')
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
@@ -1887,7 +1887,6 @@ def login():
 
     from google_auth_oauthlib.flow import Flow
     
-    # 1. Initialize Flow with the redirect_uri immediately
     flow = Flow.from_client_config(
         {
             "web": {
@@ -1899,9 +1898,8 @@ def login():
         },
         scopes=['https://www.googleapis.com/auth/userinfo.profile', 'openid']
     )
-    flow.redirect_uri = r_uri  # <--- This is the cleaner way to set it
+    flow.redirect_uri = r_uri
 
-    # 2. Generate the URL (removed redirect_uri from here to avoid the "multiple values" error)
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true'
@@ -1911,7 +1909,10 @@ def login():
         login.flows = {}
     login.flows[state] = flow
     
-    session['state'] = state
+    # This line was causing the crash; ensure 'from flask import session' is at top
+    session['state'] = state 
+    
+    # This line also requires 'from flask import redirect' at top
     return redirect(authorization_url)
 
 @app.route('/callback')
