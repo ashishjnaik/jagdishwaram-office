@@ -1918,61 +1918,60 @@ def login():
   
 @app.route('/callback')
 def callback():
-    """Handle OAuth callback. Retrieve flow from memory using state parameter."""
   try:
-        state_id = session.get('state')
-        incoming_state = request.args.get('state')
+    state_id = session.get('state')
+    incoming_state = request.args.get('state')
   
-        if not state_id or state_id != incoming_state:
-        return "State mismatch or session expired. Please restart /login.", 400
+    if not state_id or state_id != incoming_state:
+    return "State mismatch or session expired. Please restart /login.", 400
             
-        # Retrieve the flow and set the URI before fetching the token
-        flow = login.flows.pop(state_id)
-        flow.redirect_uri = os.environ.get('REDIRECT_URI')
+    # Retrieve the flow and set the URI before fetching the token
+    flow = login.flows.pop(state_id)
+    flow.redirect_uri = os.environ.get('REDIRECT_URI')
   
-        credentials = flow.credentials
+    credentials = flow.credentials
   
-        # Execute token exchange
-        flow.fetch_token(authorization_response=request.url)
-        token_json = flow.credentials.to_json()
+    # Execute token exchange
+    flow.fetch_token(authorization_response=request.url)
+    token_json = flow.credentials.to_json()
           
-        # Return as plain HTML so user can copy the JSON
-        return f"""
-          <html><head><title>जगदिश्वरम् — Token Captured</title>
-          <meta charset="UTF-8"></head>
-          <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; max-width: 800px;">
-          <h2 style="color: #2d5016;">✅ Authenticated Successfully!</h2>
-          <p>Copy everything in the box below and paste into Railways environment variable <code>GOOGLE_USER_TOKEN</code>:</p>
-          <textarea style="width: 100%; height: 400px; border: 1px solid #ccc; padding: 10px; font-family: monospace; font-size: 12px;">{token_json}</textarea>
-          <p style="margin-top: 20px;">
-          <strong>Next steps:</strong><br>
-          1. Copy the JSON above<br>
-          2. Go to Railway Dashboard → Environment → Add variable<br>
-          3. Key: <code>GOOGLE_USER_TOKEN</code> | Value: [paste JSON]<br>
-          4. Save and Redeploy<br>
-          5. Visit <a href="/field">/field</a> to test photo + note upload
-          </p>
-          </body>
-          </html>
-        """
+    # Return as plain HTML so user can copy the JSON
+    return f"""
+    <html><head><title>जगदिश्वरम् — Token Captured</title>
+    <meta charset="UTF-8"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; max-width: 800px;">
+    <h2 style="color: #2d5016;">✅ Authenticated Successfully!</h2>
+    <p>Copy everything in the box below and paste into Railways environment variable <code>GOOGLE_USER_TOKEN</code>:</p>
+    <textarea style="width: 100%; height: 400px; border: 1px solid #ccc; padding: 10px; font-family: monospace; font-size: 12px;">{token_json}</textarea>
+    <p style="margin-top: 20px;">
+    <strong>Next steps:</strong><br>
+    1. Copy the JSON above<br>
+    2. Go to Railway Dashboard → Environment → Add variable<br>
+    3. Key: <code>GOOGLE_USER_TOKEN</code> | Value: [paste JSON]<br>
+    4. Save and Redeploy<br>
+    5. Visit <a href="/field">/field</a> to test photo + note upload
+    </p>
+    </body>
+    </html>
+    """
     except Exception as e:
-        return f"""
-        <html><head><title>Authentication Error</title>
-        <meta charset="UTF-8"></head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px;">
-        <h2 style="color: #8b1a1a;">❌ Authentication Failed</h2>
-        <p><strong>Error:</strong> {str(e)}</p>
-        <p>This usually means:</p>
-        <ul>
-        <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is incorrect</li>
-        <li>The redirect URI doesn't match Google Cloud Console</li>
-        <li>You waited too long before completing auth (try again)</li>
-        <li>Railway instance restarted (try /login again)</li>
-        </ul>
-        <p><a href="/login">🔄 Try Again</a></p>
-        </body>
-        </html>
-        """, 400
+      return f"""
+      <html><head><title>Authentication Error</title>
+      <meta charset="UTF-8"></head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px;">
+      <h2 style="color: #8b1a1a;">❌ Authentication Failed</h2>
+      <p><strong>Error:</strong> {str(e)}</p>
+      <p>This usually means:</p>
+      <ul>
+      <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is incorrect</li>
+      <li>The redirect URI doesn't match Google Cloud Console</li>
+      <li>You waited too long before completing auth (try again)</li>
+      <li>Railway instance restarted (try /login again)</li>
+      </ul>
+      <p><a href="/login">🔄 Try Again</a></p>
+      </body>
+      </html>
+      """, 400
       
 @app.route('/capture', methods=['POST'])
 def capture():
