@@ -79,7 +79,6 @@ def get_google_flow():
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 # --- OAuth Configuration ---
 client_config = {
