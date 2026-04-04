@@ -1919,14 +1919,14 @@ def login():
 @app.route('/callback')
 def callback():
     """Handle OAuth callback. Retrieve flow from memory using state parameter."""
-try:
-state_id = session.get('state')
-incoming_state = request.args.get('state')
+  try:
+        state_id = session.get('state')
+        incoming_state = request.args.get('state')
 
-if not state_id or state_id != incoming_state:
-    return "State mismatch or session expired. Please restart /login.", 400
+        if not state_id or state_id != incoming_state:
+        return "State mismatch or session expired. Please restart /login.", 400
           
-# Retrieve the flow and set the URI before fetching the token
+        # Retrieve the flow and set the URI before fetching the token
         flow = login.flows.pop(state_id)
         flow.redirect_uri = os.environ.get('REDIRECT_URI')
 
