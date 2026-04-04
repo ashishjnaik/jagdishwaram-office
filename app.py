@@ -1934,8 +1934,7 @@ def callback():
         # Exchange authorization code for token
         r_uri = os.environ.get('REDIRECT_URI')
         flow.fetch_token(
-        authorization_response=request.url,
-        redirect_uri=r_uri
+        authorization_response=request.url
         )
         token_json = flow.credentials.to_json()
         
