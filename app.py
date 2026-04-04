@@ -145,24 +145,23 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
 
 def _get_drive_service():
     try:
-        # 1. Match the variable name you used in the /callback screen
-        token_json = os.environ.get("GOOGLE_USER_TOKEN") 
+        # 1. Retrieve the JSON token from your Railway variable
+        token_json = os.environ.get("GOOGLE_USER_TOKEN")
         if not token_json:
-            print("ERROR: GOOGLE_USER_TOKEN is missing from Railway Variables")
+            print("DEBUG: GOOGLE_USER_TOKEN is missing from environment")
             return None
             
-        # 2. Define the scopes locally to avoid NameErrors if Line 82 was deleted
-        current_scopes = [
+        # 2. Define scopes locally since global SCOPES was removed
+        drive_scopes = [
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive'
         ]
         
-        # 3. Load credentials
-        import json as _json_internal
-        creds_data = _json_internal.loads(token_json) 
-        creds = Credentials.from_authorized_user_info(creds_data, current_scopes)
+        # 3. Use the global json import to load the token
+        creds_data = json.loads(token_json) 
+        creds = Credentials.from_authorized_user_info(creds_data, drive_scopes)
         
-        # 4. Handle token refresh if expired
+        # 4. Handle automatic token refresh
         if creds and creds.expired and creds.refresh_token:
             from google.auth.transport.requests import Request
             creds.refresh(Request())
