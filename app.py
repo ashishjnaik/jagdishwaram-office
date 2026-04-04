@@ -145,22 +145,31 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
 
 def _get_drive_service():
     try:
-        token_json = os.environ.get("GOOGLE_USER_TOKEN")
+        # 1. Match the variable name you used in the /callback screen
+        token_json = os.environ.get("GOOGLE_USER_TOKEN") 
         if not token_json:
-            print("DEBUG: GOOGLE_USER_TOKEN is missing")
+            print("ERROR: GOOGLE_USER_TOKEN is missing from Railway Variables")
             return None
             
-        # Use the correct json reference
-        creds_data = _json_field.loads(token_json) 
-        creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
+        # 2. Define the scopes locally to avoid NameErrors if Line 82 was deleted
+        current_scopes = [
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive'
+        ]
         
+        # 3. Load credentials
+        import json as _json_internal
+        creds_data = _json_internal.loads(token_json) 
+        creds = Credentials.from_authorized_user_info(creds_data, current_scopes)
+        
+        # 4. Handle token refresh if expired
         if creds and creds.expired and creds.refresh_token:
             from google.auth.transport.requests import Request
             creds.refresh(Request())
             
-        return _gdrive_build('drive', 'v3', credentials=creds)
+        return build('drive', 'v3', credentials=creds)
     except Exception as e:
-        print(f"ERROR: _get_drive_service: {e}")
+        print(f"CRITICAL ERROR: _get_drive_service: {e}")
         return None
       
 def _write_to_inbox(text_content: str, filename: str) -> dict:
