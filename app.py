@@ -1878,16 +1878,16 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    # 1. Get variables
     client_id = os.environ.get('GOOGLE_CLIENT_ID')
     client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
     r_uri = os.environ.get('REDIRECT_URI')
     
     if not all([client_id, client_secret, r_uri]):
-        return "Error: Missing Google credentials or Redirect URI in environment.", 500
+        return "Error: Missing Google credentials or Redirect URI.", 500
 
-    # 2. Re-initialize the flow object
     from google_auth_oauthlib.flow import Flow
+    
+    # 1. Initialize Flow with the redirect_uri immediately
     flow = Flow.from_client_config(
         {
             "web": {
@@ -1899,15 +1899,14 @@ def login():
         },
         scopes=['https://www.googleapis.com/auth/userinfo.profile', 'openid']
     )
+    flow.redirect_uri = r_uri  # <--- This is the cleaner way to set it
 
-    # 3. Generate the URL
+    # 2. Generate the URL (removed redirect_uri from here to avoid the "multiple values" error)
     authorization_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true',
-        redirect_uri=r_uri
+        include_granted_scopes='true'
     )
     
-    # Store flow in memory so callback can find it
     if not hasattr(login, 'flows'):
         login.flows = {}
     login.flows[state] = flow
