@@ -145,30 +145,34 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
 
 def _get_drive_service():
     try:
-        # 1. Get the token from Railway Variables
+        import os
+        import json as _json_internal
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build as _final_build
+        from google.auth.transport.requests import Request
+
+        # 1. Get the token
         token_json = os.environ.get("GOOGLE_USER_TOKEN")
         if not token_json:
-            print("DEBUG: GOOGLE_USER_TOKEN env var is missing")
+            print("DEBUG: GOOGLE_USER_TOKEN is missing")
             return None
             
-        # 2. Define Scopes locally (Crucial: prevents NameError)
+        # 2. Define Scopes locally
         local_scopes = [
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive'
         ]
         
-        # 3. Parse JSON and build credentials
-        import json as _json_internal
+        # 3. Parse JSON
         creds_data = _json_internal.loads(token_json)
         creds = Credentials.from_authorized_user_info(creds_data, local_scopes)
         
-        # 4. Handle token refresh if it has expired
+        # 4. Handle token refresh
         if creds and creds.expired and creds.refresh_token:
-            from google.auth.transport.requests import Request
             creds.refresh(Request())
             
-        # 5. Build and return the service
-        return build('drive', 'v3', credentials=creds)
+        # 5. Use the EXPLICIT imported build function
+        return _final_build('drive', 'v3', credentials=creds)
         
     except Exception as e:
         print(f"CRITICAL ERROR in _get_drive_service: {str(e)}")
