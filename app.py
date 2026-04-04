@@ -15,6 +15,7 @@ Routes:
 """
 
 import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 import json
 import logging
 from flask import Flask, request, jsonify, render_template, render_template_string, redirect, session, url_for
