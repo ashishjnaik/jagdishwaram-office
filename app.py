@@ -1878,19 +1878,40 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    # Use the Environment Variable we set in Railway
-    # This will be https://dev.jagdishwaram-office.org/callback in Staging
-    # and https://www.jagdishwaram-office.org/callback in Production
+    # 1. Get variables
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
     r_uri = os.environ.get('REDIRECT_URI')
     
-    if not r_uri:
-        return "Error: REDIRECT_URI environment variable not set.", 500
+    if not all([client_id, client_secret, r_uri]):
+        return "Error: Missing Google credentials or Redirect URI in environment.", 500
 
+    # 2. Re-initialize the flow object
+    from google_auth_oauthlib.flow import Flow
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=['https://www.googleapis.com/auth/userinfo.profile', 'openid']
+    )
+
+    # 3. Generate the URL
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
         redirect_uri=r_uri
     )
+    
+    # Store flow in memory so callback can find it
+    if not hasattr(login, 'flows'):
+        login.flows = {}
+    login.flows[state] = flow
+    
     session['state'] = state
     return redirect(authorization_url)
 
