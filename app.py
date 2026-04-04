@@ -145,30 +145,31 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
 
 def _get_drive_service():
     try:
-        # 1. Retrieve the JSON token from your Railway variable
+        # 1. Retrieve JSON token from Railway
         token_json = os.environ.get("GOOGLE_USER_TOKEN")
         if not token_json:
             print("DEBUG: GOOGLE_USER_TOKEN is missing from environment")
             return None
             
-        # 2. Define scopes locally since global SCOPES was removed
+        # 2. Hardcode Scopes locally to avoid NameError
         drive_scopes = [
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive'
         ]
         
-        # 3. Use the global json import to load the token
+        # 3. Load credentials using the standard json library
+        # We use the global 'json' import (Line 25) instead of the alias
         creds_data = json.loads(token_json) 
         creds = Credentials.from_authorized_user_info(creds_data, drive_scopes)
         
-        # 4. Handle automatic token refresh
+        # 4. Handle token refresh
         if creds and creds.expired and creds.refresh_token:
             from google.auth.transport.requests import Request
             creds.refresh(Request())
             
         return build('drive', 'v3', credentials=creds)
     except Exception as e:
-        print(f"CRITICAL ERROR: _get_drive_service: {e}")
+        print(f"CRITICAL ERROR: _get_drive_service failed: {e}")
         return None
       
 def _write_to_inbox(text_content: str, filename: str) -> dict:
