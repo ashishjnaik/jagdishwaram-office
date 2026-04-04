@@ -65,7 +65,12 @@ def get_google_flow():
                 "token_uri": "https://oauth2.googleapis.com/token",
             }
         },
-        scopes=['https://www.googleapis.com/auth/userinfo.profile', 'openid']
+        scopes=[
+            'https://www.googleapis.com/auth/userinfo.profile', 
+            'openid',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive'
+        ]
     )
     flow.redirect_uri = r_uri
     return flow
