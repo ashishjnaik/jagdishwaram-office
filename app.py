@@ -151,29 +151,28 @@ def _get_drive_service():
         from googleapiclient.discovery import build as _final_build
         from google.auth.transport.requests import Request
 
-        # 1. Get the token
+        # 1. Retrieve the token from Railway
         token_json = os.environ.get("GOOGLE_USER_TOKEN")
         if not token_json:
-            print("DEBUG: GOOGLE_USER_TOKEN is missing")
+            print("DEBUG: GOOGLE_USER_TOKEN is missing from Railway")
             return None
             
-        # 2. Define Scopes locally
+        # 2. Define scopes locally (Ensures no NameError)
         local_scopes = [
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive'
         ]
         
-        # 3. Parse JSON
-        creds_data = _json_internal.loads(token_json)
+        # 3. Load credentials using internal json library
+        creds_data = _json_internal.loads(token_json) 
         creds = Credentials.from_authorized_user_info(creds_data, local_scopes)
         
-        # 4. Handle token refresh
+        # 4. Handle automatic token refresh
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
             
-        # 5. Use the EXPLICIT imported build function
+        # 5. Build and return the service using the explicit local build import
         return _final_build('drive', 'v3', credentials=creds)
-        
     except Exception as e:
         print(f"CRITICAL ERROR in _get_drive_service: {str(e)}")
         return None
