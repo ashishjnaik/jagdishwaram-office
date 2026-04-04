@@ -1878,34 +1878,21 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    """Initiate OAuth flow. Store flow object in memory with a state ID."""
-    import uuid
+    # Use the Environment Variable we set in Railway
+    # This will be https://dev.jagdishwaram-office.org/callback in Staging
+    # and https://www.jagdishwaram-office.org/callback in Production
+    r_uri = os.environ.get('REDIRECT_URI')
     
-    r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    
-    # Create flow (no PKCE — we have client_secret)
-    flow = Flow.from_client_config(
-        client_config, 
-        scopes=SCOPES, 
+    if not r_uri:
+        return "Error: REDIRECT_URI environment variable not set.", 500
+
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
         redirect_uri=r_uri
     )
-    
-    # Generate a unique state ID
-    state_id = str(uuid.uuid4())
-    
-    # Store the flow object in memory using state_id as key
-    if not hasattr(login, 'flows'):
-        login.flows = {}
-    login.flows[state_id] = flow
-    
-    # Generate authorization URL with our custom state
-    auth_url, _ = flow.authorization_url(
-        prompt='consent', 
-        access_type='offline',
-        state=state_id  # ← Pass our state_id instead of letting Google generate it
-    )
-    
-    return redirect(auth_url)
+    session['state'] = state
+    return redirect(authorization_url)
 
 @app.route('/callback')
 def callback():
@@ -1924,7 +1911,11 @@ def callback():
         flow = login.flows.pop(state_id)  # Remove after retrieving
         
         # Exchange authorization code for token
-        flow.fetch_token(authorization_response=request.url)
+        r_uri = os.environ.get('REDIRECT_URI')
+        flow.fetch_token(
+        authorization_response=request.url,
+        redirect_uri=r_uri
+        )
         token_json = flow.credentials.to_json()
         
         # Return as plain HTML so user can copy the JSON
