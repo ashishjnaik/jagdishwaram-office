@@ -15,15 +15,14 @@ Routes:
 """
 
 import os
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-from datetime import datetime
-import pytz
-from flask import Flask, request, jsonify, render_template, render_template_string, redirect, session, url_for
-import anthropic
-import io
-import json as _json_field   # alias to avoid conflict with existing json import
 import json
- 
+import logging
+from flask import Flask, request, jsonify, render_template, render_template_string, redirect, session, url_for
+from google_auth_oauthlib.flow import Flow
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
+
 # ── Google Drive (Service Account — no OAuth popup on Render) ──────────────
 # Add to requirements.txt:
 #   google-auth==2.29.0
@@ -41,8 +40,34 @@ except ImportError:
     _DRIVE_LIBS_OK = False
     print("WARNING: google-api-python-client not installed. /field will run without Drive.")
 
+# --- INITIALIZATION ---
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'a_reliable_fallback_secret_for_dev')
+# Railway should have FLASK_SECRET_KEY set in the Variables tab
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_for_local_dev')
+
+def get_google_flow():
+    """Dynamically creates the OAuth flow based on Railway environment variables."""
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    r_uri = os.environ.get('REDIRECT_URI')
+
+    if not all([client_id, client_secret, r_uri]):
+        raise ValueError("Missing Google OAuth variables in Railway. Check your Variables tab.")
+
+    from google_auth_oauthlib.flow import Flow
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=['https://www.googleapis.com/auth/userinfo.profile', 'openid']
+    )
+    flow.redirect_uri = r_uri
+    return flow
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
@@ -1878,28 +1903,7 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    client_id = os.environ.get('GOOGLE_CLIENT_ID')
-    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
-    r_uri = os.environ.get('REDIRECT_URI')
-    
-    if not all([client_id, client_secret, r_uri]):
-        return "Error: Missing Google credentials or Redirect URI.", 500
-
-    from google_auth_oauthlib.flow import Flow
-    
-    flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
-        scopes=['https://www.googleapis.com/auth/userinfo.profile', 'openid']
-    )
-    flow.redirect_uri = r_uri
-
+    flow = get_google_flow()
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true'
@@ -1909,31 +1913,24 @@ def login():
         login.flows = {}
     login.flows[state] = flow
     
-    # This line was causing the crash; ensure 'from flask import session' is at top
-    session['state'] = state 
-    
-    # This line also requires 'from flask import redirect' at top
+    session['state'] = state
     return redirect(authorization_url)
-
+  
 @app.route('/callback')
 def callback():
     """Handle OAuth callback. Retrieve flow from memory using state parameter."""
-    try:
-        # Google returns the state parameter we set in /login
-        state_id = request.args.get('state')
-        
-        if not state_id:
-            raise ValueError("Missing state parameter in callback URL")
-        
-        # Retrieve the Flow object from /login using state_id
-        if not hasattr(login, 'flows') or state_id not in login.flows:
-            raise ValueError("Flow expired or not found. Try /login again.")
+try:
+state_id = session.get('state')
+incoming_state = request.args.get('state')
 
-        flow = login.flows.pop(state_id) # Remove after retrieving
-
-        # Re-set the redirect_uri explicitly on the flow object before fetching token
-        # This ensures Google is happy without causing the "multiple values" error
+if not state_id or state_id != incoming_state:
+    return "State mismatch or session expired. Please restart /login.", 400
+          
+# Retrieve the flow and set the URI before fetching the token
+        flow = login.flows.pop(state_id)
         flow.redirect_uri = os.environ.get('REDIRECT_URI')
+
+        credentials = flow.credentials
 
         # Execute token exchange
         flow.fetch_token(authorization_response=request.url)
