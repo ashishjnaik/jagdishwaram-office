@@ -14,16 +14,20 @@ Routes:
   /debug     API key validation
 """
 
+import io
+import anthropic
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 from datetime import datetime
 import pytz
-from flask import Flask, request, jsonify, render_template_string, redirect
-import anthropic
-import io
-import json as _json_field   # alias to avoid conflict with existing json import
 import json
- 
+import logging
+from flask import Flask, request, jsonify, render_template, render_template_string, redirect, session, url_for
+from google_auth_oauthlib.flow import Flow
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
+
 # ── Google Drive (Service Account — no OAuth popup on Render) ──────────────
 # Add to requirements.txt:
 #   google-auth==2.29.0
@@ -41,12 +45,42 @@ except ImportError:
     _DRIVE_LIBS_OK = False
     print("WARNING: google-api-python-client not installed. /field will run without Drive.")
 
+# --- INITIALIZATION ---
 app = Flask(__name__)
-app.secret_key = "JAGDISHWARAM_UAT_2026"
+# Railway should have FLASK_SECRET_KEY set in the Variables tab
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_for_local_dev')
+
+def get_google_flow():
+    """Dynamically creates the OAuth flow based on Railway environment variables."""
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    r_uri = os.environ.get('REDIRECT_URI')
+
+    if not all([client_id, client_secret, r_uri]):
+        raise ValueError("Missing Google OAuth variables in Railway. Check your Variables tab.")
+
+    from google_auth_oauthlib.flow import Flow
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=[
+            'https://www.googleapis.com/auth/userinfo.profile', 
+            'openid',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive'
+        ]
+    )
+    flow.redirect_uri = r_uri
+    return flow
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 # --- OAuth Configuration ---
 client_config = {
@@ -113,26 +147,43 @@ HANUMAN_INBOX_FOLDER_ID = os.environ.get(
 
 def _get_drive_service():
     try:
+        import os
+        import json as _json_internal
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build as _final_build
+        from google.auth.transport.requests import Request
+
+        # 1. Retrieve the token from Railway
         token_json = os.environ.get("GOOGLE_USER_TOKEN")
         if not token_json:
-            print("DEBUG: GOOGLE_USER_TOKEN is missing")
+            print("DEBUG: GOOGLE_USER_TOKEN is missing from Railway")
             return None
             
-        # Use the correct json reference
-        creds_data = _json_field.loads(token_json) 
-        creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
+        # 2. Define scopes locally (Ensures no NameError)
+        local_scopes = [
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive'
+        ]
         
+        # 3. Load credentials using internal json library
+        creds_data = _json_internal.loads(token_json) 
+        creds = Credentials.from_authorized_user_info(creds_data, local_scopes)
+        
+        # 4. Handle automatic token refresh
         if creds and creds.expired and creds.refresh_token:
-            from google.auth.transport.requests import Request
             creds.refresh(Request())
             
-        return _gdrive_build('drive', 'v3', credentials=creds)
+        # 5. Build and return the service using the explicit local build import
+        return _final_build('drive', 'v3', credentials=creds)
     except Exception as e:
-        print(f"ERROR: _get_drive_service: {e}")
-        return None
+        print(f"CRITICAL ERROR in _get_drive_service: {str(e)}")
+        return f"AUTH_ERROR: {str(e)}"
       
 def _write_to_inbox(text_content: str, filename: str) -> dict:
     service = _get_drive_service()
+  # New check: If service is a string, it contains the actual error message
+    if isinstance(service, str) and "AUTH_ERROR" in service:
+        return {"ok": False, "error": service}  
     if not service:
         # Graceful degradation — log locally, note not written to Drive
         print(f"[HANUMAN LOCAL FALLBACK] {filename}")
@@ -1878,67 +1929,54 @@ def chronicle():
 
 @app.route('/login')
 def login():
-    """Initiate OAuth flow. Store flow object in memory with a state ID."""
-    import uuid
-    
-    r_uri = "https://jagdishwaram-office.onrender.com/callback"
-    
-    # Create flow (no PKCE — we have client_secret)
-    flow = Flow.from_client_config(
-        client_config, 
-        scopes=SCOPES, 
-        redirect_uri=r_uri
+    flow = get_google_flow()
+    # Adding prompt='consent' is the key to getting a refresh_token
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent' 
     )
     
-    # Generate a unique state ID
-    state_id = str(uuid.uuid4())
-    
-    # Store the flow object in memory using state_id as key
     if not hasattr(login, 'flows'):
         login.flows = {}
-    login.flows[state_id] = flow
+    login.flows[state] = flow
     
-    # Generate authorization URL with our custom state
-    auth_url, _ = flow.authorization_url(
-        prompt='consent', 
-        access_type='offline',
-        state=state_id  # ← Pass our state_id instead of letting Google generate it
-    )
-    
-    return redirect(auth_url)
+    session['state'] = state
+    return redirect(authorization_url)
 
 @app.route('/callback')
 def callback():
     """Handle OAuth callback. Retrieve flow from memory using state parameter."""
     try:
-        # Google returns the state parameter we set in /login
-        state_id = request.args.get('state')
+        state_id = session.get('state')
+        incoming_state = request.args.get('state')
         
-        if not state_id:
-            raise ValueError("Missing state parameter in callback URL")
-        
-        # Retrieve the Flow object from /login using state_id
+        if not state_id or state_id != incoming_state:
+            return "State mismatch or session expired. Please restart /login.", 400
+
+        # Retrieve the flow and set the URI before fetching the token
         if not hasattr(login, 'flows') or state_id not in login.flows:
-            raise ValueError("Flow expired or not found. Try /login again.")
-        
-        flow = login.flows.pop(state_id)  # Remove after retrieving
-        
-        # Exchange authorization code for token
+            return "Auth flow expired or session missing. Please restart /login.", 400
+            
+        flow = login.flows.pop(state_id)
+        flow.redirect_uri = os.environ.get('REDIRECT_URI')
+
+        # Execute token exchange
         flow.fetch_token(authorization_response=request.url)
         token_json = flow.credentials.to_json()
-        
+              
         # Return as plain HTML so user can copy the JSON
         return f"""
         <html><head><title>जगदिश्वरम् — Token Captured</title>
         <meta charset="UTF-8"></head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; max-width: 800px;">
         <h2 style="color: #2d5016;">✅ Authenticated Successfully!</h2>
-        <p>Copy everything in the box below and paste into Render environment variable <code>GOOGLE_USER_TOKEN</code>:</p>
+        <p>Copy everything in the box below and paste into Railways environment variable <code>GOOGLE_USER_TOKEN</code>:</p>
         <textarea style="width: 100%; height: 400px; border: 1px solid #ccc; padding: 10px; font-family: monospace; font-size: 12px;">{token_json}</textarea>
         <p style="margin-top: 20px;">
         <strong>Next steps:</strong><br>
         1. Copy the JSON above<br>
-        2. Go to Render Dashboard → Environment → Add variable<br>
+        2. Go to Railway Dashboard → Environment → Add variable<br>
         3. Key: <code>GOOGLE_USER_TOKEN</code> | Value: [paste JSON]<br>
         4. Save and Redeploy<br>
         5. Visit <a href="/field">/field</a> to test photo + note upload
@@ -1958,12 +1996,13 @@ def callback():
         <li>GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is incorrect</li>
         <li>The redirect URI doesn't match Google Cloud Console</li>
         <li>You waited too long before completing auth (try again)</li>
-        <li>Render instance restarted (try /login again)</li>
+        <li>Railway instance restarted (try /login again)</li>
         </ul>
         <p><a href="/login">🔄 Try Again</a></p>
         </body>
         </html>
         """, 400
+
       
 @app.route('/capture', methods=['POST'])
 def capture():
