@@ -1378,6 +1378,7 @@ a { -webkit-tap-highlight-color: transparent; }
       <button class="q-btn" onclick="setQ('FIR 270/2024 च्या दुर्भावनाबाबत न्यायालयांनी काय सांगितले?')">FIR स्थिती</button>
       <button class="q-btn" onclick="setQ('उच्च न्यायालयात Article 226 याचिका दाखल करण्यासाठी कोणती कारणे आहेत?')">उच्च न्यायालय</button>
       <button class="q-btn" onclick="setQ('अर्जदाराला ११ वर्षांत झालेले आर्थिक, व्यावसायिक आणि मानसिक नुकसान कायदेशीरदृष्ट्या कसे मांडावे?')">अपूरणीय नुकसान</button>
+      <button class="q-btn" onclick="setQ('VVMC कर मागणी योग्य कि अयोग्य? अर्जदारास न्याय मिळावा म्हणून VVMC ने काय करावे?')">VVMC कर्तव्य</button>
       <button class="q-btn" onclick="setQ('शासन व न्यायव्यवस्थेत AI आणि डिजिटल साधनांचा अनिवार्य वापर — महाराष्ट्र शासन परिपत्रक आणि कायदेशीर आधार काय आहे?')">तंत्रज्ञान अंगीकार</button>
     </div>
     <textarea class="ask-ta" id="qta" rows="3"
