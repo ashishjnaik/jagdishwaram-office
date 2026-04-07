@@ -2111,96 +2111,97 @@ def field():
  
  
 # ─── HANUMAN — /field/submit POST ────────────────────────────────────────────
- @app.route('/field/submit', methods=['POST'])
- def field_submit():
-     """
-     Receives Hanuman field form. Writes to Google Drive Chronicle Inbox.
-     Filename: {PREFIX}HAN-{YYYYMMDD_HHMMSS}-{THREAD}.txt
-     Narada reads: prefix -> routing lane | thread -> ClickUp list_id
-     """
-     try:
-         prefix      = request.form.get('prefix', 'FIELD_').strip() or 'FIELD_'
-         note        = request.form.get('note', '').strip()
-         thread      = request.form.get('thread', 'GENERAL').strip() or 'GENERAL'
-         legal_ref   = request.form.get('legal_ref', '').strip()
-         annotation  = request.form.get('annotation', '').strip()
-         photo_file  = request.files.get('photo')
-         photo_file2 = request.files.get('photo2')
-         photo_file3 = request.files.get('photo3')
-         audio_file  = request.files.get('audio')
-
-         if not note:
-             return jsonify({'ok': False, 'error': 'नोंद रिकामी आहे'}), 400
-
-         ist        = pytz.timezone('Asia/Kolkata')
-         now_ist    = datetime.now(ist)
-         ts_file    = now_ist.strftime('%Y%m%d_%H%M%S')
-         ts_display = now_ist.strftime('%d %B %Y | %I:%M %p IST')
-
-         ref       = f"{prefix}HAN-{ts_file}-{thread}"
-         txt_fname = f"{ref}.txt"
-
-         lines = [
-             f"{'═'*56}",
-             "HANUMAN FIELD NOTE",
-             f"Reference : {ref}",
-             f"Prefix    : {prefix}",
-             f"Timestamp : {ts_display}",
-             f"Thread    : {thread}",
-             f"{'═'*56}",
-             "",
-             " नोंद (Field Observation)",
-             note,
-             "",
-         ]
-         if legal_ref:
-             lines += [" कायदेशीर संदर्भ (Legal Reference)", legal_ref, ""]
-         if annotation:
-             lines += [" वेद व्यासांची टिप्पणी (Annotation by Veda Vyasa)", annotation, ""]
-
-         photo_entries = [pf for pf in [photo_file, photo_file2, photo_file3] if pf and pf.filename]
-         if photo_entries:
-             lines += [" छायाचित्र (Photos Attached)"]
-             for i, pf in enumerate(photo_entries, 1):
-                 lines.append(f"Photo {i}: {pf.filename}")
-             lines.append("")
-
-         if audio_file and audio_file.filename:
-             lines += [" ऑडिओ/व्हिडिओ (Audio/Video Attached)",
-                       f"Filename: {audio_file.filename}", ""]
-
-         lines += ["─"*56, "जय हनुमान। सत्यमेव जयते।", "─"*56]
-         txt_content = "\n".join(lines)
-
-         result = _write_to_inbox(txt_content, txt_fname)
-
-         photos_uploaded = 0
-         if result.get('ok'):
-             for idx, pf in enumerate([photo_file, photo_file2, photo_file3], 1):
-                 if pf and pf.filename:
-                     ph_bytes = pf.read()
-                     ph_fname = f"{prefix}HAN-{ts_file}-{thread}_photo{idx}_{pf.filename}"
-                     ph_ctype = pf.content_type or 'image/jpeg'
-                     ok = _upload_photo_to_inbox(ph_bytes, ph_fname, ph_ctype)
-                     if ok:
-                         photos_uploaded += 1
-             if audio_file and audio_file.filename:
-                 au_bytes = audio_file.read()
-                 au_fname = f"{prefix}HAN-{ts_file}-{thread}_{audio_file.filename}"
-                 au_ctype = audio_file.content_type or 'audio/mpeg'
-                 _upload_photo_to_inbox(au_bytes, au_fname, au_ctype)
-
-         return jsonify({
-             'ok'             : result.get('ok', False),
-             'ref'            : ref,
-             'drive_file'     : result.get('file_name', ''),
-             'photos_uploaded': photos_uploaded,
-             'error'          : result.get('error', '')
-         })
-
-     except Exception as e:
-         print(f"ERROR /field/submit: {e}")
-         return jsonify({'ok': False, 'error': str(e)}), 500
+@app.route('/field/submit', methods=['POST'])
+def field_submit():
+    """
+    Receives Hanuman field form. Writes to Google Drive Chronicle Inbox.
+    Filename: {PREFIX}HAN-{YYYYMMDD_HHMMSS}-{THREAD}.txt
+    Narada reads: prefix -> routing lane | thread -> ClickUp list_id
+    """
+    try:
+        prefix      = request.form.get('prefix', 'FIELD_').strip() or 'FIELD_'
+        note        = request.form.get('note', '').strip()
+        thread      = request.form.get('thread', 'GENERAL').strip() or 'GENERAL'
+        legal_ref   = request.form.get('legal_ref', '').strip()
+        annotation  = request.form.get('annotation', '').strip()
+        photo_file  = request.files.get('photo')
+        photo_file2 = request.files.get('photo2')
+        photo_file3 = request.files.get('photo3')
+        audio_file  = request.files.get('audio')
+ 
+        if not note:
+            return jsonify({'ok': False, 'error': 'नोंद रिकामी आहे'}), 400
+ 
+        ist        = pytz.timezone('Asia/Kolkata')
+        now_ist    = datetime.now(ist)
+        ts_file    = now_ist.strftime('%Y%m%d_%H%M%S')
+        ts_display = now_ist.strftime('%d %B %Y | %I:%M %p IST')
+ 
+        ref       = f"{prefix}HAN-{ts_file}-{thread}"
+        txt_fname = f"{ref}.txt"
+ 
+        lines = [
+            f"{'═'*56}",
+            "HANUMAN FIELD NOTE",
+            f"Reference : {ref}",
+            f"Prefix    : {prefix}",
+            f"Timestamp : {ts_display}",
+            f"Thread    : {thread}",
+            f"{'═'*56}",
+            "",
+            "## नोंद (Field Observation)",
+            note,
+            "",
+        ]
+        if legal_ref:
+            lines += ["## कायदेशीर संदर्भ (Legal Reference)", legal_ref, ""]
+        if annotation:
+            lines += ["## वेद व्यासांची टिप्पणी (Annotation by Veda Vyasa)", annotation, ""]
+ 
+        photo_entries = [pf for pf in [photo_file, photo_file2, photo_file3]
+                         if pf and pf.filename]
+        if photo_entries:
+            lines += ["## छायाचित्र (Photos Attached)"]
+            for i, pf in enumerate(photo_entries, 1):
+                lines.append(f"Photo {i}: {pf.filename}")
+            lines.append("")
+ 
+        if audio_file and audio_file.filename:
+            lines += ["## ऑडिओ/व्हिडिओ (Audio/Video Attached)",
+                      f"Filename: {audio_file.filename}", ""]
+ 
+        lines += ["─"*56, "जय हनुमान। सत्यमेव जयते।", "─"*56]
+        txt_content = "\n".join(lines)
+ 
+        result = _write_to_inbox(txt_content, txt_fname)
+ 
+        photos_uploaded = 0
+        if result.get('ok'):
+            for idx, pf in enumerate([photo_file, photo_file2, photo_file3], 1):
+                if pf and pf.filename:
+                    ph_bytes = pf.read()
+                    ph_fname = f"{prefix}HAN-{ts_file}-{thread}_photo{idx}_{pf.filename}"
+                    ph_ctype = pf.content_type or 'image/jpeg'
+                    ok = _upload_photo_to_inbox(ph_bytes, ph_fname, ph_ctype)
+                    if ok:
+                        photos_uploaded += 1
+            if audio_file and audio_file.filename:
+                au_bytes = audio_file.read()
+                au_fname = f"{prefix}HAN-{ts_file}-{thread}_{audio_file.filename}"
+                au_ctype = audio_file.content_type or 'audio/mpeg'
+                _upload_photo_to_inbox(au_bytes, au_fname, au_ctype)
+ 
+        return jsonify({
+            'ok'             : result.get('ok', False),
+            'ref'            : ref,
+            'drive_file'     : result.get('file_name', ''),
+            'photos_uploaded': photos_uploaded,
+            'error'          : result.get('error', '')
+        })
+ 
+    except Exception as e:
+        print(f"ERROR /field/submit: {e}")
+        return jsonify({'ok': False, 'error': str(e)}), 500
        
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
