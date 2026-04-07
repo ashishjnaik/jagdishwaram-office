@@ -1473,347 +1473,432 @@ function printAnswer() { window.print(); }
 </body>
 </html>"""
 
-FIELD_HTML = """<!DOCTYPE html>
-<html lang="mr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>हनुमान — क्षेत्र नोंद</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Devanagari',sans-serif;
-  background:#f0ede5;color:#1a1a18;min-height:100vh;
-  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
-}
- 
-/* ── Header ── */
-.hdr{
-  background:#1a1a18;color:#f0efe8;
-  padding:16px 16px 16px;
-  padding-top:max(16px,env(safe-area-inset-top));
-  position:sticky;top:0;z-index:20;
-}
-.hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:3px}
-.hdr h1{font-size:16px;font-weight:600;color:#f0efe8}
-.hdr-sub{font-size:10px;color:#5a5a50;letter-spacing:.04em}
- 
-/* ── Body ── */
-.body{padding:14px;max-width:480px;margin:0 auto}
- 
-/* ── Timestamp ── */
-.ts-pill{
-  display:inline-block;background:#1a1a18;color:#7a7a70;
-  font-size:10px;padding:5px 11px;border-radius:20px;margin-bottom:14px;
-  letter-spacing:.03em;
-}
- 
-/* ── Field groups ── */
-.fg{margin-bottom:13px}
-.fl{
-  display:block;font-size:10px;font-weight:600;color:#5f5e5a;
-  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;
-}
-.req{color:#c0392b}
- 
-textarea,input[type=text],select{
-  width:100%;background:#fff;border:1.5px solid #d3d1c7;
-  border-radius:10px;padding:11px 12px;font-size:15px;
-  font-family:inherit;color:#1a1a18;outline:none;
-  -webkit-appearance:none;appearance:none;
-  transition:border-color .15s;
-}
-textarea:focus,input:focus,select:focus{
-  border-color:#1a1a18;box-shadow:0 0 0 3px rgba(26,26,24,.07);
-}
-textarea{resize:none}
-select{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f5e5a'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 12px center;
-  padding-right:30px;
-}
-.hint{font-size:11px;color:#9c9a92;margin-top:4px;line-height:1.5}
- 
-/* ── Photo ── */
-.photo-area{
-  background:#fff;border:1.5px dashed #ccc;border-radius:10px;
-  padding:18px 16px;text-align:center;cursor:pointer;
-  transition:border-color .15s;
-}
-.photo-area:active{border-color:#1a1a18}
-.photo-icon{font-size:26px;margin-bottom:5px}
-.photo-label{font-size:13px;color:#5f5e5a}
-.photo-sub{font-size:11px;color:#9c9a92;margin-top:2px}
-#photoInput{display:none}
-.photo-preview{display:none;margin-top:10px}
-.photo-preview img{width:100%;max-height:200px;object-fit:cover;border-radius:8px}
-.photo-fname{font-size:11px;color:#3b6d11;font-weight:500;margin-top:4px}
- 
-/* ── Error ── */
-#errBar{
-  display:none;background:#fde8e8;color:#8b1a1a;
-  border:1px solid #f0b8b8;border-radius:10px;
-  padding:11px 12px;font-size:13px;margin-bottom:12px;line-height:1.5;
-}
- 
-/* ── Submit ── */
-.sbtn{
-  width:100%;background:#1a1a18;color:#fff;border:none;
-  border-radius:12px;padding:15px;font-size:15px;font-weight:600;
-  cursor:pointer;margin-top:6px;display:flex;align-items:center;
-  justify-content:center;gap:8px;transition:opacity .15s;
-}
-.sbtn:disabled{opacity:.45}
-.sbtn:active{opacity:.8}
- 
-/* ── Success ── */
-#successSc{display:none;text-align:center;padding:40px 20px}
-.suc-icon{font-size:52px;margin-bottom:16px}
-.suc-title{font-size:20px;font-weight:600;margin-bottom:8px}
-.suc-sub{font-size:13px;color:#5f5e5a;line-height:1.7;margin-bottom:22px}
-.suc-ref{
-  background:#fff;border:1px solid #e5e3db;border-radius:10px;
-  padding:12px;font-size:12px;color:#5f5e5a;
-  margin-bottom:22px;word-break:break-all;text-align:left;
-}
-.suc-ref strong{display:block;color:#1a1a18;font-size:11px;
-  text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.suc-ref .ok{color:#3b6d11;font-weight:500}
-.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.btn-sec{
-  padding:11px 20px;background:#fff;border:1.5px solid #1a1a18;
-  border-radius:10px;font-size:13px;font-weight:500;
-  text-decoration:none;color:#1a1a18;cursor:pointer;
-}
-.btn-pri{
-  padding:11px 20px;background:#1a1a18;border:none;
-  border-radius:10px;font-size:13px;font-weight:500;
-  color:#fff;cursor:pointer;
-}
- 
-.spacer{height:28px}
-</style>
-</head>
-<body>
- 
-<div class="hdr">
-  <div class="hdr-row">
-    <span style="font-size:20px">🙏</span>
-    <h1>हनुमान — क्षेत्र नोंद</h1>
-  </div>
-  <div class="hdr-sub">JAGDISHWARAM DIGITAL OFFICE · CHRONICLE INBOX</div>
-</div>
- 
-<!-- FORM SCREEN -->
-<div class="body" id="formSc">
-  <div style="height:12px"></div>
-  <div class="ts-pill" id="tsPill">⏱ लोड होत आहे...</div>
-  <div id="errBar"></div>
- 
-  <!-- NOTE — Required -->
-  <div class="fg">
-    <label class="fl" for="noteText">आजची नोंद <span class="req">*</span></label>
-    <textarea id="noteText" rows="5"
-      placeholder="आज काय झाले? कुठे गेलात? कोणाला भेटलात? काय पाहिले?&#10;(What happened? Where? Who? What did you observe?)"></textarea>
-    <div class="hint">मराठी किंवा इंग्रजीत. जितके तपशील तितके उत्तम.</div>
-  </div>
- 
-  <!-- THREAD -->
-  <div class="fg">
-    <label class="fl" for="threadSel">संबंधित धागा (Thread)</label>
-    <select id="threadSel">
-      <option value="">-- निवडा (Optional) --</option>
-      <option value="MOR">MOR — मा. तहसीलदार न्यायालय, वसई</option>
-      <option value="NPS">NPS — मा. उपविभागीय अधिकारी, वसई</option>
-      <option value="DMD">DMD — मा. जिल्हाधिकारी, पालघर</option>
-      <option value="EAF">EAF — अर्नाळा पोलीस ठाणे</option>
-      <option value="AGD">AGD — मा. पोलीस आयुक्त, MBVV</option>
-      <option value="RPD">RPD — मा. ACP, नालासोपारा</option>
-      <option value="BTR">BTR — VVMC</option>
-      <option value="RPO">RPO — मा. प्रादेशिक पारपत्र अधिकारी, मुंबई</option>
-      <option value="JUD">JUD — न्यायालय (Court)</option>
-      <option value="GENERAL">GENERAL — सर्वसाधारण नोंद</option>
-    </select>
-  </div>
- 
-  <!-- LEGAL REF -->
-  <div class="fg">
-    <label class="fl" for="legalRef">कायदेशीर संदर्भ (Optional)</label>
-    <input type="text" id="legalRef"
-      placeholder="e.g. तहसीलदार आदेश 01/03/2024 | Exhibit-102 | OMA 254/2026">
-    <div class="hint">कोणत्या आदेश, अर्ज किंवा कागदपत्राशी संबंधित?</div>
-  </div>
- 
-  <!-- PHOTO -->
-  <div class="fg">
-    <label class="fl">छायाचित्र (Optional)</label>
-    <div class="photo-area" onclick="document.getElementById('photoInput').click()">
-      <div class="photo-icon">📷</div>
-      <div class="photo-label">फोटो जोडा — Camera किंवा Gallery</div>
-      <div class="photo-sub">JPG · PNG · HEIC · Max 10 MB</div>
-    </div>
-    <input type="file" id="photoInput" accept="image/*"
-           onchange="handlePhoto(this)">
-    <div class="photo-preview" id="photoPreview">
-      <img id="previewImg" src="" alt="Preview">
-      <div class="photo-fname" id="photoFname"></div>
-    </div>
-  </div>
-
-  <div class="fg">
-    <label class="fl">ऑडिओ किंवा व्हिडिओ नोंद (Optional)</label>
-    <div class="photo-area" onclick="document.getElementById('audioInput').click()" style="border-style: dashed;">
-      <div class="photo-icon">🎙️</div>
-      <div class="photo-label">ऑडिओ/व्हिडिओ जोडा — अपनी फाइल से</div>
-      <div class="photo-sub">MP3 · MP4 · WAV · Max 50 MB</div>
-    </div>
-    <input type="file" id="audioInput" accept="audio/*,video/*,,video/*,.m4a,.mp3,.wav"
-           onchange="handleAudio(this)">
-    <div class="photo-preview" id="audioPreview">
-      <div style="padding: 10px; text-align: center;">
-        <div id="audioFname" style="font-size: 13px; color: #5f5e5a;"></div>
-      </div>
-    </div>
-  </div>
- 
-  <!-- ANNOTATION -->
-  <div class="fg">
-    <label class="fl" for="annotation">वेद व्यासांची टिप्पणी (Your Annotation)</label>
-    <textarea id="annotation" rows="3"
-      placeholder="हे पुरावे कशाचे आहेत? न्यायालयीन संदर्भात काय महत्त्व?&#10;(What does this evidence prove? Context only you know.)"></textarea>
-  </div>
- 
-  <!-- SUBMIT -->
-  <button class="sbtn" id="sbtn" onclick="doSubmit()">
-    <span id="sicon">🙏</span>
-    <span id="stxt">हनुमानाला पाठवा — Send to Inbox</span>
-  </button>
-  <div class="spacer"></div>
-</div>
- 
-<!-- SUCCESS SCREEN -->
-<div class="body" id="successSc">
-  <div class="suc-icon">✅</div>
-  <div class="suc-title">हनुमान ने नोंद घेतली</div>
-  <div class="suc-sub">
-    Chronicle Inbox मध्ये नोंद सुरक्षित झाली.<br>
-    पुढील Hanuman sync मध्ये Saraswati प्रक्रिया करेल.
-  </div>
-  <div class="suc-ref" id="sucRef">
-    <strong>संदर्भ क्रमांक</strong>
-    <span id="sucRefVal">लोड होत आहे...</span>
-  </div>
-  <div class="btn-row">
-    <a href="/" class="btn-sec">← पोर्टल</a>
-    <button class="btn-pri" onclick="resetForm()">+ नवी नोंद</button>
-  </div>
-</div>
- 
-<script>
-// ── Timestamp (IST) ────────────────────────────────────────────
-function updateTS(){
-  const n=new Date();
-  const s=n.toLocaleString('mr-IN',{
-    timeZone:'Asia/Kolkata',day:'2-digit',month:'long',
-    year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true
-  });
-  document.getElementById('tsPill').textContent='⏱ '+s+' IST';
-}
-updateTS();setInterval(updateTS,30000);
- 
-// ── Photo preview ──────────────────────────────────────────────
-function handlePhoto(inp){
-  const f=inp.files[0];if(!f)return;
-  if(f.size>10*1024*1024){showErr('फोटो 10MB पेक्षा मोठा आहे.');inp.value='';return;}
-  const r=new FileReader();
-  r.onload=e=>{
-    document.getElementById('previewImg').src=e.target.result;
-    document.getElementById('photoFname').textContent='✓ '+f.name;
-    document.getElementById('photoPreview').style.display='block';
-  };
-  r.readAsDataURL(f);
-}
-
-// ── Audio preview ──────────────────────────────────────────────
-function handleAudio(inp){
-  const f=inp.files[0];if(!f)return;
-  if(f.size>50*1024*1024){showErr('ऑडिओ/व्हिडिओ 50MB पेक्षा मोठे आहेत.');inp.value='';return;}
-  document.getElementById('audioFname').textContent='✓ '+f.name+' ('+Math.round(f.size/1024/1024)+'MB)';
-  document.getElementById('audioPreview').style.display='block';
-}
-
-// ── Error helpers ──────────────────────────────────────────────
-function showErr(m){
-  const el=document.getElementById('errBar');
-  el.textContent=m;el.style.display='block';window.scrollTo(0,0);
-}
-function clearErr(){document.getElementById('errBar').style.display='none';}
- 
-// ── Submit ─────────────────────────────────────────────────────
-async function doSubmit(){
-  clearErr();
-  const note=document.getElementById('noteText').value.trim();
-  if(!note){showErr('कृपया आजची नोंद लिहा. ही रकाना अनिवार्य आहे.');return;}
- 
-  const btn=document.getElementById('sbtn');
-  btn.disabled=true;
-  document.getElementById('sicon').textContent='⏳';
-  document.getElementById('stxt').textContent='पाठवत आहे...';
- 
-  const fd=new FormData();
-  fd.append('note',note);
-  fd.append('thread',document.getElementById('threadSel').value);
-  fd.append('legal_ref',document.getElementById('legalRef').value.trim());
-  fd.append('annotation',document.getElementById('annotation').value.trim());
-  const ph=document.getElementById('photoInput').files[0];
-  if(ph)fd.append('photo',ph,ph.name);
-  const au=document.getElementById('audioInput').files[0];
-  if(au)fd.append('audio',au,au.name);
-  
-  try{
-    const res=await fetch('/field/submit',{method:'POST',body:fd});
-    const d=await res.json();
-    if(d.ok){
-      document.getElementById('sucRefVal').innerHTML=
-        '<strong>'+d.ref+'</strong>'
-        +(d.drive_file?'<br><span class="ok">✓ Drive: '+d.drive_file+'</span>':'')
-        +(d.photo_ok?'<br><span class="ok">✓ Photo: '+d.photo_name+'</span>':'');
-      document.getElementById('formSc').style.display='none';
-      document.getElementById('successSc').style.display='block';
-      window.scrollTo(0,0);
-    }else{
-      showErr('त्रुटी: '+(d.error||'अज्ञात त्रुटी. पुन्हा प्रयत्न करा.'));
-      btn.disabled=false;
-      document.getElementById('sicon').textContent='🙏';
-      document.getElementById('stxt').textContent='हनुमानाला पाठवा — Send to Inbox';
-    }
-  }catch(e){
-    showErr('नेटवर्क त्रुटी. इंटरनेट तपासा आणि पुन्हा प्रयत्न करा.');
-    btn.disabled=false;
-    document.getElementById('sicon').textContent='🙏';
-    document.getElementById('stxt').textContent='हनुमानाला पाठवा — Send to Inbox';
-  }
-}
- 
-// ── Reset ──────────────────────────────────────────────────────
-function resetForm(){
-  ['noteText','legalRef','annotation'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('threadSel').value='';
-  document.getElementById('photoInput').value='';
-  document.getElementById('photoPreview').style.display='none';
-  document.getElementById('formSc').style.display='block';
-  document.getElementById('successSc').style.display='none';
-  document.getElementById('sbtn').disabled=false;
-  document.getElementById('sicon').textContent='🙏';
-  document.getElementById('stxt').textContent='हनुमानाला पाठवा — Send to Inbox';
-  clearErr();updateTS();window.scrollTo(0,0);
-}
-</script>
-</body>
-</html>"""
+FIELD_HTML = (
+    '<!DOCTYPE html>\n'
+    '<html lang="mr">\n'
+    '<head>\n'
+    '<meta charset="UTF-8">\n'
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">\n'
+    '<meta name="apple-mobile-web-app-capable" content="yes">\n'
+    '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
+    '<title>हनुमान — क्षेत्र नोंद</title>\n'
+    '<style>\n'
+    '*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}\n'
+    'html{scroll-behavior:smooth}\n'
+    'body{\n'
+    '  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Devanagari",sans-serif;\n'
+    '  background:#f0ede5;color:#1a1a18;min-height:100vh;\n'
+    '  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;\n'
+    '}\n'
+    '.hdr{\n'
+    '  background:#1a1a18;color:#f0efe8;\n'
+    '  padding:16px 16px 12px;\n'
+    '  padding-top:max(16px,env(safe-area-inset-top));\n'
+    '  position:sticky;top:0;z-index:20;\n'
+    '}\n'
+    '.hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:3px}\n'
+    '.hdr h1{font-size:16px;font-weight:600;color:#f0efe8}\n'
+    '.hdr-sub{font-size:10px;color:#5a5a50;letter-spacing:.04em}\n'
+    '.hdr-reg{\n'
+    '  display:inline-block;margin-top:6px;\n'
+    '  font-size:10px;color:#7a7a6a;text-decoration:none;\n'
+    '  border-bottom:1px dotted #3a3a30;padding-bottom:1px;\n'
+    '}\n'
+    '.hdr-reg:hover{color:#c5b97a}\n'
+    '.body{padding:14px;max-width:480px;margin:0 auto}\n'
+    '.ts-pill{\n'
+    '  display:inline-block;background:#1a1a18;color:#7a7a70;\n'
+    '  font-size:10px;padding:5px 11px;border-radius:20px;margin-bottom:14px;\n'
+    '  letter-spacing:.03em;\n'
+    '}\n'
+    '.fg{margin-bottom:13px}\n'
+    '.fl{\n'
+    '  display:block;font-size:10px;font-weight:600;color:#5f5e5a;\n'
+    '  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;\n'
+    '}\n'
+    '.req{color:#c0392b}\n'
+    'textarea,input[type=text],select{\n'
+    '  width:100%;background:#fff;border:1.5px solid #d3d1c7;\n'
+    '  border-radius:10px;padding:11px 12px;font-size:15px;\n'
+    '  font-family:inherit;color:#1a1a18;outline:none;\n'
+    '  -webkit-appearance:none;appearance:none;\n'
+    '  transition:border-color .15s;\n'
+    '}\n'
+    'textarea:focus,input:focus,select:focus{\n'
+    '  border-color:#1a1a18;box-shadow:0 0 0 3px rgba(26,26,24,.07);\n'
+    '}\n'
+    'textarea{resize:none}\n'
+    'select{\n'
+    '  background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'6\' viewBox=\'0 0 10 6\'%3E%3Cpath d=\'M0 0l5 6 5-6z\' fill=\'%235f5e5a\'/%3E%3C/svg%3E");\n'
+    '  background-repeat:no-repeat;background-position:right 12px center;\n'
+    '  padding-right:30px;\n'
+    '}\n'
+    '.hint{font-size:11px;color:#9c9a92;margin-top:4px;line-height:1.5}\n'
+    '.def-hint{\n'
+    '  font-size:11px;color:#3b6d11;background:#eaf3de;\n'
+    '  border-radius:7px;padding:7px 10px;margin-top:6px;\n'
+    '  line-height:1.5;display:none;\n'
+    '}\n'
+    '.photo-area{\n'
+    '  background:#fff;border:1.5px dashed #ccc;border-radius:10px;\n'
+    '  padding:18px 16px;text-align:center;cursor:pointer;\n'
+    '  transition:border-color .15s;\n'
+    '}\n'
+    '.photo-area:active{border-color:#1a1a18}\n'
+    '.photo-icon{font-size:26px;margin-bottom:5px}\n'
+    '.photo-label{font-size:13px;color:#5f5e5a}\n'
+    '.photo-sub{font-size:11px;color:#9c9a92;margin-top:2px}\n'
+    '.photo-area-sm{\n'
+    '  background:#fff;border:1.5px dashed #d3d1c7;border-radius:10px;\n'
+    '  padding:12px 16px;text-align:center;cursor:pointer;\n'
+    '  margin-top:8px;transition:border-color .15s;\n'
+    '}\n'
+    '.photo-area-sm:active{border-color:#1a1a18}\n'
+    '.photo-area-sm .photo-label{font-size:12px;color:#9c9a92}\n'
+    '.photo-area-sm .photo-sub{font-size:10px}\n'
+    '#photoInput,#photoInput2,#photoInput3{display:none}\n'
+    '.photo-preview{display:none;margin-top:10px}\n'
+    '.photo-preview img{width:100%;max-height:200px;object-fit:cover;border-radius:8px}\n'
+    '.photo-fname{font-size:11px;color:#3b6d11;font-weight:500;margin-top:4px}\n'
+    '.photo-fname-sm{font-size:11px;color:#3b6d11;font-weight:500;margin-top:4px;display:none}\n'
+    '#errBar{\n'
+    '  display:none;background:#fde8e8;color:#8b1a1a;\n'
+    '  border:1px solid #f0b8b8;border-radius:10px;\n'
+    '  padding:11px 12px;font-size:13px;margin-bottom:12px;line-height:1.5;\n'
+    '}\n'
+    '.sbtn{\n'
+    '  width:100%;background:#1a1a18;color:#fff;border:none;\n'
+    '  border-radius:12px;padding:15px;font-size:15px;font-weight:600;\n'
+    '  cursor:pointer;margin-top:6px;display:flex;align-items:center;\n'
+    '  justify-content:center;gap:8px;transition:opacity .15s;\n'
+    '}\n'
+    '.sbtn:disabled{opacity:.45}\n'
+    '.sbtn:active{opacity:.8}\n'
+    '#successSc{display:none;text-align:center;padding:40px 20px}\n'
+    '.suc-icon{font-size:52px;margin-bottom:16px}\n'
+    '.suc-title{font-size:20px;font-weight:600;margin-bottom:8px}\n'
+    '.suc-sub{font-size:13px;color:#5f5e5a;line-height:1.7;margin-bottom:22px}\n'
+    '.suc-ref{\n'
+    '  background:#fff;border:1px solid #e5e3db;border-radius:10px;\n'
+    '  padding:12px;font-size:12px;color:#5f5e5a;\n'
+    '  margin-bottom:22px;word-break:break-all;text-align:left;\n'
+    '}\n'
+    '.suc-ref strong{display:block;color:#1a1a18;font-size:11px;\n'
+    '  text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}\n'
+    '.suc-ref .ok{color:#3b6d11;font-weight:500}\n'
+    '.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}\n'
+    '.btn-sec{\n'
+    '  padding:11px 20px;background:#fff;border:1.5px solid #1a1a18;\n'
+    '  border-radius:10px;font-size:13px;font-weight:500;\n'
+    '  text-decoration:none;color:#1a1a18;cursor:pointer;\n'
+    '}\n'
+    '.btn-pri{\n'
+    '  padding:11px 20px;background:#1a1a18;border:none;\n'
+    '  border-radius:10px;font-size:13px;font-weight:500;\n'
+    '  color:#fff;cursor:pointer;\n'
+    '}\n'
+    '.spacer{height:28px}\n'
+    '</style>\n'
+    '</head>\n'
+    '<body>\n'
+    '\n'
+    '<div class="hdr">\n'
+    '  <div class="hdr-row">\n'
+    '    <span style="font-size:20px">&#x1F64F;</span>\n'
+    '    <h1>&#x939;&#x928;&#x941;&#x92E;&#x93E;&#x928; &#x2014; &#x915;&#x94D;&#x937;&#x947;&#x924;&#x94D;&#x930; &#x928;&#x94B;&#x902;&#x926;</h1>\n'
+    '  </div>\n'
+    '  <div class="hdr-sub">JAGDISHWARAM DIGITAL OFFICE &middot; CHRONICLE INBOX</div>\n'
+    '  <a class="hdr-reg"\n'
+    '     href="https://docs.google.com/document/d/1zoXKkXPpLz4wlgPvQ38EjbIeyKsrm9wTsMEuzAfloZw/edit"\n'
+    '     target="_blank">&#x1F4CB; Authority Code Registry &#x2014; &#x927;&#x93E;&#x917;&#x93E; &#x915;&#x94B;&#x921; &#x938;&#x902;&#x926;&#x930;&#x94D;&#x92D; &#x2197;</a>\n'
+    '</div>\n'
+    '\n'
+    '<div class="body" id="formSc">\n'
+    '  <div style="height:12px"></div>\n'
+    '  <div class="ts-pill" id="tsPill">&#x23F1; &#x932;&#x94B;&#x921; &#x939;&#x94B;&#x924; &#x906;&#x939;&#x947;...</div>\n'
+    '  <div id="errBar"></div>\n'
+    '\n'
+    '  <!-- PREFIX -->\n'
+    '  <div class="fg">\n'
+    '    <label class="fl" for="prefixSel">&#x928;&#x94B;&#x902;&#x926;&#x940;&#x91A;&#x93E; &#x92A;&#x94D;&#x930;&#x915;&#x93E;&#x930; (File Prefix) <span class="req">*</span></label>\n'
+    '    <select id="prefixSel" onchange="showPrefixDef(this.value)" required>\n'
+    '      <option value="FIELD_">FIELD_ &#x2014; &#x915;&#x94D;&#x937;&#x947;&#x924;&#x94D;&#x930; &#x92D;&#x947;&#x91F; / Field Visit</option>\n'
+    '      <option value="BREACH_">BREACH_ &#x2014; &#x909;&#x932;&#x94D;&#x932;&#x902;&#x918;&#x928; &#x928;&#x94B;&#x902;&#x926; / Statutory Breach</option>\n'
+    '      <option value="IDEA_">IDEA_ &#x2014; &#x915;&#x932;&#x94D;&#x92A;&#x928;&#x93E; / Idea</option>\n'
+    '      <option value="SESSION_">SESSION_ &#x2014; &#x938;&#x924;&#x94D;&#x930; &#x928;&#x94B;&#x902;&#x926; / Session Note</option>\n'
+    '      <option value="STRATEGY_">STRATEGY_ &#x2014; &#x927;&#x94B;&#x930;&#x923; &#x928;&#x93F;&#x930;&#x94D;&#x923;&#x92F; / Strategic Decision</option>\n'
+    '      <option value="HITL_">HITL_ &#x2014; &#x935;&#x948;&#x92F;&#x915;&#x94D;&#x924;&#x93F;&#x915; &#x921;&#x93E;&#x92F;&#x930;&#x940; / Personal Diary</option>\n'
+    '    </select>\n'
+    '    <div class="def-hint" id="prefixDef"></div>\n'
+    '  </div>\n'
+    '\n'
+    '  <!-- NOTE -->\n'
+    '  <div class="fg">\n'
+    '    <label class="fl" for="noteText">&#x906;&#x91C;&#x91A;&#x940; &#x928;&#x94B;&#x902;&#x926; <span class="req">*</span></label>\n'
+    '    <textarea id="noteText" rows="5"\n'
+    '      placeholder="&#x906;&#x91C; &#x915;&#x93E;&#x92F; &#x909;&#x932;&#x947;? &#x915;&#x941;&#x920;&#x947; &#x917;&#x947;&#x932;&#x93E;&#x924;? &#x915;&#x94B;&#x923;&#x93E;&#x932;&#x93E; &#x92D;&#x947;&#x91F;&#x932;&#x93E;&#x924;? &#x915;&#x93E;&#x92F; &#x92A;&#x93E;&#x939;&#x93F;&#x932;&#x947;?&#10;(What happened? Where? Who? What did you observe?)"></textarea>\n'
+    '    <div class="hint">&#x92E;&#x930;&#x93E;&#x920;&#x940; &#x915;&#x93F;&#x902;&#x935;&#x93E; &#x907;&#x902;&#x917;&#x94D;&#x930;&#x91C;&#x940;&#x924;. &#x91C;&#x93F;&#x924;&#x915;&#x947; &#x924;&#x92A;&#x936;&#x940;&#x932; &#x924;&#x93F;&#x924;&#x915;&#x947; &#x909;&#x924;&#x94D;&#x924;&#x92E;.</div>\n'
+    '  </div>\n'
+    '\n'
+    '  <!-- THREAD -->\n'
+    '  <div class="fg">\n'
+    '    <label class="fl" for="threadSel">&#x938;&#x902;&#x92C;&#x902;&#x927;&#x93F;&#x924; &#x927;&#x93E;&#x917;&#x93E; (Thread)</label>\n'
+    '    <select id="threadSel" onchange="showThreadDef(this.value)">\n'
+    '      <option value="GENERAL">GENERAL &#x2014; &#x938;&#x930;&#x94D;&#x935;&#x938;&#x93E;&#x927;&#x93E;&#x930;&#x923; &#x928;&#x94B;&#x902;&#x926;</option>\n'
+    '      <option value="BTR">BTR &#x2014; VVMC Commissioner</option>\n'
+    '      <option value="EAF">EAF &#x2014; &#x905;&#x930;&#x94D;&#x928;&#x93E;&#x933;&#x93E; &#x938;&#x93E;&#x917;&#x930;&#x940; &#x92A;&#x94B;&#x932;&#x940;&#x938; &#x920;&#x93E;&#x923;&#x947;</option>\n'
+    '      <option value="RPO">RPO &#x2014; &#x92A;&#x94D;&#x930;&#x93E;&#x926;&#x947;&#x936;&#x93F;&#x915; &#x92A;&#x93E;&#x930;&#x92A;&#x924;&#x94D;&#x930; &#x905;&#x927;&#x93F;&#x915;&#x93E;&#x930;&#x940;, &#x92E;&#x941;&#x902;&#x92C;&#x908;</option>\n'
+    '      <option value="DMD">DMD &#x2014; &#x91C;&#x93F;&#x933;&#x94D;&#x939;&#x93E;&#x927;&#x93F;&#x915;&#x93E;&#x930;&#x940;, &#x92A;&#x93E;&#x932;&#x918;&#x930;</option>\n'
+    '      <option value="MOR">MOR &#x2014; &#x924;&#x939;&#x938;&#x940;&#x932;&#x926;&#x93E;&#x930;, &#x935;&#x938;&#x908; &#x924;&#x93E;&#x932;&#x941;&#x915;&#x93E;</option>\n'
+    '      <option value="NPS">NPS &#x2014; &#x909;&#x92A;&#x935;&#x93F;&#x92D;&#x93E;&#x917;&#x940;&#x092F; &#x905;&#x927;&#x93F;&#x915;&#x93E;&#x930;&#x940;, &#x935;&#x938;&#x908;</option>\n'
+    '      <option value="AGD">AGD &#x2014; &#x92A;&#x94B;&#x932;&#x940;&#x938; &#x906;&#x92F;&#x941;&#x915;&#x94D;&#x924;, MBVV</option>\n'
+    '      <option value="RPD">RPD &#x2014; &#x938;&#x939;&#x93E;&#x92F;&#x915; &#x92A;&#x94B;&#x932;&#x940;&#x938; &#x906;&#x92F;&#x941;&#x915;&#x94D;&#x924;, &#x928;&#x93E;&#x932;&#x93E;&#x938;&#x94B;&#x92A;&#x93E;&#x930;&#x93E;</option>\n'
+    '      <option value="KDC">KDC &#x2014; &#x935;&#x93F;&#x92D;&#x93E;&#x917;&#x940;&#x092F; &#x906;&#x92F;&#x941;&#x915;&#x94D;&#x924;, &#x915;&#x94B;&#x915;&#x923;</option>\n'
+    '      <option value="VWA">VWA &#x2014; VVMC &#x92A;&#x94D;&#x930;&#x92D;&#x93E;&#x917; &#x938;&#x92E;&#x93F;&#x924;&#x940; &#x905;</option>\n'
+    '      <option value="VLD">VLD &#x2014; VVMC &#x935;&#x93F;&#x927;&#x940; &#x935;&#x93F;&#x92D;&#x93E;&#x917;</option>\n'
+    '      <option value="JTC">JTC &#x2014; &#x924;&#x939;&#x938;&#x940;&#x932;&#x926;&#x93E;&#x930; &#x928;&#x94D;&#x92F;&#x93E;&#x92F;&#x93E;&#x932;&#x92F;, &#x935;&#x938;&#x908;</option>\n'
+    '      <option value="JCV">JCV &#x2014; &#x926;&#x93F;&#x935;&#x93E;&#x923;&#x940; &#x928;&#x94D;&#x92F;&#x93E;&#x92F;&#x93E;&#x932;&#x92F;, &#x935;&#x938;&#x908;</option>\n'
+    '      <option value="JDC">JDC &#x2014; &#x91C;&#x93F;&#x933;&#x94D;&#x939;&#x93E; &#x928;&#x94D;&#x92F;&#x93E;&#x92F;&#x93E;&#x932;&#x92F;, &#x92A;&#x93E;&#x932;&#x918;&#x930;</option>\n'
+    '      <option value="JMC">JMC &#x2014; &#x25CC;&#x925;&#x947; JMFC, &#x935;&#x938;&#x908;</option>\n'
+    '      <option value="FAA">FAA &#x2014; &#x92A;&#x94D;&#x930;&#x925;&#x92E; &#x905;&#x92A;&#x940;&#x932; &#x92A;&#x94D;&#x930;&#x93E;&#x927;&#x93F;&#x915;&#x930;&#x923;</option>\n'
+    '      <option value="SIC">SIC &#x2014; &#x930;&#x93E;&#x91C;&#x94D;&#x92F; &#x92E;&#x93E;&#x939;&#x93F;&#x924;&#x940; &#x906;&#x92F;&#x941;&#x915;&#x94D;&#x924;</option>\n'
+    '      <option value="HCB">HCB &#x2014; &#x909;&#x91A;&#x94D;&#x91A; &#x928;&#x94D;&#x92F;&#x93E;&#x92F;&#x93E;&#x932;&#x92F;, &#x92E;&#x941;&#x902;&#x92C;&#x908;</option>\n'
+    '      <option value="CPG">CPG &#x2014; CPGRAMS (Central Grievance)</option>\n'
+    '      <option value="APS">APS &#x2014; &#x906;&#x92A;&#x932;&#x947; &#x938;&#x930;&#x915;&#x93E;&#x930;</option>\n'
+    '    </select>\n'
+    '    <div class="def-hint" id="threadDef"></div>\n'
+    '  </div>\n'
+    '\n'
+    '  <!-- LEGAL REF -->\n'
+    '  <div class="fg">\n'
+    '    <label class="fl" for="legalRef">&#x915;&#x93E;&#x92F;&#x926;&#x947;&#x936;&#x940;&#x930; &#x938;&#x902;&#x926;&#x930;&#x94D;&#x92D; (Optional)</label>\n'
+    '    <input type="text" id="legalRef"\n'
+    '      placeholder="e.g. &#x924;&#x939;&#x938;&#x940;&#x932;&#x926;&#x93E;&#x930; &#x906;&#x926;&#x947;&#x936; 01/03/2024 | Exhibit-102 | OMA 254/2026">\n'
+    '    <div class="hint">&#x915;&#x94B;&#x923;&#x924;&#x94D;&#x92F;&#x93E; &#x906;&#x926;&#x947;&#x936;, &#x905;&#x930;&#x94D;&#x91C; &#x915;&#x93F;&#x902;&#x935;&#x93E; &#x915;&#x93E;&#x917;&#x926;&#x92A;&#x924;&#x94D;&#x930;&#x93E;&#x936;&#x940; &#x938;&#x902;&#x92C;&#x902;&#x927;&#x93F;&#x924;?</div>\n'
+    '  </div>\n'
+    '\n'
+    '  <!-- PHOTOS -->\n'
+    '  <div class="fg">\n'
+    '    <label class="fl">&#x91B;&#x93E;&#x92F;&#x93E;&#x91A;&#x93F;&#x924;&#x94D;&#x930; (Optional)</label>\n'
+    '    <div class="photo-area" onclick="document.getElementById(\'photoInput\').click()">\n'
+    '      <div class="photo-icon">&#x1F4F7;</div>\n'
+    '      <div class="photo-label">&#x92B;&#x94B;&#x91F;&#x94B; &#x91C;&#x94B;&#x921;&#x93E; &#x2014; Camera &#x915;&#x93F;&#x902;&#x935;&#x93E; Gallery</div>\n'
+    '      <div class="photo-sub">JPG &middot; PNG &middot; HEIC &middot; Max 10 MB</div>\n'
+    '    </div>\n'
+    '    <input type="file" id="photoInput" accept="image/*"\n'
+    '           onchange="handlePhoto(this,\'previewImg\',\'photoFname\',\'photoPreview\')">\n'
+    '    <div class="photo-preview" id="photoPreview">\n'
+    '      <img id="previewImg" src="" alt="Preview">\n'
+    '      <div class="photo-fname" id="photoFname"></div>\n'
+    '    </div>\n'
+    '    <div class="photo-area-sm" onclick="document.getElementById(\'photoInput2\').click()">\n'
+    '      <div class="photo-label">+ &#x905;&#x924;&#x93F;&#x930;&#x93F;&#x915;&#x94D;&#x924; &#x91B;&#x93E;&#x92F;&#x93E;&#x91A;&#x93F;&#x924;&#x94D;&#x930; 2 (Optional)</div>\n'
+    '      <div class="photo-sub">JPG &middot; PNG &middot; HEIC &middot; Max 10 MB</div>\n'
+    '    </div>\n'
+    '    <input type="file" id="photoInput2" accept="image/*"\n'
+    '           onchange="handlePhotoSm(this,\'photoFname2\')">\n'
+    '    <div class="photo-fname-sm" id="photoFname2"></div>\n'
+    '    <div class="photo-area-sm" onclick="document.getElementById(\'photoInput3\').click()">\n'
+    '      <div class="photo-label">+ &#x905;&#x924;&#x93F;&#x930;&#x93F;&#x915;&#x94D;&#x924; &#x91B;&#x93E;&#x92F;&#x93E;&#x91A;&#x93F;&#x924;&#x94D;&#x930; 3 (Optional)</div>\n'
+    '      <div class="photo-sub">JPG &middot; PNG &middot; HEIC &middot; Max 10 MB</div>\n'
+    '    </div>\n'
+    '    <input type="file" id="photoInput3" accept="image/*"\n'
+    '           onchange="handlePhotoSm(this,\'photoFname3\')">\n'
+    '    <div class="photo-fname-sm" id="photoFname3"></div>\n'
+    '  </div>\n'
+    '\n'
+    '  <!-- AUDIO -->\n'
+    '  <div class="fg">\n'
+    '    <label class="fl">&#x911;&#x921;&#x93F;&#x913; &#x915;&#x93F;&#x902;&#x935;&#x93E; &#x935;&#x94D;&#x939;&#x93F;&#x921;&#x93F;&#x913; &#x928;&#x94B;&#x902;&#x926; (Optional)</label>\n'
+    '    <div class="photo-area" onclick="document.getElementById(\'audioInput\').click()" style="border-style:dashed;">\n'
+    '      <div class="photo-icon">&#x1F399;&#xFE0F;</div>\n'
+    '      <div class="photo-label">&#x911;&#x921;&#x93F;&#x913;/&#x935;&#x94D;&#x939;&#x93F;&#x921;&#x93F;&#x913; &#x91C;&#x94B;&#x921;&#x93E;</div>\n'
+    '      <div class="photo-sub">MP3 &middot; MP4 &middot; WAV &middot; Max 50 MB</div>\n'
+    '    </div>\n'
+    '    <input type="file" id="audioInput" accept="audio/*,video/*,.m4a,.mp3,.wav"\n'
+    '           onchange="handleAudio(this)">\n'
+    '    <div class="photo-preview" id="audioPreview">\n'
+    '      <div style="padding:10px;text-align:center;">\n'
+    '        <div id="audioFname" style="font-size:13px;color:#5f5e5a;"></div>\n'
+    '      </div>\n'
+    '    </div>\n'
+    '  </div>\n'
+    '\n'
+    '  <!-- ANNOTATION -->\n'
+    '  <div class="fg">\n'
+    '    <label class="fl" for="annotation">&#x935;&#x947;&#x926; &#x935;&#x94D;&#x92F;&#x93E;&#x938;&#x93E;&#x902;&#x91A;&#x940; &#x91F;&#x93F;&#x92A;&#x94D;&#x92A;&#x923;&#x940; (Your Annotation)</label>\n'
+    '    <textarea id="annotation" rows="3"\n'
+    '      placeholder="&#x939;&#x947; &#x92A;&#x941;&#x930;&#x93E;&#x935;&#x947; &#x915;&#x936;&#x93E;&#x91A;&#x947; &#x906;&#x939;&#x947;&#x924;? &#x928;&#x94D;&#x92F;&#x93E;&#x92F;&#x93E;&#x932;&#x92F;&#x940;&#x928; &#x938;&#x902;&#x926;&#x930;&#x94D;&#x92D;&#x93E;&#x924; &#x915;&#x93E;&#x92F; &#x92E;&#x939;&#x924;&#x94D;&#x924;&#x94D;&#x935;?&#10;(What does this evidence prove? Context only you know.)"></textarea>\n'
+    '  </div>\n'
+    '\n'
+    '  <button class="sbtn" id="sbtn" onclick="doSubmit()">\n'
+    '    <span id="sicon">&#x1F64F;</span>\n'
+    '    <span id="stxt">&#x939;&#x928;&#x941;&#x92E;&#x93E;&#x928;&#x93E;&#x932;&#x93E; &#x92A;&#x93E;&#x920;&#x935;&#x93E; &#x2014; Send to Inbox</span>\n'
+    '  </button>\n'
+    '  <div class="spacer"></div>\n'
+    '</div>\n'
+    '\n'
+    '<div class="body" id="successSc">\n'
+    '  <div class="suc-icon">&#x2705;</div>\n'
+    '  <div class="suc-title">&#x939;&#x928;&#x941;&#x92E;&#x93E;&#x928; &#x928;&#x947; &#x928;&#x94B;&#x902;&#x926; &#x918;&#x947;&#x924;&#x932;&#x940;</div>\n'
+    '  <div class="suc-sub">Chronicle Inbox &#x92E;&#x927;&#x94D;&#x92F;&#x947; &#x928;&#x94B;&#x902;&#x926; &#x938;&#x941;&#x930;&#x915;&#x94D;&#x937;&#x93F;&#x924; &#x920;&#x93E;&#x932;&#x940;.<br>Narada &#x92A;&#x941;&#x922;&#x940;&#x932; run &#x92E;&#x927;&#x94D;&#x92F;&#x947; ClickUp task &#x924;&#x92F;&#x93E;&#x930; &#x915;&#x930;&#x947;&#x932;.</div>\n'
+    '  <div class="suc-ref" id="sucRef">\n'
+    '    <strong>&#x938;&#x902;&#x926;&#x930;&#x94D;&#x92D; &#x915;&#x94D;&#x930;&#x92E;&#x93E;&#x902;&#x915;</strong>\n'
+    '    <span id="sucRefVal">&#x932;&#x94B;&#x921; &#x939;&#x94B;&#x924; &#x906;&#x939;&#x947;...</span>\n'
+    '  </div>\n'
+    '  <div class="btn-row">\n'
+    '    <a href="/" class="btn-sec">&larr; &#x92A;&#x94B;&#x930;&#x94D;&#x91F;&#x932;</a>\n'
+    '    <button class="btn-pri" onclick="resetForm()">+ &#x928;&#x935;&#x940; &#x928;&#x94B;&#x902;&#x926;</button>\n'
+    '  </div>\n'
+    '</div>\n'
+    '\n'
+    '<script>\n'
+    'const THREAD_DEFS={\n'
+    '  "GENERAL":"\\u0938\\u0930\\u094d\\u0935\\u0938\\u093e\\u0927\\u093e\\u0930\\u0923 \\u0928\\u094b\\u0902\\u0926 \\u2014 General entry, no specific authority thread.",\n'
+    '  "BTR":"\\u092e\\u093e. \\u0906\\u092f\\u0941\\u0915\\u094d\\u0924, VVMC, \\u0935\\u0938\\u0908-\\u0935\\u093f\\u0930\\u093e\\u0930 \\u2014 British Tax Regime. \\u0930\\u0942.4,04,229 \\u0915\\u0930 \\u092e\\u093e\\u0917\\u0923\\u0940.",\n'
+    '  "EAF":"\\u092e\\u093e. \\u0935\\u0930\\u093f\\u0937\\u094d\\u0920 \\u092a\\u094b\\u0932\\u0940\\u0938 \\u0928\\u093f\\u0930\\u0940\\u0915\\u094d\\u0937\\u0915, \\u0905\\u0930\\u094d\\u0928\\u093e\\u0933\\u093e \\u0938\\u093e\\u0917\\u0930\\u0940 \\u2014 Evidence Annihilation Front. FIR 270/2024.",\n'
+    '  "RPO":"\\u092e\\u093e. \\u092a\\u094d\\u0930\\u093e\\u0926\\u0947\\u0936\\u093f\\u0915 \\u092a\\u093e\\u0930\\u092a\\u0924\\u094d\\u0930 \\u0905\\u0927\\u093f\\u0915\\u093e\\u0930\\u0940, \\u092e\\u0941\\u0902\\u092c\\u0908 \\u2014 Rights Pending, Obstructed. OMA 254/2026.",\n'
+    '  "DMD":"\\u092e\\u093e. \\u091c\\u093f\\u0933\\u094d\\u0939\\u093e\\u0927\\u093f\\u0915\\u093e\\u0930\\u0940, \\u091c\\u093f\\u0933\\u094d\\u0939\\u093e \\u092a\\u093e\\u0932\\u0918\\u0930 \\u2014 District Mandate Denied.",\n'
+    '  "MOR":"\\u092e\\u093e. \\u0924\\u0939\\u0938\\u0940\\u0932\\u0926\\u093e\\u0930, \\u0935\\u0938\\u0908 \\u0924\\u093e\\u0932\\u0941\\u0915\\u093e \\u2014 Mandate Of Revenue (Unenforced). 01/03/2024 \\u0905\\u0902\\u0924\\u093f\\u092e \\u0906\\u0926\\u0947\\u0936.",\n'
+    '  "NPS":"\\u092e\\u093e. \\u0909\\u092a\\u0935\\u093f\\u092d\\u093e\\u0917\\u0940\\u092f \\u0905\\u0927\\u093f\\u0915\\u093e\\u0930\\u0940, \\u0935\\u0938\\u0908 \\u2014 Non-Performing Supervisor.",\n'
+    '  "AGD":"\\u092e\\u093e. \\u092a\\u094b\\u0932\\u0940\\u0938 \\u0906\\u092f\\u0941\\u0915\\u094d\\u0924, MBVV \\u2014 Administrative Genesis of Dysfunction.",\n'
+    '  "RPD":"\\u092e\\u093e. \\u0938\\u0939\\u093e\\u092f\\u0915 \\u092a\\u094b\\u0932\\u0940\\u0938 \\u0906\\u092f\\u0941\\u0915\\u094d\\u0924, \\u0928\\u093e\\u0932\\u093e\\u0938\\u094b\\u092a\\u093e\\u0930\\u093e \\u2014 Rights Protection Denied.",\n'
+    '  "KDC":"\\u092e\\u093e. \\u0935\\u093f\\u092d\\u093e\\u0917\\u0940\\u092f \\u0906\\u092f\\u0941\\u0915\\u094d\\u0924, \\u0915\\u094b\\u0915\\u0923 \\u0935\\u093f\\u092d\\u093e\\u0917 \\u2014 Konkan Divisional Commissioner.",\n'
+    '  "VWA":"\\u092e\\u093e. \\u0938\\u0939\\u093e\\u092f\\u0915 \\u0906\\u092f\\u0941\\u0915\\u094d\\u0924, VVMC \\u092a\\u094d\\u0930\\u092d\\u093e\\u0917 \\u0938\\u092e\\u093f\\u0924\\u0940 \\u0905 \\u2014 VVMC Ward Agent.",\n'
+    '  "VLD":"\\u092e\\u093e. \\u0935\\u093f\\u0927\\u0940 \\u0935\\u093f\\u092d\\u093e\\u0917, VVMC \\u2014 Void Legal Department.",\n'
+    '  "JTC":"\\u092e\\u093e. \\u0924\\u0939\\u0938\\u0940\\u0932\\u0926\\u093e\\u0930 \\u0928\\u094d\\u092f\\u093e\\u092f\\u093e\\u0932\\u092f, \\u0935\\u0938\\u0908 \\u2014 Justice, Twice Confirmed.",\n'
+    '  "JCV":"\\u092e\\u093e. \\u0926\\u093f\\u0935\\u093e\\u0923\\u0940 \\u0928\\u094d\\u092f\\u093e\\u092f\\u093e\\u0932\\u092f, \\u0935\\u0938\\u0908 \\u2014 Justice Contradicted, Vasai.",\n'
+    '  "JDC":"\\u092e\\u093e. \\u091c\\u093f\\u0933\\u094d\\u0939\\u093e \\u0928\\u094d\\u092f\\u093e\\u092f\\u093e\\u0932\\u092f, \\u092a\\u093e\\u0932\\u0918\\u0930 \\u2014 Judicial Domain Cleared.",\n'
+    '  "JMC":"\\u092e\\u093e. \\u25cc\\u0925\\u0947 JMFC, \\u0935\\u0938\\u0908 \\u2014 Judicial Mandate, Constitutional (OMA 254/2026).",\n'
+    '  "FAA":"\\u092e\\u093e. \\u092a\\u094d\\u0930\\u0925\\u092e \\u0905\\u092a\\u0940\\u0932 \\u092a\\u094d\\u0930\\u093e\\u0927\\u093f\\u0915\\u0930\\u0923 \\u2014 First Accountability Arena (RTI).",\n'
+    '  "SIC":"\\u092e\\u093e. \\u0930\\u093e\\u091c\\u094d\\u092f \\u092e\\u093e\\u0939\\u093f\\u0924\\u0940 \\u0906\\u092f\\u0941\\u0915\\u094d\\u0924 \\u2014 Silence Is Confirmed.",\n'
+    '  "HCB":"\\u092e\\u093e. \\u0909\\u091a\\u094d\\u091a \\u0928\\u094d\\u092f\\u093e\\u092f\\u093e\\u0932\\u092f, \\u092e\\u0941\\u0902\\u092c\\u0908 \\u2014 Constitutional Reckoning (Sprint 8, future).",\n'
+    '  "CPG":"CPGRAMS \\u2014 Complaint Processed, Gone (Central Grievance).",\n'
+    '  "APS":"\\u0906\\u092a\\u0932\\u0947 \\u0938\\u0930\\u0915\\u093e\\u0930 \\u2014 Administrative Promise, Suspended (State Grievance)."\n'
+    '};\n'
+    'const PREFIX_DEFS={\n'
+    '  "FIELD_":"\\u0915\\u094d\\u0937\\u0947\\u0924\\u094d\\u0930 \\u092d\\u0947\\u091f / Field Visit \\u2014 Narada routes to Authority list by thread code.",\n'
+    '  "BREACH_":"\\u0909\\u0932\\u094d\\u0932\\u0902\\u0918\\u0928 \\u0928\\u094b\\u0902\\u0926 / Statutory Breach \\u2014 Narada routes to Narada Execution list.",\n'
+    '  "IDEA_":"\\u0915\\u0932\\u094d\\u092a\\u0928\\u093e / Idea \\u2014 Narada routes to Product Command list.",\n'
+    '  "SESSION_":"\\u0938\\u0924\\u094d\\u0930 \\u0928\\u094b\\u0902\\u0926 / Session Note \\u2014 Narada routes to Product Command list.",\n'
+    '  "STRATEGY_":"\\u0927\\u094b\\u0930\\u0923 \\u0928\\u093f\\u0930\\u094d\\u0923\\u092f / Strategic Decision \\u2014 Narada routes to Product Command list.",\n'
+    '  "HITL_":"\\u0935\\u0948\\u092f\\u0915\\u094d\\u0924\\u093f\\u0915 \\u0921\\u093e\\u092f\\u0930\\u0940 / Personal Diary \\u2014 Narada routes to HITL Diary list."\n'
+    '};\n'
+    'function updateTS(){\n'
+    '  const n=new Date();\n'
+    '  const s=n.toLocaleString("mr-IN",{\n'
+    '    timeZone:"Asia/Kolkata",day:"2-digit",month:"long",\n'
+    '    year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true\n'
+    '  });\n'
+    '  document.getElementById("tsPill").textContent="\\u23F1 "+s+" IST";\n'
+    '}\n'
+    'updateTS();setInterval(updateTS,30000);\n'
+    'function showThreadDef(val){\n'
+    '  const el=document.getElementById("threadDef");\n'
+    '  if(val&&THREAD_DEFS[val]){el.textContent="\\u2139\\uFE0F  "+THREAD_DEFS[val];el.style.display="block";}\n'
+    '  else{el.style.display="none";}\n'
+    '}\n'
+    'function showPrefixDef(val){\n'
+    '  const el=document.getElementById("prefixDef");\n'
+    '  if(val&&PREFIX_DEFS[val]){el.textContent="\\u2139\\uFE0F  "+PREFIX_DEFS[val];el.style.display="block";}\n'
+    '  else{el.style.display="none";}\n'
+    '}\n'
+    'window.addEventListener("DOMContentLoaded",function(){\n'
+    '  showPrefixDef("FIELD_");showThreadDef("GENERAL");\n'
+    '});\n'
+    'function handlePhoto(inp,imgId,fnameId,previewId){\n'
+    '  const f=inp.files[0];if(!f)return;\n'
+    '  if(f.size>10*1024*1024){showErr("\\u092B\\u094B\\u091F\\u094B 10MB \\u092A\\u0947\\u0915\\u094D\\u0937\\u093E \\u092E\\u094B\\u0920\\u093E \\u0906\\u0939\\u0947.");inp.value="";return;}\n'
+    '  const r=new FileReader();\n'
+    '  r.onload=e=>{\n'
+    '    document.getElementById(imgId).src=e.target.result;\n'
+    '    document.getElementById(fnameId).textContent="\\u2713 "+f.name;\n'
+    '    document.getElementById(previewId).style.display="block";\n'
+    '  };\n'
+    '  r.readAsDataURL(f);\n'
+    '}\n'
+    'function handlePhotoSm(inp,fnameId){\n'
+    '  const f=inp.files[0];if(!f)return;\n'
+    '  if(f.size>10*1024*1024){showErr("\\u092B\\u094B\\u091F\\u094B 10MB \\u092A\\u0947\\u0915\\u094D\\u0937\\u093E \\u092E\\u094B\\u0920\\u093E \\u0906\\u0939\\u0947.");inp.value="";return;}\n'
+    '  const el=document.getElementById(fnameId);\n'
+    '  el.textContent="\\u2713 "+f.name;el.style.display="block";\n'
+    '}\n'
+    'function handleAudio(inp){\n'
+    '  const f=inp.files[0];if(!f)return;\n'
+    '  if(f.size>50*1024*1024){showErr("\\u0911\\u0921\\u093F\\u0913/\\u0935\\u094D\\u0939\\u093F\\u0921\\u093F\\u0913 50MB \\u092A\\u0947\\u0915\\u094D\\u0937\\u093E \\u092E\\u094B\\u0920\\u0947 \\u0906\\u0939\\u0947\\u0924.");inp.value="";return;}\n'
+    '  document.getElementById("audioFname").textContent="\\u2713 "+f.name+" ("+Math.round(f.size/1024/1024)+"MB)";\n'
+    '  document.getElementById("audioPreview").style.display="block";\n'
+    '}\n'
+    'function showErr(m){\n'
+    '  const el=document.getElementById("errBar");\n'
+    '  el.textContent=m;el.style.display="block";window.scrollTo(0,0);\n'
+    '}\n'
+    'function clearErr(){document.getElementById("errBar").style.display="none";}\n'
+    'async function doSubmit(){\n'
+    '  clearErr();\n'
+    '  const note=document.getElementById("noteText").value.trim();\n'
+    '  if(!note){showErr("\\u0915\\u0943\\u092A\\u092F\\u093E \\u0906\\u091C\\u091A\\u0940 \\u0928\\u094B\\u0902\\u0926 \\u0932\\u093F\\u0939\\u093E.");return;}\n'
+    '  const btn=document.getElementById("sbtn");\n'
+    '  btn.disabled=true;\n'
+    '  document.getElementById("sicon").textContent="\\u23F3";\n'
+    '  document.getElementById("stxt").textContent="\\u092A\\u093E\\u0920\\u0935\\u0924 \\u0906\\u0939\\u0947...";\n'
+    '  const fd=new FormData();\n'
+    '  fd.append("prefix",document.getElementById("prefixSel").value);\n'
+    '  fd.append("note",note);\n'
+    '  fd.append("thread",document.getElementById("threadSel").value);\n'
+    '  fd.append("legal_ref",document.getElementById("legalRef").value.trim());\n'
+    '  fd.append("annotation",document.getElementById("annotation").value.trim());\n'
+    '  const ph=document.getElementById("photoInput").files[0];\n'
+    '  if(ph)fd.append("photo",ph,ph.name);\n'
+    '  const ph2=document.getElementById("photoInput2").files[0];\n'
+    '  if(ph2)fd.append("photo2",ph2,ph2.name);\n'
+    '  const ph3=document.getElementById("photoInput3").files[0];\n'
+    '  if(ph3)fd.append("photo3",ph3,ph3.name);\n'
+    '  const au=document.getElementById("audioInput").files[0];\n'
+    '  if(au)fd.append("audio",au,au.name);\n'
+    '  try{\n'
+    '    const res=await fetch("/field/submit",{method:"POST",body:fd});\n'
+    '    const d=await res.json();\n'
+    '    if(d.ok){\n'
+    '      let rh="<strong>"+d.ref+"</strong>";\n'
+    '      if(d.drive_file)rh+="<br><span class=\\"ok\\">\\u2713 Drive: "+d.drive_file+"</span>";\n'
+    '      if(d.photos_uploaded>0)rh+="<br><span class=\\"ok\\">\\u2713 Photos: "+d.photos_uploaded+" uploaded</span>";\n'
+    '      document.getElementById("sucRefVal").innerHTML=rh;\n'
+    '      document.getElementById("formSc").style.display="none";\n'
+    '      document.getElementById("successSc").style.display="block";\n'
+    '      window.scrollTo(0,0);\n'
+    '    }else{\n'
+    '      showErr("\\u0924\\u094D\\u0930\\u0941\\u091F\\u0940: "+(d.error||"\\u0905\\u091C\\u094D\\u091E\\u093E\\u0924 \\u0924\\u094D\\u0930\\u0941\\u091F\\u0940."));\n'
+    '      btn.disabled=false;\n'
+    '      document.getElementById("sicon").textContent="\\u1F64F";\n'
+    '      document.getElementById("stxt").textContent="\\u939\\u928\\u941\\u92E\\u93E\\u928\\u93E\\u932\\u93E \\u92A\\u93E\\u920\\u935\\u93E";\n'
+    '    }\n'
+    '  }catch(e){\n'
+    '    showErr("\\u0928\\u0947\\u091F\\u0935\\u0930\\u094D\\u0915 \\u0924\\u094D\\u0930\\u0941\\u091F\\u0940.");\n'
+    '    btn.disabled=false;\n'
+    '    document.getElementById("sicon").textContent="\\u1F64F";\n'
+    '    document.getElementById("stxt").textContent="\\u939\\u928\\u941\\u92E\\u93E\\u928\\u93E\\u932\\u93E \\u92A\\u93E\\u920\\u935\\u93E";\n'
+    '  }\n'
+    '}\n'
+    'function resetForm(){\n'
+    '  ["noteText","legalRef","annotation"].forEach(id=>document.getElementById(id).value="");\n'
+    '  document.getElementById("prefixSel").value="FIELD_";showPrefixDef("FIELD_");\n'
+    '  document.getElementById("threadSel").value="GENERAL";showThreadDef("GENERAL");\n'
+    '  ["photoInput","photoInput2","photoInput3","audioInput"].forEach(id=>{document.getElementById(id).value="";});\n'
+    '  document.getElementById("photoPreview").style.display="none";\n'
+    '  document.getElementById("audioPreview").style.display="none";\n'
+    '  ["photoFname2","photoFname3"].forEach(id=>{const el=document.getElementById(id);el.textContent="";el.style.display="none";});\n'
+    '  document.getElementById("formSc").style.display="block";\n'
+    '  document.getElementById("successSc").style.display="none";\n'
+    '  document.getElementById("sbtn").disabled=false;\n'
+    '  document.getElementById("sicon").textContent="\\u1F64F";\n'
+    '  document.getElementById("stxt").textContent="\\u939\\u928\\u941\\u92E\\u93E\\u928\\u93E\\u932\\u93E \\u92A\\u93E\\u920\\u935\\u93E";\n'
+    '  clearErr();updateTS();window.scrollTo(0,0);\n'
+    '}\n'
+    '</script>\n'
+    '</body>\n'
+    '</html>'
+)
 
 # ─── OAUTH FLOW CACHE (server memory, not session) ───────────────────────────────
 import uuid
@@ -2026,89 +2111,97 @@ def field():
  
  
 # ─── HANUMAN — /field/submit POST ────────────────────────────────────────────
-@app.route('/field/submit', methods=['POST'])
-def field_submit():
-    """
-    Receives the Hanuman field form and writes to Google Drive Chronicle Inbox.
-    Option A: No AI processing at submission time. Saraswati processes later.
-    """
-    try:
-        note       = request.form.get('note', '').strip()
-        thread     = request.form.get('thread', 'GENERAL').strip() or 'GENERAL'
-        legal_ref  = request.form.get('legal_ref', '').strip()
-        annotation = request.form.get('annotation', '').strip()
-        photo_file = request.files.get('photo')
-        audio_file = request.files.get('audio')
- 
-        if not note:
-            return jsonify({'ok': False, 'error': 'नोंद रिकामी आहे'}), 400
- 
-        # ── Timestamp (Strict IST Enforcement) ──
-        ist = pytz.timezone('Asia/Kolkata')
-        now_ist = datetime.now(ist)
-        ts_file = now_ist.strftime('%Y%m%d_%H%M%S')
-        ts_display = now_ist.strftime('%d %B %Y | %I:%M %p IST')
-      
-        # ── Reference number: HAN-YYYYMMDD-HHMMSS-THREAD ──
-        ref       = f"HAN-{ts_file}-{thread}"
-        txt_fname = f"{ref}.txt"
- 
-        # ── Build .txt content for Chronicle Inbox ──
-        lines = [
-            f"{'═'*56}",
-            f"HANUMAN FIELD NOTE",
-            f"Reference : {ref}",
-            f"Timestamp : {ts_display}",
-            f"Thread    : {thread}",
-            f"{'═'*56}",
-            "",
-            "## नोंद (Field Observation)",
-            note,
-            "",
-        ]
-        if legal_ref:
-            lines += ["## कायदेशीर संदर्भ (Legal Reference)", legal_ref, ""]
-        if annotation:
-            lines += ["## वेद व्यासांची टिप्पणी (Annotation by Veda Vyasa)", annotation, ""]
-        if photo_file and photo_file.filename:
-            lines += [f"## छायाचित्र (Photo Attached)", f"Filename: {photo_file.filename}", ""]
-        lines += ["─"*56, "जय हनुमान। सत्यमेव जयते।", "─"*56]
- 
-        txt_content = "\\n".join(lines)
- 
-        # ── Write text note to Drive inbox ──
-        result = _write_to_inbox(txt_content, txt_fname)
+ @app.route('/field/submit', methods=['POST'])
+ def field_submit():
+     """
+     Receives Hanuman field form. Writes to Google Drive Chronicle Inbox.
+     Filename: {PREFIX}HAN-{YYYYMMDD_HHMMSS}-{THREAD}.txt
+     Narada reads: prefix -> routing lane | thread -> ClickUp list_id
+     """
+     try:
+         prefix      = request.form.get('prefix', 'FIELD_').strip() or 'FIELD_'
+         note        = request.form.get('note', '').strip()
+         thread      = request.form.get('thread', 'GENERAL').strip() or 'GENERAL'
+         legal_ref   = request.form.get('legal_ref', '').strip()
+         annotation  = request.form.get('annotation', '').strip()
+         photo_file  = request.files.get('photo')
+         photo_file2 = request.files.get('photo2')
+         photo_file3 = request.files.get('photo3')
+         audio_file  = request.files.get('audio')
 
-        # ── Upload photo if attached ──
-        photo_ok = False
-        photo_name = ""
-        if photo_file and photo_file.filename and result.get('ok'):
-            ph_bytes = photo_file.read() # Read once to avoid empty stream
-            ph_fname = f"HAN-{ts_file}-{photo_file.filename}"
-            ph_ctype = photo_file.content_type or 'image/jpeg'
-            photo_ok = _upload_photo_to_inbox(ph_bytes, ph_fname, ph_ctype)
-            photo_name = ph_fname if photo_ok else ""
+         if not note:
+             return jsonify({'ok': False, 'error': 'नोंद रिकामी आहे'}), 400
 
-        # ── Upload audio/video if attached ──
-        if audio_file and audio_file.filename and result.get('ok'):
-            au_bytes = audio_file.read()
-            au_fname = f"HAN-{ts_file}-{audio_file.filename}"
-            au_ctype = audio_file.content_type or 'audio/mpeg'
-            _upload_photo_to_inbox(au_bytes, au_fname, au_ctype)
+         ist        = pytz.timezone('Asia/Kolkata')
+         now_ist    = datetime.now(ist)
+         ts_file    = now_ist.strftime('%Y%m%d_%H%M%S')
+         ts_display = now_ist.strftime('%d %B %Y | %I:%M %p IST')
 
-        return jsonify({
-            'ok' : result.get('ok', False),
-            'ref' : ref,
-            'drive_file': result.get('file_name', ''),
-            'photo_ok' : photo_ok,
-            'photo_name': photo_name,
-            'error' : result.get('error', '')
-        })
- 
-    except Exception as e:
-        print(f"ERROR /field/submit: {e}")
-        return jsonify({'ok': False, 'error': str(e)}), 500
+         ref       = f"{prefix}HAN-{ts_file}-{thread}"
+         txt_fname = f"{ref}.txt"
 
+         lines = [
+             f"{'═'*56}",
+             "HANUMAN FIELD NOTE",
+             f"Reference : {ref}",
+             f"Prefix    : {prefix}",
+             f"Timestamp : {ts_display}",
+             f"Thread    : {thread}",
+             f"{'═'*56}",
+             "",
+             " नोंद (Field Observation)",
+             note,
+             "",
+         ]
+         if legal_ref:
+             lines += [" कायदेशीर संदर्भ (Legal Reference)", legal_ref, ""]
+         if annotation:
+             lines += [" वेद व्यासांची टिप्पणी (Annotation by Veda Vyasa)", annotation, ""]
+
+         photo_entries = [pf for pf in [photo_file, photo_file2, photo_file3] if pf and pf.filename]
+         if photo_entries:
+             lines += [" छायाचित्र (Photos Attached)"]
+             for i, pf in enumerate(photo_entries, 1):
+                 lines.append(f"Photo {i}: {pf.filename}")
+             lines.append("")
+
+         if audio_file and audio_file.filename:
+             lines += [" ऑडिओ/व्हिडिओ (Audio/Video Attached)",
+                       f"Filename: {audio_file.filename}", ""]
+
+         lines += ["─"*56, "जय हनुमान। सत्यमेव जयते।", "─"*56]
+         txt_content = "\n".join(lines)
+
+         result = _write_to_inbox(txt_content, txt_fname)
+
+         photos_uploaded = 0
+         if result.get('ok'):
+             for idx, pf in enumerate([photo_file, photo_file2, photo_file3], 1):
+                 if pf and pf.filename:
+                     ph_bytes = pf.read()
+                     ph_fname = f"{prefix}HAN-{ts_file}-{thread}_photo{idx}_{pf.filename}"
+                     ph_ctype = pf.content_type or 'image/jpeg'
+                     ok = _upload_photo_to_inbox(ph_bytes, ph_fname, ph_ctype)
+                     if ok:
+                         photos_uploaded += 1
+             if audio_file and audio_file.filename:
+                 au_bytes = audio_file.read()
+                 au_fname = f"{prefix}HAN-{ts_file}-{thread}_{audio_file.filename}"
+                 au_ctype = audio_file.content_type or 'audio/mpeg'
+                 _upload_photo_to_inbox(au_bytes, au_fname, au_ctype)
+
+         return jsonify({
+             'ok'             : result.get('ok', False),
+             'ref'            : ref,
+             'drive_file'     : result.get('file_name', ''),
+             'photos_uploaded': photos_uploaded,
+             'error'          : result.get('error', '')
+         })
+
+     except Exception as e:
+         print(f"ERROR /field/submit: {e}")
+         return jsonify({'ok': False, 'error': str(e)}), 500
+       
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
