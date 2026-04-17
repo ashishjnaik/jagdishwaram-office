@@ -80,6 +80,7 @@ def get_google_flow():
     return flow
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+GOOGLE_QUOTA_USER = os.environ.get("GOOGLE_QUOTA_USER", "ashish.j.naik@gmail.com")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
 
 # --- OAuth Configuration ---
@@ -139,11 +140,9 @@ DRIVE = {
 # Open Chronicle Inbox folder → copy the ID from the URL
 # e.g. https://drive.google.com/drive/folders/1n-tiveid-XJTAvum1VEA3gcEnt4GGePp
 #                                                              ^^^^^^^^^^^^^^^^^^^^^^^
-HANUMAN_INBOX_FOLDER_ID = os.environ.get(
-    "HANUMAN_INBOX_FOLDER_ID",
-    "1roP01xjVD0yxYoSbAI8tpZknffX8n1bZ"   # ← update this with your real folder ID
-)
- 
+HANUMAN_INBOX_FOLDER_ID = os.environ.get("HANUMAN_INBOX_FOLDER_ID")
+if not HANUMAN_INBOX_FOLDER_ID:
+    print("⚠️ WARNING: HANUMAN_INBOX_FOLDER_ID not configured") 
 
 def _get_drive_service():
     try:
@@ -200,7 +199,7 @@ def _write_to_inbox(text_content: str, filename: str) -> dict:
             mimetype="text/plain",
             resumable=False
         )
-        f = service.files().create(body=meta, media_body=media, fields="id,name", supportsAllDrives=True, quotaUser="ashish.j.naik@gmail.com").execute()
+        f = service.files().create(body=meta, media_body=media, fields="id,name", supportsAllDrives=True, quotaUser=GOOGLE_QUOTA_USER).execute()
         return {"ok": True, "file_id": f.get("id"), "file_name": f.get("name")}
     except Exception as e:
         print(f"ERROR: Drive inbox write failed: {e}")
@@ -221,7 +220,7 @@ def _upload_photo_to_inbox(photo_bytes: bytes, filename: str, content_type: str)
             mimetype=content_type or "image/jpeg",
             resumable=False
         )
-        service.files().create(body=meta, media_body=media, fields="id", supportsAllDrives=True, quotaUser="ashish.j.naik@gmail.com").execute()
+        service.files().create(body=meta, media_body=media, fields="id", supportsAllDrives=True, quotaUser=GOOGLE_QUOTA_USER).execute()
         return True
     except Exception as e:
         print(f"WARNING: Photo upload failed (non-fatal): {e}")
@@ -1017,9 +1016,9 @@ a { -webkit-tap-highlight-color: transparent; }
     <strong>अर्जदार:</strong> आशिष जगदिश नाईक (स्वयं-प्रतिनिधी) · Vasai 401 301
   </div>
     <div style="margin-top: 10px;">
-        <a href="https://docs.google.com/document/d/1a5oBJX-o_pHnttclNKew1wRjyWVG1ys2GBWOBtMdc7o/edit?usp=drive_link" 
+        <a href="https://drive.google.com/file/d/1UCJjf-_WXMVxbDXPQV39LgNMBd8gNObE/view?usp=drive_link"
            target="_blank" style="color: #5a9a5a; font-family: var(--mono); font-size: 11px; text-decoration: none; border-bottom: 1px dotted;">
-           📄 Foundation Document (v1.0)
+           📄 Foundation Document (v2.0)
         </a>
     </div>
 </div>
@@ -1610,7 +1609,7 @@ FIELD_HTML = (
     '  </div>\n'
     '  <div class="hdr-sub">JAGDISHWARAM DIGITAL OFFICE &middot; CHRONICLE INBOX</div>\n'
     '  <a class="hdr-reg"\n'
-    '     href="https://docs.google.com/document/d/1zoXKkXPpLz4wlgPvQ38EjbIeyKsrm9wTsMEuzAfloZw/edit"\n'
+    '     href="./Foundation_Document_v2.0_16_April_2026_WITH_LOGO_FULL_AUTHORITY_CODE_REGISTRY.html"\n'
     '     target="_blank">&#x1F4CB; Authority Code Registry &#x2014; &#x927;&#x93E;&#x917;&#x93E; &#x915;&#x94B;&#x921; &#x938;&#x902;&#x926;&#x930;&#x94D;&#x92D; &#x2197;</a>\n'
     '</div>\n'
     '\n'
