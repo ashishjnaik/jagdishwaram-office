@@ -80,6 +80,7 @@ def get_google_flow():
     return flow
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+GOOGLE_QUOTA_USER = os.environ.get("GOOGLE_QUOTA_USER", "ashish.j.naik@gmail.com")
 PORTAL_TOKEN      = os.environ.get("PORTAL_TOKEN", "jagdishwaram2026")
 
 # --- OAuth Configuration ---
@@ -139,11 +140,9 @@ DRIVE = {
 # Open Chronicle Inbox folder → copy the ID from the URL
 # e.g. https://drive.google.com/drive/folders/1n-tiveid-XJTAvum1VEA3gcEnt4GGePp
 #                                                              ^^^^^^^^^^^^^^^^^^^^^^^
-HANUMAN_INBOX_FOLDER_ID = os.environ.get(
-    "HANUMAN_INBOX_FOLDER_ID",
-    "1roP01xjVD0yxYoSbAI8tpZknffX8n1bZ"   # ← update this with your real folder ID
-)
- 
+HANUMAN_INBOX_FOLDER_ID = os.environ.get("HANUMAN_INBOX_FOLDER_ID")
+if not HANUMAN_INBOX_FOLDER_ID:
+    print("⚠️ WARNING: HANUMAN_INBOX_FOLDER_ID not configured") 
 
 def _get_drive_service():
     try:
@@ -200,7 +199,7 @@ def _write_to_inbox(text_content: str, filename: str) -> dict:
             mimetype="text/plain",
             resumable=False
         )
-        f = service.files().create(body=meta, media_body=media, fields="id,name", supportsAllDrives=True, quotaUser="ashish.j.naik@gmail.com").execute()
+        f = service.files().create(body=meta, media_body=media, fields="id,name", supportsAllDrives=True, quotaUser=GOOGLE_QUOTA_USER).execute()
         return {"ok": True, "file_id": f.get("id"), "file_name": f.get("name")}
     except Exception as e:
         print(f"ERROR: Drive inbox write failed: {e}")
@@ -221,7 +220,7 @@ def _upload_photo_to_inbox(photo_bytes: bytes, filename: str, content_type: str)
             mimetype=content_type or "image/jpeg",
             resumable=False
         )
-        service.files().create(body=meta, media_body=media, fields="id", supportsAllDrives=True, quotaUser="ashish.j.naik@gmail.com").execute()
+        service.files().create(body=meta, media_body=media, fields="id", supportsAllDrives=True, quotaUser=GOOGLE_QUOTA_USER).execute()
         return True
     except Exception as e:
         print(f"WARNING: Photo upload failed (non-fatal): {e}")
