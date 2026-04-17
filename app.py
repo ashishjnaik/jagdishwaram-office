@@ -1017,7 +1017,7 @@ a { -webkit-tap-highlight-color: transparent; }
     <strong>अर्जदार:</strong> आशिष जगदिश नाईक (स्वयं-प्रतिनिधी) · Vasai 401 301
   </div>
     <div style="margin-top: 10px;">
-        <a href="./Foundation_Document_v2.0_16_April_2026_WITH_LOGO_FULL_AUTHORITY_CODE_REGISTRY.html"
+        <a href="https://drive.google.com/file/d/1UCJjf-_WXMVxbDXPQV39LgNMBd8gNObE/view?usp=drive_link"
            target="_blank" style="color: #5a9a5a; font-family: var(--mono); font-size: 11px; text-decoration: none; border-bottom: 1px dotted;">
            📄 Foundation Document (v2.0)
         </a>
