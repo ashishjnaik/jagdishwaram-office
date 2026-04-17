@@ -1017,9 +1017,9 @@ a { -webkit-tap-highlight-color: transparent; }
     <strong>अर्जदार:</strong> आशिष जगदिश नाईक (स्वयं-प्रतिनिधी) · Vasai 401 301
   </div>
     <div style="margin-top: 10px;">
-        <a href="https://docs.google.com/document/d/1a5oBJX-o_pHnttclNKew1wRjyWVG1ys2GBWOBtMdc7o/edit?usp=drive_link" 
+        <a href="./Foundation_Document_v2.0_16_April_2026_WITH_LOGO_FULL_AUTHORITY_CODE_REGISTRY.html"
            target="_blank" style="color: #5a9a5a; font-family: var(--mono); font-size: 11px; text-decoration: none; border-bottom: 1px dotted;">
-           📄 Foundation Document (v1.0)
+           📄 Foundation Document (v2.0)
         </a>
     </div>
 </div>
@@ -1610,7 +1610,7 @@ FIELD_HTML = (
     '  </div>\n'
     '  <div class="hdr-sub">JAGDISHWARAM DIGITAL OFFICE &middot; CHRONICLE INBOX</div>\n'
     '  <a class="hdr-reg"\n'
-    '     href="https://docs.google.com/document/d/1zoXKkXPpLz4wlgPvQ38EjbIeyKsrm9wTsMEuzAfloZw/edit"\n'
+    '     href="./Foundation_Document_v2.0_16_April_2026_WITH_LOGO_FULL_AUTHORITY_CODE_REGISTRY.html"\n'
     '     target="_blank">&#x1F4CB; Authority Code Registry &#x2014; &#x927;&#x93E;&#x917;&#x93E; &#x915;&#x94B;&#x921; &#x938;&#x902;&#x926;&#x930;&#x94D;&#x92D; &#x2197;</a>\n'
     '</div>\n'
     '\n'
