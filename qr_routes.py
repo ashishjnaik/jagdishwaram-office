@@ -43,9 +43,13 @@ def generate_event_id():
     return f"EVT-{int(datetime.now(IST).timestamp())}"
 
 def generate_qr_id(authority_code):
-    year = datetime.now().year
-    return f"TEA-{authority_code}-{year}-0001"
-
+    """TEA-{Authority_Code}-DDMMMYY-XXXXX (global logical sequence - no duplicates)"""
+    now = datetime.now()
+    date_str = now.strftime('%d%b%y').upper()   # 26APR26
+    seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
+    sequence = f"{seconds_since_midnight:05d}"
+    return f"TEA-{authority_code}-{date_str}-{sequence}"
+    
 def create_qr_image(qr_url):
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=10, border=4)
     qr.add_data(qr_url)
@@ -152,6 +156,14 @@ def scan_dashboard(qr_id):
                 events.append(event)
         events.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
 
+# Format ETA as DD-MMM-YY
+        eta_raw = record.get('expected_turnaround_time', '')
+        try:
+            eta_date = datetime.strptime(eta_raw, '%Y-%m-%d')
+            eta_formatted = eta_date.strftime('%d-%b-%y')
+        except:
+            eta_formatted = eta_raw
+
         return render_template('qr_dashboard.html',
                                qr_id=qr_id,
                                name=record.get('citizen_name', ''),
@@ -159,11 +171,12 @@ def scan_dashboard(qr_id):
                                contact=record.get('citizen_contact_number', ''),
                                authority=record.get('recipient_authority_code', ''),
                                sub_type=record.get('application_type', ''),
-                               eta=record.get('expected_turnaround_time', ''),
+                               eta=eta_formatted,          # <-- now DD-MMM-YY
                                note=record.get('additional_notes', ''),
                                url=record.get('relevant_url', ''),
                                status=record.get('status', 'Not Yet Received'),
                                events=events)
+        
     except Exception as e:
         print(traceback.format_exc())
         return f"Error loading record: {str(e)}", 500
