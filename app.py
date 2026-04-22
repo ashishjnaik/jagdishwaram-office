@@ -26,8 +26,7 @@ from flask import Flask, request, jsonify, render_template, render_template_stri
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from qr_routes import qr_bp
-app.register_blueprint(qr_bp)
+
 
 # ── Google Drive (Service Account — no OAuth popup on Render) ──────────────
 # Add to requirements.txt:
@@ -50,6 +49,10 @@ except ImportError:
 app = Flask(__name__)
 # Railway should have FLASK_SECRET_KEY set in the Variables tab
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_for_local_dev')
+
+# ─── QR ROUTES (Narada QR Tracking System) ───────────────────────────────────
+from qr_routes import qr_bp
+app.register_blueprint(qr_bp)
 
 def get_google_flow():
     """Dynamically creates the OAuth flow based on Railway environment variables."""
