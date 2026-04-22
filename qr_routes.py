@@ -109,4 +109,34 @@ def generate_qr():
 
 @qr_bp.route('/scan/<qr_id>', methods=['GET'])
 def scan_dashboard(qr_id):
-    return render_template('qr_dashboard.html', qr_id=qr_id)
+    try:
+        sheet = get_spreadsheet()
+        if not sheet:
+            return "Sheets not configured", 500
+
+        submissions = sheet.worksheet("submissions")
+        values = submissions.get_all_values()
+
+        # Find matching row (column A = index 0)
+        record = None
+        for row in values:
+            if len(row) > 0 and row[0] == qr_id:
+                record = row
+                break
+
+        if not record:
+            return "QR ID not found", 404
+
+        # Column mapping from your actual sheet (A=0, B=1, ...)
+        return render_template('qr_dashboard.html',
+                               qr_id=qr_id,
+                               name=record[1] if len(record) > 1 else '',
+                               email=record[2] if len(record) > 2 else '',
+                               authority=record[4] if len(record) > 4 else '',
+                               sub_type=record[5] if len(record) > 5 else '',
+                               eta=record[6] if len(record) > 6 else '',
+                               note=record[7] if len(record) > 7 else 'No note provided',
+                               generated="Just now")
+    except Exception as e:
+        print("Dashboard error:", traceback.format_exc())
+        return f"Error loading record: {str(e)}", 500
