@@ -1,4 +1,4 @@
-# qr_routes.py - Narada QR Tracking System v1.0 (FINAL)
+# qr_routes.py - Narada QR Tracking System v1.1 (Comment Logging + Editable ETA/Status)
 from flask import Blueprint, render_template, request, jsonify
 import qrcode
 from PIL import Image
@@ -12,9 +12,11 @@ import gspread
 from google.oauth2.service_account import Credentials
 import pytz
 
-print("✅ qr_routes.py LOADED (FINAL)")
+print("✅ qr_routes.py LOADED (v1.1 - Comment Logging + Editable ETA/Status)")
 
 qr_bp = Blueprint('narada_qr', __name__, url_prefix='/')
+
+IST = pytz.timezone('Asia/Kolkata')
 
 def get_sheets_client():
     json_str = os.environ.get('NARADA_QR_SERVICE_ACCOUNT_JSON')
@@ -34,6 +36,9 @@ def get_spreadsheet():
         return None
     return client.open_by_key(spreadsheet_id)
 
+def get_ist_now():
+    return datetime.now(IST).isoformat()
+
 def generate_qr_id(authority_code):
     year = datetime.now().year
     return f"TEA-{authority_code}-{year}-0001"
@@ -50,6 +55,16 @@ def create_qr_image(qr_url):
         img.paste(logo, pos, mask=logo if logo.mode == 'RGBA' else None)
     return img
 
+def log_scan_event(sheet, qr_id, event_type="SCAN", comment="", eta_new="", status_new=""):
+    try:
+        scan_events = sheet.worksheet("scan_events")
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        ua = request.headers.get('User-Agent', 'Unknown')
+        now_ist = get_ist_now()
+        scan_events.append_row([None, qr_id, event_type, now_ist, ip, ua, "", comment, eta_new, status_new])
+    except Exception as e:
+        print("Scan event log failed:", e)
+
 @qr_bp.route('/generator', methods=['GET'])
 def generator():
     return render_template('qr_generator.html')
@@ -58,14 +73,14 @@ def generator():
 def generate_qr():
     try:
         data = request.get_json() or {}
-        name      = (data.get('name') or '').strip()
-        email     = (data.get('email') or '').strip()
-        contact   = (data.get('contact') or '').strip()
-        authority = (data.get('authority_code') or 'OTHERS').strip()
-        sub_type  = (data.get('submission_type') or 'Application').strip()
-        eta       = (data.get('eta_date') or '').strip()
-        note      = (data.get('additional_note') or '').strip()
-        url       = (data.get('url') or '').strip()
+        name = (data.get('name') or '').strip()
+        email = (data.get('email') or '').strip()
+        contact = (data.get('contact') or '').strip()
+        authority = (data.get('authority_code') or 'OTH').strip()
+        sub_type = (data.get('submission_type') or 'Application').strip()
+        eta = (data.get('eta_date') or '').strip()
+        note = (data.get('additional_note') or '').strip()
+        url = (data.get('url') or '').strip()
 
         if not all([name, email, eta, note]):
             return jsonify({'error': 'Mandatory fields missing'}), 400
@@ -73,13 +88,11 @@ def generate_qr():
         qr_id = generate_qr_id(authority)
         short_url = f"https://dev.jagdishwaram-office.org/scan/{qr_id}"
 
-        # Save to Google Sheet
         sheet = get_spreadsheet()
         if sheet:
             submissions = sheet.worksheet("submissions")
-            submissions.append_row([qr_id, name, email, contact, authority, sub_type, eta, note, url, datetime.now().isoformat(), "Not Yet Received", ""])
+            submissions.append_row([qr_id, name, email, contact, authority, sub_type, eta, note, url, get_ist_now(), "Not Yet Received", ""])
 
-        # Generate QR
         img = create_qr_image(short_url)
         img_io = io.BytesIO()
         img.save(img_io, 'PNG')
@@ -92,7 +105,6 @@ def generate_qr():
             'download_name': f"QR-{qr_id}.png",
             'image_base64': image_base64
         })
-
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
@@ -104,20 +116,19 @@ def scan_dashboard(qr_id):
         if not sheet:
             return "Sheets not configured", 500
 
+        # Auto-log SCAN event
+        log_scan_event(sheet, qr_id, "SCAN")
+
         submissions = sheet.worksheet("submissions")
         records = submissions.get_all_records()
-
         record = next((r for r in records if r.get('qr_id') == qr_id), None)
         if not record:
             return "QR ID not found", 404
 
-        # Convert timestamp to IST
-        try:
-            utc_time = datetime.fromisoformat(record.get('qr_generation_timestamp', '').replace('Z', '+00:00'))
-            ist = pytz.timezone('Asia/Kolkata')
-            ist_time = utc_time.astimezone(ist).strftime('%d/%m/%Y, %I:%M %p IST')
-        except:
-            ist_time = "Just now"
+        # Fetch scan events
+        scan_events = sheet.worksheet("scan_events")
+        events = [e for e in scan_events.get_all_records() if e.get('qr_id') == qr_id]
+        events.sort(key=lambda x: x.get('timestamp_ist', '') or x.get('event_timestamp', ''), reverse=True)
 
         return render_template('qr_dashboard.html',
                                qr_id=qr_id,
@@ -127,9 +138,49 @@ def scan_dashboard(qr_id):
                                authority=record.get('recipient_authority_code', ''),
                                sub_type=record.get('application_type', ''),
                                eta=record.get('expected_turnaround_time', ''),
-                               note=record.get('additional_notes', 'No note provided'),
+                               note=record.get('additional_notes', ''),
                                url=record.get('relevant_url', ''),
-                               generated=ist_time)
+                               status=record.get('status', 'Not Yet Received'),
+                               events=events)
     except Exception as e:
         print(traceback.format_exc())
         return f"Error loading record: {str(e)}", 500
+
+@qr_bp.route('/api/update_record', methods=['POST'])
+def update_record():
+    try:
+        data = request.get_json() or {}
+        qr_id = data.get('qr_id')
+        comment = (data.get('comment') or '').strip()
+        eta_new = (data.get('eta') or '').strip()
+        status_new = (data.get('status') or '').strip()
+
+        if not qr_id:
+            return jsonify({'error': 'QR ID missing'}), 400
+
+        sheet = get_spreadsheet()
+        if not sheet:
+            return jsonify({'error': 'Sheets not available'}), 500
+
+        submissions = sheet.worksheet("submissions")
+        records = submissions.get_all_records()
+        row_idx = next((i for i, r in enumerate(records, start=2) if r.get('qr_id') == qr_id), None)
+
+        if not row_idx:
+            return jsonify({'error': 'Record not found'}), 404
+
+        # Update submissions row if ETA or Status changed
+        if eta_new or status_new:
+            if eta_new:
+                submissions.update_cell(row_idx, 7, eta_new)   # expected_turnaround_time
+            if status_new:
+                submissions.update_cell(row_idx, 11, status_new)  # status column
+
+        # Log event
+        log_scan_event(sheet, qr_id, "COMMENT" if comment else "UPDATE",
+                       comment=comment, eta_new=eta_new, status_new=status_new)
+
+        return jsonify({'success': True, 'message': 'Update logged successfully'})
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'error': str(e)}), 500
