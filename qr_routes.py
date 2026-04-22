@@ -16,50 +16,36 @@ def generator():
 
 @qr_bp.route('/qr/generate', methods=['POST'])
 def generate_qr():
-    try:
-        data = request.get_json() or {}
-        print("DEBUG payload:", data)
+    data = request.get_json() or {}
+    print("DEBUG - Received payload:", data)   # Check Railway logs for exact keys
 
-        name = (data.get('name') or '').strip()
-        email = (data.get('email') or '').strip()
-        contact = (data.get('contact') or '').strip()
-        authority = (data.get('authority') or 'OTHERS').strip()
-        sub_type = (data.get('submission_type') or 'Application').strip()
-        eta = (data.get('eta') or '').strip()
-        note = (data.get('note') or '').strip()
+    # Accept ALL possible field names from your HTML form
+    name = (data.get('name') or data.get('yourName') or data.get('Your Name') or '').strip()
+    email = (data.get('email') or data.get('emailId') or data.get('Your Email ID') or '').strip()
+    contact = (data.get('contact') or data.get('contactNo') or '').strip()
+    authority = (data.get('authority') or data.get('recipientAuthority') or data.get('Authority') or 'OTHERS').strip()
+    sub_type = (data.get('submission_type') or data.get('submissionType') or data.get('Submission Type') or 'Application').strip()
+    eta = (data.get('eta') or data.get('ETA') or '').strip()
+    note = (data.get('note') or data.get('additionalNote') or data.get('Additional Note') or '').strip()
 
-        if not all([name, email, eta, note]):
-            return jsonify({'error': 'Mandatory fields missing'}), 400
+    if not all([name, email, eta, note]):
+        print("❌ Validation failed - missing fields")
+        return jsonify({'error': 'Mandatory fields missing'}), 400
 
-        qr_id = f"TEA-{authority}-{datetime.now().year}-0001"
-        short_url = f"https://dev.jagdishwaram-office.org/scan/{qr_id}"
+    qr_id = generate_qr_id(authority)
+    short_url = f"https://dev.jagdishwaram-office.org/scan/{qr_id}"
 
-        # Create branded QR
-        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=10, border=4)
-        qr.add_data(short_url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="#1a365d", back_color="white").convert('RGB')
+    # Generate QR (Sheets disabled for now to avoid 502)
+    img = create_qr_image(short_url)
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
 
-        logo_path = "static/Logo.jpg"
-        if os.path.exists(logo_path):
-            logo = Image.open(logo_path).resize((80, 80))
-            pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
-            img.paste(logo, pos, mask=logo if logo.mode == 'RGBA' else None)
-
-        img_io = io.BytesIO()
-        img.save(img_io, 'PNG')
-        img_io.seek(0)
-
-        return jsonify({
-            'qr_id': qr_id,
-            'short_url': short_url,
-            'download_name': f"QR-{qr_id}.png"
-        })
-
-    except Exception as e:
-        print("❌ ERROR in generate_qr:")
-        print(traceback.format_exc())
-        return jsonify({'error': str(e)}), 500
+    return jsonify({
+        'qr_id': qr_id,
+        'short_url': short_url,
+        'download_name': f"QR-{qr_id}.png"
+    })
 
 @qr_bp.route('/scan/<qr_id>', methods=['GET'])
 def scan_dashboard(qr_id):
