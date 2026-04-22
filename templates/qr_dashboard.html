@@ -1,154 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scan Dashboard — Narada</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<meta charset="UTF-8">
+<title>Narada Dashboard - {{ qr_id }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50">
-    <div class="max-w-3xl mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <div class="flex items-center gap-x-3">
-                    <div class="w-9 h-9 bg-[#1a365d] rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-qrcode text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="font-bold text-2xl text-[#1a365d]">Narada Dashboard</div>
-                        <div class="text-xs text-gray-500 -mt-1">Public Accountability Tracker</div>
-                    </div>
-                </div>
-            </div>
-            <div class="text-right">
-                <div id="qrId" class="font-mono text-sm bg-white border px-4 py-1.5 rounded-2xl text-[#1a365d] font-semibold"></div>
-            </div>
-        </div>
-        
-        <!-- Record Card -->
-        <div class="bg-white rounded-3xl shadow border p-6 mb-6">
-            <div class="grid grid-cols-2 gap-y-4 text-sm">
-                <div><span class="text-gray-500">Citizen:</span> <span id="citizenName" class="font-semibold"></span></div>
-                <div><span class="text-gray-500">Email:</span> <span id="email" class="font-mono text-xs"></span></div>
-                <div><span class="text-gray-500">Authority:</span> <span id="authority" class="font-semibold text-[#1a365d]"></span></div>
-                <div><span class="text-gray-500">Type:</span> <span id="type" class="font-semibold"></span></div>
-                <div><span class="text-gray-500">Generated:</span> <span id="generated" class="font-mono text-xs"></span></div>
-                <div><span class="text-gray-500">ETA:</span> <span id="eta" class="font-semibold"></span></div>
-            </div>
-            
-            <div class="mt-4 pt-4 border-t">
-                <div class="text-xs text-gray-500 mb-1">ADDITIONAL NOTE</div>
-                <div id="note" class="text-sm bg-gray-50 p-3 rounded-2xl text-gray-700"></div>
-            </div>
-        </div>
-        
-        <!-- Status -->
-        <div class="flex items-center gap-x-2 mb-6">
-            <div class="px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-2xl text-xs font-semibold flex items-center gap-x-1.5">
-                <i class="fa-solid fa-check-circle"></i>
-                <span>TRACKED • LAST UPDATED: <span id="lastUpdate"></span></span>
-            </div>
-        </div>
-        
-        <!-- Comment Section -->
-        <div class="bg-white rounded-3xl shadow border p-6">
-            <div class="font-semibold text-[#1a365d] mb-3 flex items-center gap-x-2">
-                <i class="fa-solid fa-comments"></i>
-                <span>Activity Log & Comments</span>
-            </div>
-            
-            <div class="flex gap-x-2 mb-4">
-                <input id="commentInput" type="text" placeholder="Add update or comment..." 
-                       class="flex-1 border border-gray-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[#1a365d]">
-                <button onclick="postComment()" 
-                        class="bg-[#1a365d] text-white px-6 rounded-2xl text-sm font-semibold">POST</button>
-            </div>
-            
-            <div id="history" class="space-y-3 max-h-[420px] overflow-auto pr-2 text-sm">
-                <!-- Populated by JS -->
-            </div>
-        </div>
-        
-        <div class="text-center mt-8 text-xs text-gray-400">
-            This record is publicly verifiable. Anyone with the QR ID can view this page.<br>
-            Powered by Jagdishwaram Foundation • सत्यमेव जयते
-        </div>
+<body class="bg-gray-50 font-sans">
+<div class="max-w-4xl mx-auto p-6">
+  <div class="flex justify-between items-center mb-8">
+    <div class="flex items-center gap-3">
+      <div class="bg-blue-900 text-white w-10 h-10 rounded-2xl flex items-center justify-center text-2xl">📌</div>
+      <div>
+        <h1 class="text-2xl font-bold">Narada Dashboard</h1>
+        <p class="text-sm text-gray-500">Public Accountability Tracker</p>
+      </div>
     </div>
-    
-    <script>
-        const qrId = window.location.pathname.split('/').pop();
-        document.getElementById('qrId').textContent = qrId;
-        
-        // Mock data for demo (replace with real fetch)
-        const mockRecord = {
-            citizen_name: "Ashish Jagdish Naik",
-            email: "ashish.j.naik@gmail.com",
-            authority_code: "MOR",
-            submission_type: "RTI",
-            generated_at: "2026-04-21T12:05:00+05:30",
-            eta_date: "2026-05-21",
-            additional_note: "Request for immediate enforcement of Tehsildar final order dated 01-Mar-2024 in Vahiwat Dava 01/2017 (Survey 39/19, Mouje Watar). 394+ days of non-compliance."
-        };
-        
-        const mockHistory = [
-            { timestamp: "2026-04-21T12:05:00+05:30", actor: "System", text: "QR Generated" },
-            { timestamp: "2026-04-22T09:14:00+05:30", actor: "Authority", text: "Received. File under process. Awaiting instructions from SDO." }
-        ];
-        
-        function renderRecord() {
-            document.getElementById('citizenName').textContent = mockRecord.citizen_name;
-            document.getElementById('email').textContent = mockRecord.email;
-            document.getElementById('authority').textContent = mockRecord.authority_code;
-            document.getElementById('type').textContent = mockRecord.submission_type;
-            document.getElementById('generated').textContent = new Date(mockRecord.generated_at).toLocaleString('en-IN');
-            document.getElementById('eta').textContent = mockRecord.eta_date;
-            document.getElementById('note').textContent = mockRecord.additional_note;
-            document.getElementById('lastUpdate').textContent = new Date(mockHistory[mockHistory.length-1].timestamp).toLocaleString('en-IN');
-        }
-        
-        function renderHistory() {
-            const container = document.getElementById('history');
-            container.innerHTML = '';
-            
-            mockHistory.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `p-3 rounded-2xl ${item.actor === 'System' ? 'bg-gray-100' : 'bg-blue-50'}`;
-                div.innerHTML = `
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="font-semibold ${item.actor === 'Authority' ? 'text-blue-600' : 'text-gray-600'}">${item.actor}</span>
-                        <span class="text-gray-400 font-mono">${new Date(item.timestamp).toLocaleString('en-IN')}</span>
-                    </div>
-                    <div class="text-gray-700">${item.text}</div>
-                `;
-                container.appendChild(div);
-            });
-        }
-        
-        async function postComment() {
-            const input = document.getElementById('commentInput');
-            if (!input.value.trim()) return;
-            
-            // In real version: POST to /qr/comment
-            const newComment = {
-                timestamp: new Date().toISOString(),
-                actor: "Citizen",
-                text: input.value.trim()
-            };
-            
-            mockHistory.push(newComment);
-            renderHistory();
-            input.value = '';
-            
-            // TODO: actual fetch to backend
-        }
-        
-        // Init
-        renderRecord();
-        renderHistory();
-        
-        // Auto-refresh every 30s in real version
-    </script>
+    <div class="px-4 py-1 bg-blue-100 text-blue-900 rounded-3xl font-mono text-sm">{{ qr_id }}</div>
+  </div>
+
+  <div class="bg-white rounded-3xl shadow p-8">
+    <div class="grid grid-cols-2 gap-8">
+      <div>
+        <p class="text-sm text-gray-500">Citizen</p>
+        <p class="font-medium">{{ name or 'Ashish Jagdish Naik' }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Email</p>
+        <p class="font-medium">{{ email or 'ashish.j.naik@gmail.com' }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Authority</p>
+        <p class="font-medium">{{ authority or 'BTR' }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Type</p>
+        <p class="font-medium">{{ sub_type or 'GRV' }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Generated</p>
+        <p class="font-medium">{{ generated or 'Today' }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">ETA</p>
+        <p class="font-medium">{{ eta or '04/23/2026' }}</p>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <p class="text-sm text-gray-500 mb-2">Additional Note</p>
+      <p class="text-gray-700">{{ note or 'No note provided' }}</p>
+    </div>
+  </div>
+
+  <!-- Activity Log -->
+  <div class="mt-8 bg-white rounded-3xl shadow p-8">
+    <h3 class="font-semibold mb-4">Activity Log & Comments</h3>
+    <div class="space-y-4">
+      <!-- Real logs will appear here once Sheets is enabled -->
+      <div class="bg-gray-50 p-4 rounded-2xl text-sm">
+        <span class="text-green-600">✅ QR Generated</span> — {{ generated or 'Just now' }}
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center text-xs text-gray-500 mt-12">
+    This record is publicly verifiable. Anyone with the QR ID can view this page.
+  </div>
+</div>
 </body>
 </html>
