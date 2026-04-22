@@ -57,7 +57,7 @@ def create_qr_image(qr_url):
 def generator():
     return render_template('qr_generator.html')
 
-@qr_bp.route('/api/qr/generate', methods=['POST'])
+@qr_bp.route('/qr/generate', methods=['POST'])
 def generate_qr():
     data = request.get_json()
     name = data.get('name', '').strip()
