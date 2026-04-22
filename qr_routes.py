@@ -1,4 +1,4 @@
-# qr_routes.py - Narada QR Tracking System v1.1 (Comment Logging + Editable ETA/Status)
+# qr_routes.py - Narada QR Tracking System v1.1 (Robust + URL Field)
 from flask import Blueprint, render_template, request, jsonify
 import qrcode
 from PIL import Image
@@ -12,7 +12,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import pytz
 
-print("✅ qr_routes.py LOADED (v1.1 - Comment Logging + Editable ETA/Status)")
+print("✅ qr_routes.py LOADED (v1.1 - Robust Headers + URL)")
 
 qr_bp = Blueprint('narada_qr', __name__, url_prefix='/')
 
@@ -58,7 +58,7 @@ def create_qr_image(qr_url):
 def log_scan_event(sheet, qr_id, event_type="SCAN", comment="", eta_new="", status_new=""):
     try:
         scan_events = sheet.worksheet("scan_events")
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr) or 'Unknown'
         ua = request.headers.get('User-Agent', 'Unknown')
         now_ist = get_ist_now()
         scan_events.append_row([None, qr_id, event_type, now_ist, ip, ua, "", comment, eta_new, status_new])
@@ -73,14 +73,14 @@ def generator():
 def generate_qr():
     try:
         data = request.get_json() or {}
-        name = (data.get('name') or '').strip()
-        email = (data.get('email') or '').strip()
-        contact = (data.get('contact') or '').strip()
+        name      = (data.get('name') or '').strip()
+        email     = (data.get('email') or '').strip()
+        contact   = (data.get('contact') or '').strip()
         authority = (data.get('authority_code') or 'OTH').strip()
-        sub_type = (data.get('submission_type') or 'Application').strip()
-        eta = (data.get('eta_date') or '').strip()
-        note = (data.get('additional_note') or '').strip()
-        url = (data.get('url') or '').strip()
+        sub_type  = (data.get('submission_type') or 'Application').strip()
+        eta       = (data.get('eta_date') or '').strip()
+        note      = (data.get('additional_note') or '').strip()
+        url       = (data.get('url') or '').strip()
 
         if not all([name, email, eta, note]):
             return jsonify({'error': 'Mandatory fields missing'}), 400
@@ -116,19 +116,29 @@ def scan_dashboard(qr_id):
         if not sheet:
             return "Sheets not configured", 500
 
-        # Auto-log SCAN event
         log_scan_event(sheet, qr_id, "SCAN")
 
         submissions = sheet.worksheet("submissions")
-        records = submissions.get_all_records()
+        values = submissions.get_all_values()
+        if not values:
+            return "No data", 404
+
+        headers = values[0]
+        records = []
+        for row in values[1:]:
+            record = {}
+            for i, h in enumerate(headers):
+                if i < len(row):
+                    record[h] = row[i]
+            records.append(record)
+
         record = next((r for r in records if r.get('qr_id') == qr_id), None)
         if not record:
             return "QR ID not found", 404
 
-        # Fetch scan events
         scan_events = sheet.worksheet("scan_events")
         events = [e for e in scan_events.get_all_records() if e.get('qr_id') == qr_id]
-        events.sort(key=lambda x: x.get('timestamp_ist', '') or x.get('event_timestamp', ''), reverse=True)
+        events.sort(key=lambda x: x.get('timestamp_ist') or x.get('event_timestamp', ''), reverse=True)
 
         return render_template('qr_dashboard.html',
                                qr_id=qr_id,
@@ -162,25 +172,26 @@ def update_record():
         if not sheet:
             return jsonify({'error': 'Sheets not available'}), 500
 
+        log_scan_event(sheet, qr_id, "COMMENT" if comment else "UPDATE", comment, eta_new, status_new)
+
+        # Optional: update submissions sheet
         submissions = sheet.worksheet("submissions")
-        records = submissions.get_all_records()
-        row_idx = next((i for i, r in enumerate(records, start=2) if r.get('qr_id') == qr_id), None)
-
-        if not row_idx:
-            return jsonify({'error': 'Record not found'}), 404
-
-        # Update submissions row if ETA or Status changed
-        if eta_new or status_new:
+        values = submissions.get_all_values()
+        headers = values[0]
+        row_idx = None
+        for i, row in enumerate(values):
+            if row and row[0] == qr_id:
+                row_idx = i + 1
+                break
+        if row_idx:
             if eta_new:
-                submissions.update_cell(row_idx, 7, eta_new)   # expected_turnaround_time
+                col = headers.index('expected_turnaround_time') + 1
+                submissions.update_cell(row_idx, col, eta_new)
             if status_new:
-                submissions.update_cell(row_idx, 11, status_new)  # status column
+                col = headers.index('status') + 1 if 'status' in headers else len(headers)
+                submissions.update_cell(row_idx, col, status_new)
 
-        # Log event
-        log_scan_event(sheet, qr_id, "COMMENT" if comment else "UPDATE",
-                       comment=comment, eta_new=eta_new, status_new=status_new)
-
-        return jsonify({'success': True, 'message': 'Update logged successfully'})
+        return jsonify({'success': True, 'message': 'Update logged'})
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
