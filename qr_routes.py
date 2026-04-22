@@ -95,16 +95,45 @@ def generate_qr():
 def scan_dashboard(qr_id):
     return render_template('qr_dashboard.html', qr_id=qr_id)
 
-@qr_bp.route('/api/comment', methods=['POST'])
-def post_comment():
-    data = request.get_json()
-    qr_id = data.get('qr_id')
-    comment = data.get('comment', '').strip()
-    author = data.get('author', 'HITL')
+@qr_bp.route('/qr/generate', methods=['POST'])
+def generate_qr():
+    data = request.get_json() or {}
+
+    # Flexible field mapping (matches your HTML form)
+    name = (data.get('name') or data.get('yourName') or '').strip()
+    email = (data.get('email') or data.get('emailId') or '').strip()
+    contact = (data.get('contact') or '').strip()
+    authority = (data.get('authority') or data.get('recipientAuthority') or 'OTHERS').strip()
+    sub_type = (data.get('submission_type') or data.get('submissionType') or 'Application').strip()
+    eta = (data.get('eta') or '').strip()
+    note = (data.get('note') or data.get('additionalNote') or '').strip()
+
+    if not all([name, email, eta, note]):
+        print("DEBUG - Received payload:", data)   # will appear in Railway logs
+        return jsonify({'error': 'Mandatory fields missing'}), 400
+
+    qr_id = generate_qr_id(authority)
+    short_url = f"https://dev.jagdishwaram-office.org/scan/{qr_id}"
+
+    # Save to Google Sheet
     sheet = get_spreadsheet()
-    scan_events = sheet.worksheet("scan_events")
-    scan_events.append_row([qr_id, datetime.now().isoformat(), author, comment])
-    return jsonify({'status': 'success'})
+    submissions = sheet.worksheet("submissions")
+    submissions.append_row([
+        qr_id, name, email, contact, authority, sub_type,
+        eta, note, datetime.now().isoformat(), "Not Yet Received", ""
+    ])
+
+    # Generate QR image
+    img = create_qr_image(short_url)
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+
+    return jsonify({
+        'qr_id': qr_id,
+        'short_url': short_url,
+        'download_name': f"QR-{qr_id}.png"
+    })
 
 @qr_bp.route('/search', methods=['GET'])
 def public_search():
