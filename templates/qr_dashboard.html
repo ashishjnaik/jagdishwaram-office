@@ -23,11 +23,19 @@
     <div class="grid grid-cols-2 gap-x-8 gap-y-6 text-sm">
       <div><span class="text-gray-500">Citizen</span><br><span class="font-medium">{{ name }}</span></div>
       <div><span class="text-gray-500">Email</span><br><span class="font-medium">{{ email }}</span></div>
+      <div><span class="text-gray-500">Contact</span><br><span class="font-medium">{{ contact }}</span></div>
       <div><span class="text-gray-500">Authority</span><br><span class="font-medium">{{ authority }}</span></div>
       <div><span class="text-gray-500">Type</span><br><span class="font-medium">{{ sub_type }}</span></div>
       <div><span class="text-gray-500">Generated</span><br><span class="font-medium">{{ generated }}</span></div>
       <div><span class="text-gray-500">ETA</span><br><span class="font-medium">{{ eta }}</span></div>
     </div>
+
+    {% if url %}
+    <div class="mt-8 border-t pt-8">
+      <span class="text-gray-500">Supporting URL / Drive Link</span>
+      <p class="mt-2"><a href="{{ url }}" target="_blank" class="text-blue-600 underline">{{ url }}</a></p>
+    </div>
+    {% endif %}
 
     <div class="mt-8 border-t pt-8">
       <span class="text-gray-500">Additional Note</span>
@@ -38,7 +46,7 @@
   <div class="mt-8 bg-white rounded-3xl shadow p-8">
     <h3 class="font-semibold mb-4">Activity Log & Comments</h3>
     <div class="bg-gray-50 p-4 rounded-2xl text-sm">
-      ✅ QR Generated — Just now
+      ✅ QR Generated — {{ generated }}
     </div>
   </div>
 
