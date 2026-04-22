@@ -117,6 +117,41 @@ def generate_qr():
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
+@qr_bp.route('/api/config', methods=['GET'])
+def get_config():
+    try:
+        sheet = get_spreadsheet()
+        if not sheet:
+            return jsonify({'error': 'Sheets not available'}), 500
+
+        # Recipient Authority
+        auth_ws = sheet.worksheet("config_recipient_authority")
+        auth_records = auth_ws.get_all_records()
+        authorities = [{"code": r.get("authority_registry_code", ""), "name": r.get("authority_name", "")} 
+                      for r in auth_records if r.get("authority_registry_code")]
+
+        # Submission Type
+        sub_ws = sheet.worksheet("config_submission_type")
+        sub_records = sub_ws.get_all_records()
+        submission_types = [{"code": r.get("submission_type_code", ""), "name": r.get("submission_type_name", "")} 
+                           for r in sub_records if r.get("submission_type_code")]
+
+        # Status (for dashboard)
+        status_ws = sheet.worksheet("config_status")
+        status_records = status_ws.get_all_records()
+        statuses = [r.get("Status", "") for r in status_records if r.get("Status")]
+
+        return jsonify({
+            "authorities": authorities,
+            "submission_types": submission_types,
+            "statuses": statuses or ["Not Yet Received", "SUBMITTED", "IN PROGRESS", "REJECTED", "SILENCED", "COMPLETED"]
+        })
+    except Exception as e:
+        print("Config load error:", traceback.format_exc())
+        return jsonify({'error': str(e)}), 500
+        
+
+
 @qr_bp.route('/scan/<qr_id>', methods=['GET'])
 def scan_dashboard(qr_id):
     try:
