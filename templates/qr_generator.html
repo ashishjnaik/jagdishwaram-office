@@ -55,14 +55,25 @@
           <div class="text-xs text-right text-gray-400 mt-1" id="charCount">0 / 800</div>
         </div>
 
-        <button type="submit" id="generateBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 rounded-3xl text-xl font-semibold shadow-lg">GENERATE QR CODE</button>
+        <!-- Rock-solid Generate button -->
+        <button type="submit" id="generateBtn" 
+                style="width:100%;padding:28px 0;font-size:1.4rem;font-weight:700;background:#10b981;color:white;border-radius:9999px;box-shadow:0 10px 15px -3px rgb(16 185 129);">
+          GENERATE QR CODE
+        </button>
       </form>
 
+      <!-- Preview with visible buttons -->
       <div id="previewSection" class="hidden mt-10 border-2 border-emerald-300 rounded-3xl p-8 text-center">
         <div class="mx-auto mb-6 w-72 h-72 bg-white shadow-inner rounded-2xl flex items-center justify-center p-4" id="qrPreview"></div>
         <div class="space-y-4">
-          <a id="downloadLink" href="#" class="block w-full py-6 bg-emerald-600 text-white text-xl font-semibold rounded-3xl hover:bg-emerald-700">↓ DOWNLOAD PNG</a>
-          <a href="/generator" class="block w-full py-6 bg-gray-800 text-white text-xl font-semibold rounded-3xl hover:bg-gray-900">GENERATE NEW</a>
+          <a id="downloadLink" href="#" 
+             style="display:block;width:100%;padding:24px 0;background:#10b981;color:white;font-size:1.25rem;font-weight:600;border-radius:9999px;text-align:center;">
+            ↓ DOWNLOAD PNG
+          </a>
+          <a href="/generator" 
+             style="display:block;width:100%;padding:24px 0;background:#374151;color:white;font-size:1.25rem;font-weight:600;border-radius:9999px;text-align:center;">
+            GENERATE NEW
+          </a>
         </div>
       </div>
     </div>
@@ -70,23 +81,6 @@
 </div>
 
 <script>
-async function loadConfig() {
-  try {
-    const res = await fetch('/api/config');
-    const config = await res.json();
-
-    // Recipient Authority
-    const authSelect = document.getElementById('authority_code');
-    authSelect.innerHTML = config.authorities.map(a => `<option value="${a.code}">${a.code} - ${a.name}</option>`).join('');
-
-    // Submission Type
-    const subSelect = document.getElementById('submission_type');
-    subSelect.innerHTML = config.submission_types.map(s => `<option value="${s.code}">${s.code} - ${s.name}</option>`).join('');
-  } catch (e) {
-    console.error("Config load failed, using fallback", e);
-  }
-}
-
 document.getElementById('qrForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
@@ -107,7 +101,17 @@ document.getElementById('additional_note').addEventListener('input', function() 
   document.getElementById('charCount').textContent = `${this.value.length} / 800`;
 });
 
-// Load config on page load
+// Dynamic config loading (from your config tabs)
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    const config = await res.json();
+    document.getElementById('authority_code').innerHTML = config.authorities.map(a => `<option value="${a.code}">${a.code} - ${a.name}</option>`).join('');
+    document.getElementById('submission_type').innerHTML = config.submission_types.map(s => `<option value="${s.code}">${s.code} - ${s.name}</option>`).join('');
+  } catch (e) {
+    console.error("Config load failed, using fallback", e);
+  }
+}
 window.onload = loadConfig;
 </script>
 </body>
