@@ -7,7 +7,6 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
   .qr-box { border: 2px dashed #1a365d; background: #f8fafc; }
-  button { transition: all 0.2s; }
 </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -49,7 +48,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Contact No (optional)</label>
-            <input type="tel" id="contact" placeholder="Enter 10-digit mobile number" class="w-full border rounded-xl px-4 py-3">
+            <input type="tel" id="contact" placeholder="10-digit mobile number" class="w-full border rounded-xl px-4 py-3">
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Recipient Authority</label>
@@ -88,7 +87,7 @@
 
         <button type="submit" id="generateBtn"
           class="mt-8 w-full bg-[#1a365d] hover:bg-[#0f2540] text-white font-medium py-4 rounded-2xl flex items-center justify-center gap-3 text-lg">
-          <span id="btnText">GENERATE QR CODE</span>
+          GENERATE QR CODE
         </button>
       </form>
 
@@ -98,17 +97,15 @@
           <h3 class="text-lg font-semibold">QR Preview</h3>
           <span id="qrIdDisplay" class="text-xs font-mono bg-gray-100 px-3 py-1 rounded"></span>
         </div>
-        <div class="qr-box rounded-3xl p-8 flex items-center justify-center min-h-[280px]" id="qrContainer">
+        <div class="qr-box rounded-3xl p-8 flex items-center justify-center min-h-[280px]">
           <img id="qrImage" class="max-w-[280px] shadow-lg" alt="QR Code">
         </div>
 
         <div class="flex gap-4 mt-8">
-          <a id="downloadLink" 
-             class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center font-medium py-4 rounded-2xl flex items-center justify-center gap-2">
+          <a id="downloadLink" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center font-medium py-4 rounded-2xl flex items-center justify-center gap-2">
             ↓ DOWNLOAD PNG
           </a>
-          <button onclick="location.reload()" 
-            class="flex-1 border border-gray-300 hover:bg-gray-50 font-medium py-4 rounded-2xl">
+          <button onclick="location.reload()" class="flex-1 border border-gray-300 hover:bg-gray-50 font-medium py-4 rounded-2xl">
             GENERATE NEW
           </button>
         </div>
@@ -122,7 +119,7 @@ document.getElementById('qrForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = document.getElementById('generateBtn');
   btn.disabled = true;
-  btn.innerHTML = 'GENERATING...';
+  btn.textContent = 'GENERATING...';
 
   const payload = {
     name: document.getElementById('name').value,
