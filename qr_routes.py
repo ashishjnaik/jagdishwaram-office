@@ -1,13 +1,15 @@
+# qr_routes.py - Narada QR Tracking System v1.0 (FINAL - Sheets + Base64)
 from flask import Blueprint, render_template, request, jsonify
 import qrcode
 from PIL import Image
 import io
 import os
 import base64
+import json
 from datetime import datetime
+import traceback
 import gspread
 from google.oauth2.service_account import Credentials
-import traceback
 
 print("✅ qr_routes.py (FULL) LOADED")
 
@@ -51,13 +53,13 @@ def generator():
 def generate_qr():
     try:
         data = request.get_json() or {}
-        name = (data.get('name') or '').strip()
-        email = (data.get('email') or '').strip()
-        contact = (data.get('contact') or '').strip()
+        name      = (data.get('name') or '').strip()
+        email     = (data.get('email') or '').strip()
+        contact   = (data.get('contact') or '').strip()
         authority = (data.get('authority_code') or 'OTHERS').strip()
-        sub_type = (data.get('submission_type') or 'Application').strip()
-        eta = (data.get('eta_date') or '').strip()
-        note = (data.get('additional_note') or '').strip()
+        sub_type  = (data.get('submission_type') or 'Application').strip()
+        eta       = (data.get('eta_date') or '').strip()
+        note      = (data.get('additional_note') or '').strip()
 
         if not all([name, email, eta, note]):
             return jsonify({'error': 'Mandatory fields missing'}), 400
@@ -68,10 +70,7 @@ def generate_qr():
         # Save to Google Sheet
         sheet = get_spreadsheet()
         submissions = sheet.worksheet("submissions")
-        submissions.append_row([
-            qr_id, name, email, contact, authority, sub_type,
-            eta, note, datetime.now().isoformat(), "Not Yet Received", ""
-        ])
+        submissions.append_row([qr_id, name, email, contact, authority, sub_type, eta, note, datetime.now().isoformat(), "Not Yet Received", ""])
 
         # Generate QR
         img = create_qr_image(short_url)
@@ -93,13 +92,11 @@ def generate_qr():
 
 @qr_bp.route('/scan/<qr_id>', methods=['GET'])
 def scan_dashboard(qr_id):
-    """Fetch real record from Google Sheet"""
     try:
         sheet = get_spreadsheet()
         submissions = sheet.worksheet("submissions")
         records = submissions.get_all_records()
         record = next((r for r in records if r.get('qr_id') == qr_id), None)
-
         if not record:
             return "QR ID not found", 404
 
@@ -111,7 +108,7 @@ def scan_dashboard(qr_id):
                                sub_type=record.get('submission_type', ''),
                                eta=record.get('eta', ''),
                                note=record.get('note', 'No note provided'),
-                               generated=record.get('generated', 'Just now'))
+                               generated="Just now")
     except Exception as e:
         print(traceback.format_exc())
         return f"Error loading record: {str(e)}", 500
