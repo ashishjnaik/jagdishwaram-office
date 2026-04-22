@@ -26,7 +26,8 @@ from flask import Flask, request, jsonify, render_template, render_template_stri
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-
+from qr_routes import qr_bp
+app.register_blueprint(qr_bp)
 
 # ── Google Drive (Service Account — no OAuth popup on Render) ──────────────
 # Add to requirements.txt:
