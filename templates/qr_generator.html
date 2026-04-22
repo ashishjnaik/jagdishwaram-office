@@ -5,22 +5,6 @@
 <title>Generate Dynamic QR</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<style>
-  .generate-btn {
-    background-color: #10b981 !important;
-    color: white !important;
-    padding: 28px 0 !important;
-    font-size: 1.4rem !important;
-    font-weight: 700 !important;
-    border-radius: 9999px !important;
-    box-shadow: 0 20px 25px -5px rgb(16 185 129) !important;
-    width: 100% !important;
-    display: block !important;
-  }
-  .generate-btn:hover {
-    background-color: #059669 !important;
-  }
-</style>
 </head>
 <body class="bg-gray-50 font-sans">
 <div class="max-w-6xl mx-auto p-6">
@@ -71,16 +55,22 @@
           <div class="text-xs text-right text-gray-400 mt-1" id="charCount">0 / 800</div>
         </div>
 
-        <!-- PROMINENT BUTTON -->
-        <button type="submit" id="generateBtn" class="generate-btn">GENERATE QR CODE</button>
+        <button type="submit" id="generateBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 rounded-3xl text-xl font-semibold shadow-lg">GENERATE QR CODE</button>
       </form>
 
-      <!-- Preview -->
+      <!-- SIMPLE PREVIEW - Both buttons made extremely visible -->
       <div id="previewSection" class="hidden mt-10 border-2 border-emerald-300 rounded-3xl p-8 text-center">
         <div class="mx-auto mb-6 w-72 h-72 bg-white shadow-inner rounded-2xl flex items-center justify-center p-4" id="qrPreview"></div>
-        <div class="flex gap-4 justify-center">
-          <a id="downloadLink" href="#" class="flex-1 px-8 py-5 bg-emerald-600 text-white rounded-3xl hover:bg-emerald-700 font-medium text-lg flex items-center justify-center gap-2">↓ DOWNLOAD PNG</a>
-          <a href="/generator" class="flex-1 px-8 py-5 bg-gray-800 text-white rounded-3xl hover:bg-gray-900 font-medium text-lg flex items-center justify-center">GENERATE NEW</a>
+        
+        <div class="space-y-4">
+          <a id="downloadLink" href="#" 
+             class="block w-full py-6 bg-emerald-600 text-white text-xl font-semibold rounded-3xl hover:bg-emerald-700">
+            ↓ DOWNLOAD PNG
+          </a>
+          <a href="/generator" 
+             class="block w-full py-6 bg-gray-800 text-white text-xl font-semibold rounded-3xl hover:bg-gray-900">
+            GENERATE NEW
+          </a>
         </div>
       </div>
     </div>
@@ -92,9 +82,18 @@ document.getElementById('qrForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const data = Object.fromEntries(formData);
-  const res = await fetch('/qr/generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+
+  const res = await fetch('/qr/generate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+
   const result = await res.json();
-  if (result.error) { alert(result.error); return; }
+  if (result.error) {
+    alert(result.error);
+    return;
+  }
 
   document.getElementById('qrPreview').innerHTML = `<img src="data:image/png;base64,${result.image_base64}" class="w-full h-full object-contain">`;
   document.getElementById('previewSection').classList.remove('hidden');
@@ -103,6 +102,7 @@ document.getElementById('qrForm').addEventListener('submit', async (e) => {
   dl.href = `data:image/png;base64,${result.image_base64}`;
   dl.download = result.download_name || `QR-${result.qr_id}.png`;
 });
+
 document.getElementById('additional_note').addEventListener('input', function() {
   document.getElementById('charCount').textContent = `${this.value.length} / 800`;
 });
