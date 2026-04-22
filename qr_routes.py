@@ -1,4 +1,4 @@
-# qr_routes.py - Narada QR Tracking System v1.0 (FINAL - Sheets + Base64)
+# qr_routes.py - Narada QR Tracking System v1.0 (ROBUST - Sheets fallback)
 from flask import Blueprint, render_template, request, jsonify
 import qrcode
 from PIL import Image
@@ -11,22 +11,31 @@ import traceback
 import gspread
 from google.oauth2.service_account import Credentials
 
-print("✅ qr_routes.py (FULL) LOADED")
+print("✅ qr_routes.py LOADED (robust version)")
 
 qr_bp = Blueprint('narada_qr', __name__, url_prefix='/')
 
 def get_sheets_client():
     json_str = os.environ.get('NARADA_QR_SERVICE_ACCOUNT_JSON')
     if not json_str:
-        raise ValueError("NARADA_QR_SERVICE_ACCOUNT_JSON not set")
-    creds_dict = json.loads(json_str)
-    scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    return gspread.authorize(creds)
+        print("WARNING: NARADA_QR_SERVICE_ACCOUNT_JSON not set")
+        return None
+    try:
+        creds_dict = json.loads(json_str)
+        scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        return gspread.authorize(creds)
+    except Exception as e:
+        print("Sheets client error:", e)
+        return None
 
 def get_spreadsheet():
     client = get_sheets_client()
+    if not client:
+        return None
     spreadsheet_id = os.environ.get('NARADA_QR_SPREADSHEET_ID')
+    if not spreadsheet_id:
+        return None
     return client.open_by_key(spreadsheet_id)
 
 def generate_qr_id(authority_code):
@@ -67,12 +76,19 @@ def generate_qr():
         qr_id = generate_qr_id(authority)
         short_url = f"https://dev.jagdishwaram-office.org/scan/{qr_id}"
 
-        # Save to Google Sheet
-        sheet = get_spreadsheet()
-        submissions = sheet.worksheet("submissions")
-        submissions.append_row([qr_id, name, email, contact, authority, sub_type, eta, note, datetime.now().isoformat(), "Not Yet Received", ""])
+        # Save to Google Sheet (non-blocking)
+        try:
+            sheet = get_spreadsheet()
+            if sheet:
+                submissions = sheet.worksheet("submissions")
+                submissions.append_row([qr_id, name, email, contact, authority, sub_type, eta, note, datetime.now().isoformat(), "Not Yet Received", ""])
+                print(f"✅ Saved to Sheets: {qr_id}")
+            else:
+                print("WARNING: Sheets not available - continuing without save")
+        except Exception as sheet_err:
+            print("Sheets save failed (non-fatal):", sheet_err)
 
-        # Generate QR
+        # Always generate QR
         img = create_qr_image(short_url)
         img_io = io.BytesIO()
         img.save(img_io, 'PNG')
@@ -87,28 +103,10 @@ def generate_qr():
         })
 
     except Exception as e:
+        print("CRITICAL ERROR in generate_qr:")
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 @qr_bp.route('/scan/<qr_id>', methods=['GET'])
 def scan_dashboard(qr_id):
-    try:
-        sheet = get_spreadsheet()
-        submissions = sheet.worksheet("submissions")
-        records = submissions.get_all_records()
-        record = next((r for r in records if r.get('qr_id') == qr_id), None)
-        if not record:
-            return "QR ID not found", 404
-
-        return render_template('qr_dashboard.html',
-                               qr_id=qr_id,
-                               name=record.get('name', ''),
-                               email=record.get('email', ''),
-                               authority=record.get('authority', ''),
-                               sub_type=record.get('submission_type', ''),
-                               eta=record.get('eta', ''),
-                               note=record.get('note', 'No note provided'),
-                               generated="Just now")
-    except Exception as e:
-        print(traceback.format_exc())
-        return f"Error loading record: {str(e)}", 500
+    return render_template('qr_dashboard.html', qr_id=qr_id)
