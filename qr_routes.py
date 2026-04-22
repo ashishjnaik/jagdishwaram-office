@@ -1,97 +1,147 @@
-"""
-Narada QR Tracking System — Flask Routes v1.0
-Add this file to jagdishwaram-office root
-"""
+# qr_routes.py - Narada QR Tracking System v1.0
+# Full end-to-end: Generator + Scan Dashboard + Comment Logging
 
-import uuid
+from flask import Blueprint, render_template, request, jsonify, send_file
 import qrcode
-from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageDraw
+import io
+import os
+from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
-from flask import Blueprint, request, jsonify, send_file, render_template, redirect
-from datetime import datetime
-import pytz
-import os
+import json
 
-qr_bp = Blueprint('qr', __name__)
+qr_bp = Blueprint('qr', __name__, url_prefix='/')
 
-# Config from Railway environment
-SPREADSHEET_ID = os.environ.get("NARADA_QR_SPREADSHEET_ID")
-PREFIX = os.environ.get("NARADA_QR_PREFIX", "TEA")
+# Google Sheets Setup (Service Account)
+def get_sheets_client():
+    json_str = os.environ.get('NARADA_QR_SERVICE_ACCOUNT_JSON')
+    if not json_str:
+        raise ValueError("NARADA_QR_SERVICE_ACCOUNT_JSON not set in Railway")
+    creds_dict = json.loads(json_str)
+    scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    return gspread.authorize(creds)
 
-gc = gspread.authorize(
-    Credentials.from_service_account_file("service_account.json", 
-    scopes=["https://www.googleapis.com/auth/spreadsheets"])
-)
-sheet = gc.open_by_key(SPREADSHEET_ID)
+def get_spreadsheet():
+    client = get_sheets_client()
+    spreadsheet_id = os.environ.get('NARADA_QR_SPREADSHEET_ID')
+    return client.open_by_key(spreadsheet_id)
 
-def get_submissions(): return sheet.worksheet("submissions")
-def get_events(): return sheet.worksheet("scan_events")
-def get_config(): return sheet.worksheet("config")
-
+# Next sequence number (global incremental)
 def get_next_sequence():
-    cfg = get_config()
-    val = cfg.acell('C1').value or 0
-    next_val = int(val) + 1
-    cfg.update('C1', next_val)
-    return f"{next_val:04d}"
+    sheet = get_spreadsheet()
+    submissions = sheet.worksheet("submissions")
+    records = submissions.get_all_records()
+    if not records:
+        return 1
+    max_seq = max((int(r.get('sequence', 0)) for r in records), default=0)
+    return max_seq + 1
 
-def make_qr_id(auth_code):
-    year = datetime.now(pytz.timezone('Asia/Kolkata')).year
-    return f"{PREFIX}-{auth_code}-{year}-{get_next_sequence()}"
+# Generate QR ID: TEA-{AUTH_CODE}-{YYYY}-{SEQUENCE}
+def generate_qr_id(authority_code):
+    year = datetime.now().year
+    seq = get_next_sequence()
+    return f"TEA-{authority_code}-{year}-{seq:04d}"
 
-@qr_bp.route('/qr/generate', methods=['POST'])
-def generate():
-    data = request.get_json()
-    required = ['name', 'email', 'eta_date', 'additional_note']
-    for f in required:
-        if not data.get(f): return jsonify({"error": f"Missing {f}"}), 400
-
-    qr_id = make_qr_id(data.get('authority_code', 'MOR'))
-    now = datetime.now(pytz.timezone('Asia/Kolkata')).isoformat()
-
-    get_submissions().append_row([
-        qr_id, now, data['name'], data['email'],
-        data.get('contact', ''), data.get('authority_code', 'MOR'),
-        data.get('submission_type', 'RTI'), data['eta_date'],
-        data['additional_note'][:800],
-        f"https://narada.jagdishwaram-office.org/scan/{qr_id}"
-    ])
-
-    # Generate QR
-    qr = qrcode.QRCode(version=1, box_size=10, border=2, error_correction=qrcode.constants.ERROR_CORRECT_H)
-    qr.add_data(f"https://narada.jagdishwaram-office.org/scan/{qr_id}")
+# Create QR image with logo
+def create_qr_image(qr_url, logo_path="static/Logo.jpg"):
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=10, border=4)
+    qr.add_data(qr_url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="#1a365d", back_color="white").convert('RGB')
+    
+    # Add logo if exists
+    if os.path.exists(logo_path):
+        logo = Image.open(logo_path)
+        logo = logo.resize((80, 80))
+        pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
+        img.paste(logo, pos, mask=logo if logo.mode == 'RGBA' else None)
+    return img
 
-    try:
-        logo = Image.open("logo.png").convert("RGBA")
-        logo = logo.resize((60, 60))
-        pos = ((img.size[0]-60)//2, (img.size[1]-60)//2)
-        img.paste(logo, pos, logo)
-    except: pass
+@qr_bp.route('/generator', methods=['GET'])
+def generator():
+    """Your exact mock-up screen"""
+    return render_template('qr_generator.html')
 
-    buf = BytesIO()
-    img.save(buf, format="PNG")
-    buf.seek(0)
-    return send_file(buf, mimetype="image/png", download_name=f"QR-{qr_id}.png")
+@qr_bp.route('/api/qr/generate', methods=['POST'])
+def generate_qr():
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip()
+    contact = data.get('contact', '').strip()
+    authority = data.get('authority', 'OTHERS')
+    sub_type = data.get('submission_type', 'Application')
+    eta = data.get('eta', '')
+    note = data.get('note', '').strip()
 
-@qr_bp.route('/qr/scan/<qr_id>')
-def scan(qr_id):
-    recs = get_submissions().get_all_records()
-    record = next((r for r in recs if r.get('qr_id') == qr_id), None)
-    if not record: return "Not found", 404
+    if not all([name, email, eta, note]):
+        return jsonify({'error': 'Mandatory fields missing'}), 400
 
-    events = [e for e in get_events().get_all_records() if e.get('qr_id') == qr_id]
-    return render_template('qr_dashboard.html', record=record, history=events, qr_id=qr_id)
+    qr_id = generate_qr_id(authority)
+    short_url = f"https://www.jagdishwaram-office.org/scan/{qr_id}"
 
-@qr_bp.route('/qr/comment', methods=['POST'])
-def comment():
-    d = request.get_json()
-    get_events().append_row([
-        f"EVT-{uuid.uuid4().hex[:8]}", d['qr_id'], "COMMENT",
-        datetime.now(pytz.timezone('Asia/Kolkata')).isoformat(),
-        d.get('actor', 'Citizen'), d.get('comment', '')
+    # Save to submissions sheet
+    sheet = get_spreadsheet()
+    submissions = sheet.worksheet("submissions")
+    submissions.append_row([
+        qr_id, name, email, contact, authority, sub_type,
+        eta, note, datetime.now().isoformat(), "Not Yet Received", ""
     ])
-    return jsonify({"ok": True})
+
+    # Generate QR image
+    img = create_qr_image(short_url)
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+
+    return jsonify({
+        'qr_id': qr_id,
+        'short_url': short_url,
+        'download_name': f"QR-{qr_id}.png"
+    })
+
+@qr_bp.route('/scan/<qr_id>', methods=['GET'])
+def scan_dashboard(qr_id):
+    """Full dashboard with history + comment box"""
+    sheet = get_spreadsheet()
+    submissions = sheet.worksheet("submissions")
+    scan_events = sheet.worksheet("scan_events")
+    
+    record = None
+    for row in submissions.get_all_records():
+        if row.get('qr_id') == qr_id:
+            record = row
+            break
+
+    if not record:
+        return "QR ID not found", 404
+
+    # Get scan history and comments
+    logs = [r for r in scan_events.get_all_records() if r.get('qr_id') == qr_id]
+
+    return render_template('qr_dashboard.html', record=record, logs=logs, qr_id=qr_id)
+
+@qr_bp.route('/api/comment', methods=['POST'])
+def post_comment():
+    data = request.get_json()
+    qr_id = data.get('qr_id')
+    comment = data.get('comment', '').strip()
+    author = data.get('author', 'HITL/Authority')
+
+    if not qr_id or not comment:
+        return jsonify({'error': 'Missing data'}), 400
+
+    sheet = get_spreadsheet()
+    scan_events = sheet.worksheet("scan_events")
+    scan_events.append_row([qr_id, datetime.now().isoformat(), author, comment, ""])
+
+    return jsonify({'status': 'success'})
+
+# Public search fallback
+@qr_bp.route('/search', methods=['GET'])
+def public_search():
+    qr_id = request.args.get('qr_id')
+    if qr_id:
+        return scan_dashboard(qr_id)
+    return render_template('qr_generator.html')  # fallback
