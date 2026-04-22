@@ -1,274 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Narada QR Generator — Jagdishwaram Foundation</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<meta charset="UTF-8">
+<title>Narada QR Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  .qr-box { border: 2px dashed #1a365d; background: #f8fafc; }
+</style>
 </head>
-<body class="bg-gray-50">
-    <!-- Header -->
-    <div class="bg-[#1a365d] text-white py-4">
-        <div class="max-w-5xl mx-auto px-6 flex items-center justify-between">
-            <div class="flex items-center gap-x-3">
-                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <i class="fa-solid fa-qrcode text-[#1a365d] text-2xl"></i>
-                </div>
-                <div>
-                    <div class="font-bold text-2xl tracking-tight">Narada</div>
-                    <div class="text-xs -mt-1 opacity-75">Public Transparency • Free QR Tracking</div>
-                </div>
-            </div>
-            <div class="text-right text-sm">
-                <div class="font-semibold">Jagdishwaram Foundation</div>
-                <div class="text-xs opacity-75">सत्यमेव जयते</div>
-            </div>
+<body class="bg-gray-50 font-sans">
+
+<div class="max-w-6xl mx-auto p-6">
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Generate Dynamic QR</h1>
+      <p class="text-gray-600">Your digital trackable record for any submission</p>
+    </div>
+    <div class="text-right">
+      <span class="text-sm text-gray-500">Jagdishwaram Foundation</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Left: How This Works -->
+    <div class="lg:col-span-5">
+      <!-- Read-me content from your mockup -->
+      <div class="bg-white rounded-2xl shadow p-8">
+        <h2 class="text-xl font-semibold mb-6">How This Works</h2>
+        <div class="space-y-6 text-sm">
+          <p><strong>Purpose</strong><br>Create a permanent, publicly verifiable digital record of your physical submission.</p>
+          <p><strong>How to Use</strong><br>1. Fill the form<br>2. Click Generate QR<br>3. Download and embed in your physical letter<br>4. Submit within 3 days</p>
+          <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-xl text-xs">
+            <strong>Important Note on Dates</strong><br>
+            The system records QR generation date. For tracking we treat “QR Generation Date + 3 days” as the assumed physical submission date.
+          </div>
         </div>
+      </div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-6 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Read Me -->
-            <div class="lg:col-span-5">
-                <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
-                    <h3 class="font-bold text-xl text-[#1a365d] mb-4 flex items-center gap-x-2">
-                        <i class="fa-solid fa-info-circle"></i> 
-                        <span>How This Works</span>
-                    </h3>
-                    
-                    <div class="space-y-4 text-sm text-gray-700">
-                        <div>
-                            <div class="font-semibold text-[#1a365d]">Purpose</div>
-                            <div class="mt-1">Create a permanent, publicly verifiable digital record of your physical submission. Every scan becomes immutable proof of receipt and action (or inaction).</div>
-                        </div>
-                        
-                        <div>
-                            <div class="font-semibold text-[#1a365d]">How to Use</div>
-                            <ol class="mt-1 list-decimal list-inside space-y-1 text-sm">
-                                <li>Fill the form with your submission details</li>
-                                <li>Click <span class="font-semibold">"Generate QR"</span></li>
-                                <li>Download the QR and embed it in your physical letter</li>
-                                <li>Submit within <span class="font-semibold">3 days</span> (recommended best practice)</li>
-                                <li>Anyone can scan or search the QR ID to see full history</li>
-                            </ol>
-                        </div>
-                        
-                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs">
-                            <div class="font-semibold text-amber-700">Important Note on Dates</div>
-                            <div class="text-amber-600 mt-1">The system records the QR generation date. For tracking purposes we treat <strong>"QR Generation Date + 3 days"</strong> as the assumed physical submission date (we do not yet capture the exact submission date). This is a recommended best practice, not a strict rule.</div>
-                        </div>
-                        
-                        <div class="pt-2 border-t text-xs text-gray-500">
-                            This tool exists because institutional silence has become normalized. Use it responsibly.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Form -->
-            <div class="lg:col-span-7">
-                <div class="bg-white rounded-2xl shadow border border-gray-100 p-6">
-                    <h2 class="font-bold text-2xl text-[#1a365d] mb-1">Generate Dynamic QR</h2>
-                    <p class="text-sm text-gray-500 mb-6">Your digital trackable record for any submission to an authority</p>
-                    
-                    <form id="qrForm" onsubmit="generateQR(event)">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            
-                            <!-- Name -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Your Name <span class="text-red-500">*</span></label>
-                                <input type="text" id="name" value="Ashish Jagdish Naik" required
-                                       class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a365d]">
-                            </div>
-                            
-                            <!-- Email -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Email ID <span class="text-red-500">*</span></label>
-                                <input type="email" id="email" value="ashish.j.naik@gmail.com" required
-                                       class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a365d]">
-                            </div>
-                            
-                            <!-- Contact -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Contact No <span class="text-gray-400">(optional)</span></label>
-                                <input type="tel" id="contact" value="9730731985"
-                                       class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a365d]">
-                            </div>
-                            
-                            <!-- Authority -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Recipient Authority</label>
-                                <select id="authority" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm bg-white">
-                                    <option value="MOR">Tehsildar, Vasai (MOR)</option>
-                                    <option value="NPS">SDO, Vasai (NPS)</option>
-                                    <option value="DMD">District Collector, Palghar (DMD)</option>
-                                    <option value="AGD">Police Commissioner, MBVV (AGD)</option>
-                                    <option value="EAF">Arnala Marine Police (EAF)</option>
-                                    <option value="RPD">ACP, Nalasopara (RPD)</option>
-                                    <option value="BTR">AC, VVMC Ward A (BTR)</option>
-                                    <option value="RPO">RPO Mumbai (RPO)</option>
-                                    <option value="OTH">Others</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Type -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Submission Type</label>
-                                <select id="type" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm bg-white">
-                                    <option value="RTI">RTI Application</option>
-                                    <option value="PET">Petition</option>
-                                    <option value="APP">Application</option>
-                                    <option value="CMP">Complaint / Grievance</option>
-                                    <option value="GRV">Grievance</option>
-                                    <option value="RTS">RTS Appeal</option>
-                                </select>
-                            </div>
-                            
-                            <!-- ETA -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">ETA (Expected Response Date) <span class="text-red-500">*</span></label>
-                                <input type="date" id="eta" value="2026-05-21" required
-                                       class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a365d]">
-                            </div>
-                            
-                            <!-- Note -->
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Additional Note <span class="text-red-500">*</span> <span class="text-xs text-gray-400">(800 chars max)</span></label>
-                                <textarea id="note" rows="3" maxlength="800" required
-                                          oninput="updateCharCount()"
-                                          class="w-full border border-gray-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[#1a365d]">Request for immediate enforcement of Tehsildar final order dated 01-Mar-2024 in Vahiwat Dava 01/2017 (Survey 39/19, Mouje Watar). 394+ days of non-compliance despite District Court confirmation on 18-Mar-2026.</textarea>
-                                <div class="flex justify-end text-xs mt-1">
-                                    <span id="charCount" class="font-mono text-gray-500">187/800</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="submit"
-                                class="mt-6 w-full bg-[#1a365d] hover:bg-[#162c4a] transition text-white font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-x-2 text-sm tracking-wider">
-                            <i class="fa-solid fa-qrcode"></i>
-                            <span>GENERATE QR CODE</span>
-                        </button>
-                    </form>
-                    
-                    <!-- Preview Area -->
-                    <div id="previewArea" class="hidden mt-8 border-t pt-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="font-semibold text-[#1a365d]">QR Preview</div>
-                            <div id="qrIdBadge" class="font-mono text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600"></div>
-                        </div>
-                        
-                        <div class="flex justify-center bg-gray-50 p-6 rounded-2xl">
-                            <img id="qrPreview" class="w-[220px] h-[220px] shadow-inner border border-gray-200 rounded-xl" alt="QR Code">
-                        </div>
-                        
-                        <div class="flex gap-x-3 mt-4">
-                            <button onclick="downloadQR()"
-                                    class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-x-2">
-                                <i class="fa-solid fa-download"></i>
-                                <span>DOWNLOAD PNG</span>
-                            </button>
-                            
-                            <button onclick="resetForm()"
-                                    class="flex-1 border border-gray-300 hover:bg-gray-50 py-3 rounded-2xl font-semibold text-sm">
-                                GENERATE NEW
-                            </button>
-                        </div>
-                        
-                        <div class="text-center text-xs text-emerald-600 mt-3">
-                            <i class="fa-solid fa-check-circle mr-1"></i> 
-                            QR generated successfully. Submit your physical letter within 3 days.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
+    <!-- Right: Form + Preview -->
+    <div class="lg:col-span-7 bg-white rounded-3xl shadow p-8">
+      <form id="qrForm">
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium mb-1">Your Name <span class="text-red-500">*</span></label>
+            <input type="text" id="name" value="Ashish Jagdish Naik" class="w-full border rounded-xl px-4 py-3" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Email ID <span class="text-red-500">*</span></label>
+            <input type="email" id="email" value="ashish.j.naik@gmail.com" class="w-full border rounded-xl px-4 py-3" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Contact No (optional)</label>
+            <input type="tel" id="contact" value="9730731985" class="w-full border rounded-xl px-4 py-3">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Recipient Authority</label>
+            <select id="authority_code" class="w-full border rounded-xl px-4 py-3">
+              <option value="MOR">Tehsildar, Vasai (MOR)</option>
+              <option value="BTR">AC, VVMC Ward A (BTR)</option>
+              <!-- add more as needed -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Submission Type</label>
+            <select id="submission_type" class="w-full border rounded-xl px-4 py-3">
+              <option value="GRV">Complaint / Grievance</option>
+              <option value="RTI">RTI Application</option>
+              <option value="PET">Petition</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">ETA (Expected Response Date) <span class="text-red-500">*</span></label>
+            <input type="date" id="eta_date" value="2026-04-23" class="w-full border rounded-xl px-4 py-3" required>
+          </div>
         </div>
-    </div>
-    
-    <footer class="text-center text-xs text-gray-400 py-6 border-t">
-        Initiative by Jagdishwaram Foundation • Every scan creates accountability
-    </footer>
 
-    <script>
-        function updateCharCount() {
-            const note = document.getElementById('note');
-            const count = document.getElementById('charCount');
-            count.textContent = `${note.value.length}/800`;
-            if (note.value.length > 750) count.style.color = '#c53030';
-            else count.style.color = '#666';
-        }
-        
-        async function generateQR(e) {
-            e.preventDefault();
-            
-            const btn = e.target.querySelector('button');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> GENERATING...';
-            btn.disabled = true;
-            
-            const payload = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                contact: document.getElementById('contact').value,
-                authority_code: document.getElementById('authority').value,
-                submission_type: document.getElementById('type').value,
-                eta_date: document.getElementById('eta').value,
-                additional_note: document.getElementById('note').value
-            };
-            
-            try {
-                const res = await fetch('/qr/generate', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!res.ok) throw new Error(await res.text());
-                
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                
-                // Show preview
-                document.getElementById('qrPreview').src = url;
-                document.getElementById('qrIdBadge').textContent = `TEA-${payload.authority_code}-2026-XXXX`;
-                document.getElementById('previewArea').classList.remove('hidden');
-                
-                // Store for download
-                window.currentQRBlob = blob;
-                window.currentQRId = `TEA-${payload.authority_code}-2026-0001`; // Will be replaced by real ID from response
-                
-            } catch (err) {
-                alert('Error generating QR: ' + err.message);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-        
-        function downloadQR() {
-            if (!window.currentQRBlob) return;
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(window.currentQRBlob);
-            a.download = `QR-${window.currentQRId || 'TEA-MOR-2026-0001'}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-        
-        function resetForm() {
-            document.getElementById('previewArea').classList.add('hidden');
-            document.getElementById('qrForm').reset();
-            document.getElementById('charCount').textContent = '0/800';
-        }
-        
-        // Initialize char count
-        window.onload = () => {
-            const note = document.getElementById('note');
-            if (note) note.oninput = updateCharCount;
-            updateCharCount();
-        }
-    </script>
+        <div class="mt-6">
+          <label class="block text-sm font-medium mb-1">Additional Note <span class="text-red-500">*</span> (800 chars max)</label>
+          <textarea id="additional_note" rows="3" class="w-full border rounded-xl px-4 py-3" placeholder="Request immediate response..."></textarea>
+        </div>
+
+        <button type="submit" id="generateBtn"
+          class="mt-8 w-full bg-[#1a365d] hover:bg-[#0f2540] text-white font-medium py-4 rounded-2xl flex items-center justify-center gap-3">
+          <span id="btnText">GENERATE QR CODE</span>
+        </button>
+      </form>
+
+      <!-- QR Preview -->
+      <div id="previewSection" class="mt-10 hidden">
+        <div class="flex justify-between items-baseline mb-3">
+          <h3 class="text-lg font-semibold">QR Preview</h3>
+          <span id="qrIdDisplay" class="text-xs font-mono bg-gray-100 px-3 py-1 rounded"></span>
+        </div>
+        <div class="qr-box rounded-3xl p-8 flex items-center justify-center min-h-[280px]" id="qrContainer">
+          <img id="qrImage" class="max-w-[280px] shadow-lg" alt="QR Code">
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <a id="downloadLink" 
+             class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center font-medium py-4 rounded-2xl flex items-center justify-center gap-2">
+            <span>↓</span> DOWNLOAD PNG
+          </a>
+          <button onclick="location.reload()" 
+            class="flex-1 border border-gray-300 hover:bg-gray-50 font-medium py-4 rounded-2xl">
+            GENERATE NEW
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('qrForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'GENERATING...';
+
+  const payload = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    contact: document.getElementById('contact').value,
+    authority_code: document.getElementById('authority_code').value,
+    submission_type: document.getElementById('submission_type').value,
+    eta_date: document.getElementById('eta_date').value,
+    additional_note: document.getElementById('additional_note').value
+  };
+
+  try {
+    const res = await fetch('/qr/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      alert("Error: " + data.error);
+      btn.disabled = false;
+      btn.textContent = "GENERATE QR CODE";
+      return;
+    }
+
+    // Show preview
+    document.getElementById('qrIdDisplay').textContent = data.qr_id;
+    document.getElementById('qrImage').src = 'data:image/png;base64,' + data.image_base64;
+    document.getElementById('previewSection').classList.remove('hidden');
+
+    // Download link
+    const link = document.getElementById('downloadLink');
+    link.href = 'data:image/png;base64,' + data.image_base64;
+    link.download = data.download_name;
+
+  } catch (err) {
+    alert("Network error. Please try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "GENERATE QR CODE";
+  }
+});
+</script>
 </body>
 </html>
