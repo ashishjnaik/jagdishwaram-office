@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <!-- Update Form -->
+  <!-- Log Update / Comment -->
   <div class="mt-8 bg-white rounded-3xl shadow p-8">
     <h3 class="font-semibold mb-4">Log Update / Comment</h3>
     <form id="updateForm">
@@ -69,18 +69,18 @@
     </form>
   </div>
 
-  <!-- Activity Log -->
+  <!-- Activity Log with Timestamp -->
   <div class="mt-8 bg-white rounded-3xl shadow p-8">
-    <h3 class="font-semibold mb-4">Activity Log &amp; Comments</h3>
+    <h3 class="font-semibold mb-4">Activity Log & Comments</h3>
     <div id="activityLog" class="space-y-3">
       {% for event in events %}
       <div class="bg-gray-50 p-4 rounded-2xl text-sm">
-        <div class="flex justify-between">
-          <span class="font-medium">{{ event.event_type }}</span>
-          <span class="text-gray-500 text-xs">{{ event.timestamp_ist or event.event_timestamp }}</span>
+        <div class="flex justify-between items-baseline">
+          <span class="font-medium uppercase">{{ event.event_type }}</span>
+          <span class="text-gray-500 text-xs">{{ event.timestamp or event.timestamp_ist or 'Just now' }}</span>
         </div>
-        {% if event.comment_text %}<p class="mt-1 text-gray-700">{{ event.comment_text }}</p>{% endif %}
-        {% if event.eta_new %}<p class="text-xs text-blue-600">ETA → {{ event.eta_new }}</p>{% endif %}
+        {% if event.comment_text %}<p class="mt-2 text-gray-700">{{ event.comment_text }}</p>{% endif %}
+        {% if event.eta_new %}<p class="text-xs text-blue-600 mt-1">ETA → {{ event.eta_new }}</p>{% endif %}
         {% if event.status_new %}<p class="text-xs text-green-600">Status → {{ event.status_new }}</p>{% endif %}
       </div>
       {% endfor %}
