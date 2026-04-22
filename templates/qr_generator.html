@@ -43,8 +43,8 @@
           <div><label class="block text-xs text-gray-500 mb-1">Your Name <span class="text-red-500">*</span></label><input type="text" id="name" name="name" required class="w-full border rounded-2xl px-4 py-3"></div>
           <div><label class="block text-xs text-gray-500 mb-1">Email ID <span class="text-red-500">*</span></label><input type="email" id="email" name="email" required class="w-full border rounded-2xl px-4 py-3"></div>
           <div><label class="block text-xs text-gray-500 mb-1">Contact No (optional)</label><input type="tel" id="contact" name="contact" class="w-full border rounded-2xl px-4 py-3"></div>
-          <div><label class="block text-xs text-gray-500 mb-1">Recipient Authority</label><select id="authority_code" name="authority_code" class="w-full border rounded-2xl px-4 py-3"><option value="EAF">EAF</option><option value="RPD">RPD</option><option value="OTH" selected>OTH - OTHER</option></select></div>
-          <div><label class="block text-xs text-gray-500 mb-1">Submission Type</label><select id="submission_type" name="submission_type" class="w-full border rounded-2xl px-4 py-3"><option value="GRV">GRV - Grievance</option><option value="RTIA">RTIA</option><option value="COMP">COMP</option><option value="APPL">APPL</option></select></div>
+          <div><label class="block text-xs text-gray-500 mb-1">Recipient Authority</label><select id="authority_code" name="authority_code" class="w-full border rounded-2xl px-4 py-3"></select></div>
+          <div><label class="block text-xs text-gray-500 mb-1">Submission Type</label><select id="submission_type" name="submission_type" class="w-full border rounded-2xl px-4 py-3"></select></div>
           <div><label class="block text-xs text-gray-500 mb-1">ETA <span class="text-red-500">*</span></label><input type="date" id="eta_date" name="eta_date" required class="w-full border rounded-2xl px-4 py-3"></div>
         </div>
 
@@ -55,25 +55,14 @@
           <div class="text-xs text-right text-gray-400 mt-1" id="charCount">0 / 800</div>
         </div>
 
-        <!-- GUARANTEED VISIBLE BUTTON -->
-        <button type="submit" id="generateBtn" 
-                style="width:100%; padding:28px 0; font-size:1.4rem; font-weight:700; background:#10b981; color:white; border-radius:9999px; box-shadow:0 10px 15px -3px rgb(16 185 129);">
-          GENERATE QR CODE
-        </button>
+        <button type="submit" id="generateBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 rounded-3xl text-xl font-semibold shadow-lg">GENERATE QR CODE</button>
       </form>
 
-      <!-- Preview -->
       <div id="previewSection" class="hidden mt-10 border-2 border-emerald-300 rounded-3xl p-8 text-center">
         <div class="mx-auto mb-6 w-72 h-72 bg-white shadow-inner rounded-2xl flex items-center justify-center p-4" id="qrPreview"></div>
         <div class="space-y-4">
-          <a id="downloadLink" href="#" 
-             style="display:block; width:100%; padding:24px 0; background:#10b981; color:white; font-size:1.25rem; font-weight:600; border-radius:9999px; text-align:center;">
-            ↓ DOWNLOAD PNG
-          </a>
-          <a href="/generator" 
-             style="display:block; width:100%; padding:24px 0; background:#374151; color:white; font-size:1.25rem; font-weight:600; border-radius:9999px; text-align:center;">
-            GENERATE NEW
-          </a>
+          <a id="downloadLink" href="#" class="block w-full py-6 bg-emerald-600 text-white text-xl font-semibold rounded-3xl hover:bg-emerald-700">↓ DOWNLOAD PNG</a>
+          <a href="/generator" class="block w-full py-6 bg-gray-800 text-white text-xl font-semibold rounded-3xl hover:bg-gray-900">GENERATE NEW</a>
         </div>
       </div>
     </div>
@@ -81,6 +70,23 @@
 </div>
 
 <script>
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    const config = await res.json();
+
+    // Recipient Authority
+    const authSelect = document.getElementById('authority_code');
+    authSelect.innerHTML = config.authorities.map(a => `<option value="${a.code}">${a.code} - ${a.name}</option>`).join('');
+
+    // Submission Type
+    const subSelect = document.getElementById('submission_type');
+    subSelect.innerHTML = config.submission_types.map(s => `<option value="${s.code}">${s.code} - ${s.name}</option>`).join('');
+  } catch (e) {
+    console.error("Config load failed, using fallback", e);
+  }
+}
+
 document.getElementById('qrForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
@@ -96,9 +102,13 @@ document.getElementById('qrForm').addEventListener('submit', async (e) => {
   dl.href = `data:image/png;base64,${result.image_base64}`;
   dl.download = result.download_name || `QR-${result.qr_id}.png`;
 });
+
 document.getElementById('additional_note').addEventListener('input', function() {
   document.getElementById('charCount').textContent = `${this.value.length} / 800`;
 });
+
+// Load config on page load
+window.onload = loadConfig;
 </script>
 </body>
 </html>
