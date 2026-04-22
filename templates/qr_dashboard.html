@@ -20,47 +20,25 @@
   </div>
 
   <div class="bg-white rounded-3xl shadow p-8">
-    <div class="grid grid-cols-2 gap-8">
-      <div>
-        <p class="text-sm text-gray-500">Citizen</p>
-        <p class="font-medium">{{ name or 'Ashish Jagdish Naik' }}</p>
-      </div>
-      <div>
-        <p class="text-sm text-gray-500">Email</p>
-        <p class="font-medium">{{ email or 'ashish.j.naik@gmail.com' }}</p>
-      </div>
-      <div>
-        <p class="text-sm text-gray-500">Authority</p>
-        <p class="font-medium">{{ authority or 'BTR' }}</p>
-      </div>
-      <div>
-        <p class="text-sm text-gray-500">Type</p>
-        <p class="font-medium">{{ sub_type or 'GRV' }}</p>
-      </div>
-      <div>
-        <p class="text-sm text-gray-500">Generated</p>
-        <p class="font-medium">{{ generated or 'Today' }}</p>
-      </div>
-      <div>
-        <p class="text-sm text-gray-500">ETA</p>
-        <p class="font-medium">{{ eta or '04/23/2026' }}</p>
-      </div>
+    <div class="grid grid-cols-2 gap-x-8 gap-y-6 text-sm">
+      <div><span class="text-gray-500">Citizen</span><br><span class="font-medium">{{ name }}</span></div>
+      <div><span class="text-gray-500">Email</span><br><span class="font-medium">{{ email }}</span></div>
+      <div><span class="text-gray-500">Authority</span><br><span class="font-medium">{{ authority }}</span></div>
+      <div><span class="text-gray-500">Type</span><br><span class="font-medium">{{ sub_type }}</span></div>
+      <div><span class="text-gray-500">Generated</span><br><span class="font-medium">{{ generated }}</span></div>
+      <div><span class="text-gray-500">ETA</span><br><span class="font-medium">{{ eta }}</span></div>
     </div>
 
-    <div class="mt-8">
-      <p class="text-sm text-gray-500 mb-2">Additional Note</p>
-      <p class="text-gray-700">{{ note or 'No note provided' }}</p>
+    <div class="mt-8 border-t pt-8">
+      <span class="text-gray-500">Additional Note</span>
+      <p class="mt-2 text-gray-700">{{ note }}</p>
     </div>
   </div>
 
-  <!-- Activity Log -->
   <div class="mt-8 bg-white rounded-3xl shadow p-8">
     <h3 class="font-semibold mb-4">Activity Log & Comments</h3>
-    <div class="space-y-4">
-      <!-- Real logs will appear here once Sheets is enabled -->
-      <div class="bg-gray-50 p-4 rounded-2xl text-sm">
-        <span class="text-green-600">✅ QR Generated</span> — {{ generated or 'Just now' }}
-      </div>
+    <div class="bg-gray-50 p-4 rounded-2xl text-sm">
+      ✅ QR Generated — Just now
     </div>
   </div>
 
