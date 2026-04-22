@@ -55,20 +55,23 @@
           <div class="text-xs text-right text-gray-400 mt-1" id="charCount">0 / 800</div>
         </div>
 
-        <button type="submit" id="generateBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 rounded-3xl text-xl font-semibold shadow-lg">GENERATE QR CODE</button>
+        <!-- GUARANTEED VISIBLE BUTTON -->
+        <button type="submit" id="generateBtn" 
+                style="width:100%; padding:28px 0; font-size:1.4rem; font-weight:700; background:#10b981; color:white; border-radius:9999px; box-shadow:0 10px 15px -3px rgb(16 185 129);">
+          GENERATE QR CODE
+        </button>
       </form>
 
-      <!-- SIMPLE PREVIEW - Both buttons made extremely visible -->
+      <!-- Preview -->
       <div id="previewSection" class="hidden mt-10 border-2 border-emerald-300 rounded-3xl p-8 text-center">
         <div class="mx-auto mb-6 w-72 h-72 bg-white shadow-inner rounded-2xl flex items-center justify-center p-4" id="qrPreview"></div>
-        
         <div class="space-y-4">
           <a id="downloadLink" href="#" 
-             class="block w-full py-6 bg-emerald-600 text-white text-xl font-semibold rounded-3xl hover:bg-emerald-700">
+             style="display:block; width:100%; padding:24px 0; background:#10b981; color:white; font-size:1.25rem; font-weight:600; border-radius:9999px; text-align:center;">
             ↓ DOWNLOAD PNG
           </a>
           <a href="/generator" 
-             class="block w-full py-6 bg-gray-800 text-white text-xl font-semibold rounded-3xl hover:bg-gray-900">
+             style="display:block; width:100%; padding:24px 0; background:#374151; color:white; font-size:1.25rem; font-weight:600; border-radius:9999px; text-align:center;">
             GENERATE NEW
           </a>
         </div>
@@ -82,18 +85,9 @@ document.getElementById('qrForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const data = Object.fromEntries(formData);
-
-  const res = await fetch('/qr/generate', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(data)
-  });
-
+  const res = await fetch('/qr/generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
   const result = await res.json();
-  if (result.error) {
-    alert(result.error);
-    return;
-  }
+  if (result.error) { alert(result.error); return; }
 
   document.getElementById('qrPreview').innerHTML = `<img src="data:image/png;base64,${result.image_base64}" class="w-full h-full object-contain">`;
   document.getElementById('previewSection').classList.remove('hidden');
@@ -102,7 +96,6 @@ document.getElementById('qrForm').addEventListener('submit', async (e) => {
   dl.href = `data:image/png;base64,${result.image_base64}`;
   dl.download = result.download_name || `QR-${result.qr_id}.png`;
 });
-
 document.getElementById('additional_note').addEventListener('input', function() {
   document.getElementById('charCount').textContent = `${this.value.length} / 800`;
 });
