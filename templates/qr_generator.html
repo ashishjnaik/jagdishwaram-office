@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <!-- Form -->
+    <!-- Form + Preview -->
     <div class="lg:col-span-8 bg-white rounded-3xl shadow p-8">
       <form id="qrForm" class="grid grid-cols-2 gap-x-6 gap-y-8">
         <div class="col-span-2 md:col-span-1">
@@ -83,22 +83,31 @@
         <div class="col-span-2">
           <label class="block text-xs text-gray-500 mb-1">Additional Note <span class="text-red-500">*</span> (800 chars max)</label>
           <textarea id="additional_note" name="additional_note" maxlength="800" rows="4" required class="w-full border rounded-3xl px-4 py-3"></textarea>
-          <div class="text-xs text-right text-gray-400" id="charCount">0 / 800</div>
+          <div class="text-xs text-right text-gray-400 mt-1" id="charCount">0 / 800</div>
         </div>
 
         <div class="col-span-2">
-          <button type="submit" id="generateBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-3xl text-lg font-medium">
+          <button type="submit" id="generateBtn"
+                  class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 rounded-3xl text-xl font-semibold shadow-lg">
             GENERATE QR CODE
           </button>
         </div>
       </form>
 
-      <!-- Preview -->
-      <div id="previewSection" class="hidden mt-10 border border-dashed border-gray-300 rounded-3xl p-8 text-center">
-        <div class="mx-auto mb-4 w-64 h-64 bg-white shadow-inner rounded-2xl flex items-center justify-center" id="qrPreview"></div>
-        <a id="downloadLink" href="#" class="inline-flex items-center px-8 py-4 bg-emerald-600 text-white rounded-3xl hover:bg-emerald-700">
-          ↓ DOWNLOAD PNG
-        </a>
+      <!-- Preview Section (now clearly visible) -->
+      <div id="previewSection" class="hidden mt-10 border-2 border-emerald-300 rounded-3xl p-8 text-center">
+        <div class="mx-auto mb-6 w-72 h-72 bg-white shadow-inner rounded-2xl flex items-center justify-center p-4" id="qrPreview"></div>
+        
+        <div class="flex gap-4 justify-center">
+          <a id="downloadLink" href="#" 
+             class="flex-1 max-w-xs px-8 py-5 bg-emerald-600 text-white rounded-3xl hover:bg-emerald-700 font-medium text-lg flex items-center justify-center gap-2">
+            ↓ DOWNLOAD PNG
+          </a>
+          <a href="/generator" 
+             class="flex-1 max-w-xs px-8 py-5 bg-gray-800 text-white rounded-3xl hover:bg-gray-900 font-medium text-lg flex items-center justify-center">
+            GENERATE NEW
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -122,8 +131,7 @@ document.getElementById('qrForm').addEventListener('submit', async (e) => {
     return;
   }
 
-  // Show preview
-  const previewHTML = `<img src="data:image/png;base64,${result.image_base64}" class="mx-auto">`;
+  const previewHTML = `<img src="data:image/png;base64,${result.image_base64}" class="w-full h-full object-contain">`;
   document.getElementById('qrPreview').innerHTML = previewHTML;
   document.getElementById('previewSection').classList.remove('hidden');
 
