@@ -1,20 +1,19 @@
-# qr_routes.py - Narada QR Tracking System v1.0 (COMPLETE & STABLE)
+# qr_routes.py - Narada QR Tracking System v1.0 (FINAL - Base64 Preview + Download)
 from flask import Blueprint, render_template, request, jsonify
 import qrcode
 from PIL import Image
 import io
 import os
+import base64
 from datetime import datetime
 import traceback
 
-print("✅ qr_routes.py LOADED SUCCESSFULLY")
+print("✅ qr_routes.py LOADED SUCCESSFULLY (with base64 support)")
 
 qr_bp = Blueprint('narada_qr', __name__, url_prefix='/')
 
-# ==================== HELPER FUNCTIONS ====================
 def generate_qr_id(authority_code):
     year = datetime.now().year
-    # Temporary fixed sequence for testing (we will make it dynamic later)
     return f"TEA-{authority_code}-{year}-0001"
 
 def create_qr_image(qr_url):
@@ -30,7 +29,6 @@ def create_qr_image(qr_url):
         img.paste(logo, pos, mask=logo if logo.mode == 'RGBA' else None)
     return img
 
-# ==================== ROUTES ====================
 @qr_bp.route('/generator', methods=['GET'])
 def generator():
     return render_template('qr_generator.html')
@@ -50,23 +48,26 @@ def generate_qr():
         note      = (data.get('additional_note') or '').strip()
 
         if not all([name, email, eta, note]):
-            print("❌ Mandatory fields missing")
             return jsonify({'error': 'Mandatory fields missing'}), 400
 
         qr_id = generate_qr_id(authority)
         short_url = f"https://dev.jagdishwaram-office.org/scan/{qr_id}"
 
-        # Create branded QR
+        # Generate image
         img = create_qr_image(short_url)
         img_io = io.BytesIO()
         img.save(img_io, 'PNG')
         img_io.seek(0)
 
+        # Convert to base64 for frontend preview + download
+        image_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
+
         print(f"✅ QR generated successfully: {qr_id}")
         return jsonify({
             'qr_id': qr_id,
             'short_url': short_url,
-            'download_name': f"QR-{qr_id}.png"
+            'download_name': f"QR-{qr_id}.png",
+            'image_base64': image_base64   # ← This fixes preview + download
         })
 
     except Exception as e:
