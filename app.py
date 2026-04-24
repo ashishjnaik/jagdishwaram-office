@@ -50,6 +50,10 @@ app = Flask(__name__)
 # Railway should have FLASK_SECRET_KEY set in the Variables tab
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_for_local_dev')
 
+# ─── QR ROUTES (Narada QR Tracking System) ───────────────────────────────────
+from qr_routes import qr_bp
+app.register_blueprint(qr_bp)
+
 def get_google_flow():
     """Dynamically creates the OAuth flow based on Railway environment variables."""
     client_id = os.environ.get('GOOGLE_CLIENT_ID')
@@ -2202,7 +2206,7 @@ def field_submit():
     except Exception as e:
         print(f"ERROR /field/submit: {e}")
         return jsonify({'ok': False, 'error': str(e)}), 500
-       
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port)
