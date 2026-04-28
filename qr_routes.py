@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 import os
+import time
 import requests
 from datetime import datetime
 import uuid
@@ -11,23 +12,67 @@ import base64
 qr_bp = Blueprint('narada_qr', __name__, url_prefix='/')
 
 # Zoho Config (from Railway env vars)
-ZOHO_ACCESS_TOKEN = os.environ.get('ZOHO_ACCESS_TOKEN')
 ZOHO_OWNER = os.environ.get('ZOHO_OWNER_NAME')
 ZOHO_APP = os.environ.get('ZOHO_APP_LINK_NAME')
 ZOHO_DOMAIN = os.environ.get('ZOHO_API_DOMAIN', 'https://www.zohoapis.in')
 
+# OAuth refresh-token flow (preferred over static access token)
+ZOHO_CLIENT_ID = os.environ.get('ZOHO_CLIENT_ID')
+ZOHO_CLIENT_SECRET = os.environ.get('ZOHO_CLIENT_SECRET')
+ZOHO_REFRESH_TOKEN = os.environ.get('ZOHO_REFRESH_TOKEN')
+# India accounts host. Fall back to .com if needed.
+ZOHO_ACCOUNTS_DOMAIN = os.environ.get('ZOHO_ACCOUNTS_DOMAIN', 'https://accounts.zoho.in')
+
+# In-memory cache so we don't refresh on every API call
+_token_cache = {'token': None, 'expires_at': 0}
+
+def get_access_token():
+    """Return a valid Zoho access token, refreshing if needed."""
+    now = time.time()
+    if _token_cache['token'] and _token_cache['expires_at'] > now + 60:
+        return _token_cache['token']
+
+    if not (ZOHO_CLIENT_ID and ZOHO_CLIENT_SECRET and ZOHO_REFRESH_TOKEN):
+        raise RuntimeError(
+            "Missing Zoho OAuth env vars: need ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REFRESH_TOKEN"
+        )
+
+    resp = requests.post(
+        f"{ZOHO_ACCOUNTS_DOMAIN}/oauth/v2/token",
+        params={
+            'refresh_token': ZOHO_REFRESH_TOKEN,
+            'client_id': ZOHO_CLIENT_ID,
+            'client_secret': ZOHO_CLIENT_SECRET,
+            'grant_type': 'refresh_token',
+        },
+        timeout=10,
+    )
+    body = resp.json()
+    if 'access_token' not in body:
+        raise RuntimeError(f"Zoho token refresh failed: HTTP {resp.status_code} {body}")
+
+    _token_cache['token'] = body['access_token']
+    _token_cache['expires_at'] = now + int(body.get('expires_in', 3600))
+    print(f"[zoho] Refreshed access token, valid for {body.get('expires_in', 3600)}s")
+    return _token_cache['token']
+
 def get_headers():
-    return {'Authorization': f'Zoho-oauthtoken {ZOHO_ACCESS_TOKEN}', 'Content-Type': 'application/json'}
+    return {
+        'Authorization': f'Zoho-oauthtoken {get_access_token()}',
+        'Content-Type': 'application/json',
+    }
 
 def zoho_get(report_link_name, criteria=''):
+    """Read records from a Zoho Creator REPORT. v2.1 path: /data/{owner}/{app}/report/{report}"""
     url = f"{ZOHO_DOMAIN}/creator/v2.1/data/{ZOHO_OWNER}/{ZOHO_APP}/report/{report_link_name}"
     params = {'criteria': criteria} if criteria else {}
     resp = requests.get(url, headers=get_headers(), params=params, timeout=10)
     return resp.json()
 
 def zoho_post(form_link_name, data):
+    """Create a record via a Zoho Creator FORM. v2.1 path: /data/{owner}/{app}/form/{form}"""
     url = f"{ZOHO_DOMAIN}/creator/v2.1/data/{ZOHO_OWNER}/{ZOHO_APP}/form/{form_link_name}"
-    payload = {"data": data}  # v2.1 takes a single dict, not a list-wrapped one
+    payload = {"data": data}
     resp = requests.post(url, json=payload, headers=get_headers(), timeout=10)
     return resp.json()
 
@@ -55,9 +100,20 @@ def get_config():
     types = zoho_get('Config_Submission_Types_Report')
     print(f"[config] auth response: {auth}")
     print(f"[config] types response: {types}")
-    authorities = [{'code': r.get('authority_registry_code'), 'name': r.get('authority_name')} for r in auth.get('data', [])]
-    submission_types = [{'code': r.get('submission_type_code'), 'name': r.get('submission_type_name')} for r in types.get('data', [])]
-    return jsonify({'authorities': authorities, 'submission_types': submission_types, '_debug': {'auth_raw': auth, 'types_raw': types}})
+    authorities = [
+        {'code': r.get('authority_registry_code'), 'name': r.get('authority_name')}
+        for r in auth.get('data', [])
+    ]
+    submission_types = [
+        {'code': r.get('submission_type_code'), 'name': r.get('submission_type_name')}
+        for r in types.get('data', [])
+    ]
+    # _debug stays in for now so we can diagnose. Remove before production.
+    return jsonify({
+        'authorities': authorities,
+        'submission_types': submission_types,
+        '_debug': {'auth_raw': auth, 'types_raw': types},
+    })
 
 @qr_bp.route('/qr/generate', methods=['POST'])
 def generate_qr():
@@ -96,7 +152,6 @@ def generate_qr():
 def scan_dashboard(qr_id):
     # Full scan + auto-log + events logic (Zoho version)
     # ... (full implementation as per previous stable version)
-    # (To avoid length, confirm this file first. I will send full scan/update in next step if needed)
     return render_template('qr_dashboard.html', qr_id=qr_id)
 
-print("✅ ZOHO QR ROUTES LOADED SUCCESSFULLY (full end-to-end)")
+print("✅ ZOHO QR ROUTES LOADED SUCCESSFULLY (refresh-token flow)")
