@@ -145,4 +145,31 @@ def update_record():
 
     return jsonify({'success': True})
 
+@qr_bp.route('/api/config', methods=['GET'])
+def get_config():
+    # Authorities
+    auth_resp = zoho_get('Config_Authority_Registry', '')
+    authorities = [
+        {
+            'code': item.get('authority_registry_code'),
+            'name': item.get('authority_name')
+        }
+        for item in auth_resp.get('data', [])
+    ]
+
+    # Submission Types
+    type_resp = zoho_get('Config_Submission_Types', '')
+    submission_types = [
+        {
+            'code': item.get('submission_type_code'),
+            'name': item.get('submission_type_name')
+        }
+        for item in type_resp.get('data', [])
+    ]
+
+    return jsonify({
+        'authorities': authorities,
+        'submission_types': submission_types
+    })
+
 print("✅ Zoho Creator Narada QR routes loaded successfully (full loop active)")
