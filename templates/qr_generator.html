@@ -6,22 +6,101 @@
     <title>Generate Dynamic QR</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .preview-section { display: none; }
+        #generateBtn { transition: all 0.2s ease; }
+    </style>
 </head>
 <body class="bg-gray-50">
-<div class="max-w-6xl mx-auto p-6">
-    <!-- Your existing layout (How This Works + Form) remains unchanged except dropdowns -->
-    <select id="recipient_authority_code" name="recipient_authority_code" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500">
-        <option value="">Loading authorities...</option>
-    </select>
-    <select id="application_type" name="application_type" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500">
-        <option value="">Loading submission types...</option>
-    </select>
-    <!-- Rest of your form fields stay exactly as before -->
+<div class="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Sidebar -->
+    <div class="lg:col-span-4">
+        <div class="bg-white rounded-3xl p-8 shadow sticky top-6">
+            <h1 class="text-3xl font-bold mb-2">Generate Dynamic QR</h1>
+            <p class="text-gray-600 mb-8">Your digital trackable record for any submission to an authority</p>
+            
+            <div class="space-y-8">
+                <div>
+                    <h3 class="font-semibold mb-3">How This Works</h3>
+                    <p class="text-sm text-gray-600">Create a permanent, publicly verifiable digital record of your physical submission.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-3">How to Use</h3>
+                    <ol class="text-sm text-gray-600 space-y-2">
+                        <li>1. Fill the form below</li>
+                        <li>2. Click "Generate QR Code"</li>
+                        <li>3. Download and embed in your physical letter</li>
+                        <li>4. Submit within 3 days (recommended best practice)</li>
+                    </ol>
+                </div>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 text-sm">
+                    <strong>Important Note on Dates</strong><br>
+                    The system records QR generation date. For tracking purposes we treat "QR Generation Date + 3 days" as the assumed physical submission date.
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <button type="submit" id="generateBtn"
-            class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xl py-6 rounded-3xl mt-8 shadow-lg">
-        GENERATE QR CODE
-    </button>
+    <!-- Form -->
+    <div class="lg:col-span-8 bg-white rounded-3xl shadow p-8">
+        <form id="qrForm" class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Your Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="citizen_name" required class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email ID <span class="text-red-500">*</span></label>
+                    <input type="email" id="citizen_email_id" required class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Contact No (optional)</label>
+                    <input type="tel" id="citizen_contact_number" class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Recipient Authority <span class="text-red-500">*</span></label>
+                    <select id="recipient_authority_code" required class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500">
+                        <option value="">Loading authorities...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Submission Type <span class="text-red-500">*</span></label>
+                    <select id="application_type" required class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500">
+                        <option value="">Loading submission types...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">ETA <span class="text-red-500">*</span></label>
+                    <input type="date" id="expected_turnaround_time" required class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Supporting URL / Drive Link (optional)</label>
+                <input type="url" id="relevant_url" class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Additional Note <span class="text-red-500">*</span> <span id="charCount" class="text-xs text-gray-500 float-right">0 / 800</span></label>
+                <textarea id="additional_notes" maxlength="800" rows="4" class="w-full px-4 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:border-emerald-500"></textarea>
+            </div>
+
+            <button type="submit" id="generateBtn"
+                    class="w-full mt-8 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-2xl py-7 rounded-3xl transition-all shadow-lg">
+                GENERATE QR CODE
+            </button>
+        </form>
+
+        <!-- Preview Section -->
+        <div id="previewSection" class="preview-section mt-12 border-t pt-8">
+            <h3 class="font-semibold text-xl mb-6">QR Code Generated</h3>
+            <div id="qrPreview" class="flex justify-center bg-white p-8 rounded-3xl border border-gray-100"></div>
+            <div class="flex gap-4 mt-8">
+                <a id="downloadBtn" href="#" download class="flex-1 text-center bg-gray-900 text-white py-5 rounded-3xl font-medium text-lg">DOWNLOAD PNG</a>
+                <button onclick="location.reload()" class="flex-1 text-center bg-white border border-gray-300 py-5 rounded-3xl font-medium text-lg">GENERATE NEW</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -30,7 +109,6 @@ async function loadConfig() {
         const res = await fetch('/api/config');
         const config = await res.json();
 
-        // Populate Recipient Authority
         const authSelect = document.getElementById('recipient_authority_code');
         authSelect.innerHTML = '<option value="">-- Select Authority --</option>';
         config.authorities.forEach(a => {
@@ -40,7 +118,6 @@ async function loadConfig() {
             authSelect.appendChild(opt);
         });
 
-        // Populate Submission Type
         const typeSelect = document.getElementById('application_type');
         typeSelect.innerHTML = '<option value="">-- Select Submission Type --</option>';
         config.submission_types.forEach(t => {
@@ -54,7 +131,41 @@ async function loadConfig() {
     }
 }
 
-// Load config on page load
+document.getElementById('additional_notes').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length + ' / 800';
+});
+
+document.getElementById('qrForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = {
+        citizen_name: document.getElementById('citizen_name').value,
+        citizen_email_id: document.getElementById('citizen_email_id').value,
+        citizen_contact_number: document.getElementById('citizen_contact_number').value,
+        recipient_authority_code: document.getElementById('recipient_authority_code').value,
+        application_type: document.getElementById('application_type').value,
+        expected_turnaround_time: document.getElementById('expected_turnaround_time').value,
+        relevant_url: document.getElementById('relevant_url').value,
+        additional_notes: document.getElementById('additional_notes').value
+    };
+
+    const response = await fetch('/qr/generate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData)
+    });
+    const result = await response.json();
+
+    if (result.success) {
+        const previewSection = document.getElementById('previewSection');
+        previewSection.style.display = 'block';
+        document.getElementById('qrPreview').innerHTML = `<img src="data:image/png;base64,${result.image_base64}" class="max-w-[320px]">`;
+        
+        const downloadBtn = document.getElementById('downloadBtn');
+        downloadBtn.href = `data:image/png;base64,${result.image_base64}`;
+        downloadBtn.download = `${result.qr_id}.png`;
+    }
+});
+
 window.onload = loadConfig;
 </script>
 </body>
