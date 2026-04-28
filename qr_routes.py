@@ -51,12 +51,10 @@ def generator():
 
 @qr_bp.route('/api/config', methods=['GET'])
 def get_config():
-    auth = zoho_get('Config_Authority_Registry')
+    auth = zoho_get('Config_Authority_Registry_Report')
     authorities = [{'code': r.get('authority_registry_code'), 'name': r.get('authority_name')} for r in auth.get('data', [])]
-
-    types = zoho_get('Config_Submission_Types')
+    types = zoho_get('Config_Submission_Types_Report')
     submission_types = [{'code': r.get('submission_type_code'), 'name': r.get('submission_type_name')} for r in types.get('data', [])]
-
     return jsonify({'authorities': authorities, 'submission_types': submission_types})
 
 @qr_bp.route('/qr/generate', methods=['POST'])
