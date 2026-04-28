@@ -19,15 +19,15 @@ ZOHO_DOMAIN = os.environ.get('ZOHO_API_DOMAIN', 'https://www.zohoapis.in')
 def get_headers():
     return {'Authorization': f'Zoho-oauthtoken {ZOHO_ACCESS_TOKEN}', 'Content-Type': 'application/json'}
 
-def zoho_get(form_link_name, criteria=''):
-    url = f"{ZOHO_DOMAIN}/creator/v2.1/{ZOHO_OWNER}/{ZOHO_APP}/{form_link_name}/records"
+def zoho_get(report_link_name, criteria=''):
+    url = f"{ZOHO_DOMAIN}/creator/v2.1/data/{ZOHO_OWNER}/{ZOHO_APP}/report/{report_link_name}"
     params = {'criteria': criteria} if criteria else {}
     resp = requests.get(url, headers=get_headers(), params=params, timeout=10)
     return resp.json()
 
 def zoho_post(form_link_name, data):
-    url = f"{ZOHO_DOMAIN}/creator/v2.1/{ZOHO_OWNER}/{ZOHO_APP}/{form_link_name}/records"
-    payload = {"data": [data]}
+    url = f"{ZOHO_DOMAIN}/creator/v2.1/data/{ZOHO_OWNER}/{ZOHO_APP}/form/{form_link_name}"
+    payload = {"data": data}  # v2.1 takes a single dict, not a list-wrapped one
     resp = requests.post(url, json=payload, headers=get_headers(), timeout=10)
     return resp.json()
 
@@ -52,10 +52,12 @@ def generator():
 @qr_bp.route('/api/config', methods=['GET'])
 def get_config():
     auth = zoho_get('Config_Authority_Registry_Report')
-    authorities = [{'code': r.get('authority_registry_code'), 'name': r.get('authority_name')} for r in auth.get('data', [])]
     types = zoho_get('Config_Submission_Types_Report')
+    print(f"[config] auth response: {auth}")
+    print(f"[config] types response: {types}")
+    authorities = [{'code': r.get('authority_registry_code'), 'name': r.get('authority_name')} for r in auth.get('data', [])]
     submission_types = [{'code': r.get('submission_type_code'), 'name': r.get('submission_type_name')} for r in types.get('data', [])]
-    return jsonify({'authorities': authorities, 'submission_types': submission_types})
+    return jsonify({'authorities': authorities, 'submission_types': submission_types, '_debug': {'auth_raw': auth, 'types_raw': types}})
 
 @qr_bp.route('/qr/generate', methods=['POST'])
 def generate_qr():
