@@ -8,6 +8,7 @@
 </head>
 <body class="bg-gray-50 font-sans">
 <div class="max-w-4xl mx-auto p-6">
+
   <div class="flex justify-between items-center mb-8">
     <div class="flex items-center gap-3">
       <div class="bg-blue-900 text-white w-10 h-10 rounded-2xl flex items-center justify-center text-2xl">📌</div>
@@ -19,11 +20,25 @@
     <div class="px-4 py-1 bg-blue-100 text-blue-900 rounded-3xl font-mono text-sm">{{ qr_id }}</div>
   </div>
 
+  <!-- Submission summary -->
   <div class="bg-white rounded-3xl shadow p-8">
+    <div class="flex justify-between items-start mb-6">
+      <h3 class="font-semibold">Submission Details</h3>
+      <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase
+          {% if status == 'COMPLETED' %}bg-green-100 text-green-800
+          {% elif status == 'IN PROGRESS' %}bg-blue-100 text-blue-800
+          {% elif status == 'REJECTED' %}bg-red-100 text-red-800
+          {% elif status == 'SILENCED' %}bg-yellow-100 text-yellow-800
+          {% elif status == 'SUBMITTED' %}bg-indigo-100 text-indigo-800
+          {% else %}bg-gray-100 text-gray-700{% endif %}">
+        {{ status }}
+      </span>
+    </div>
+
     <div class="grid grid-cols-2 gap-x-8 gap-y-6 text-sm">
       <div><span class="text-gray-500">Citizen</span><br><span class="font-medium">{{ name }}</span></div>
       <div><span class="text-gray-500">Email</span><br><span class="font-medium">{{ email }}</span></div>
-      <div><span class="text-gray-500">Contact</span><br><span class="font-medium">{{ contact }}</span></div>
+      <div><span class="text-gray-500">Contact</span><br><span class="font-medium">{{ contact or '—' }}</span></div>
       <div><span class="text-gray-500">Authority</span><br><span class="font-medium">{{ authority }}</span></div>
       <div><span class="text-gray-500">Type</span><br><span class="font-medium">{{ sub_type }}</span></div>
       <div><span class="text-gray-500">ETA</span><br><span class="font-medium">{{ eta }}</span></div>
@@ -32,13 +47,13 @@
     {% if url %}
     <div class="mt-8 border-t pt-8">
       <span class="text-gray-500">Supporting URL / Drive Link</span>
-      <p class="mt-2"><a href="{{ url }}" target="_blank" class="text-blue-600 underline">{{ url }}</a></p>
+      <p class="mt-2"><a href="{{ url }}" target="_blank" class="text-blue-600 underline break-all">{{ url }}</a></p>
     </div>
     {% endif %}
 
     <div class="mt-8 border-t pt-8">
       <span class="text-gray-500">Additional Note</span>
-      <p class="mt-2 text-gray-700">{{ note }}</p>
+      <p class="mt-2 text-gray-700 whitespace-pre-wrap">{{ note }}</p>
     </div>
   </div>
 
@@ -50,40 +65,44 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-xs text-gray-500">New ETA</label>
-          <input type="date" id="eta" name="eta" value="{{ eta }}" class="w-full border rounded-xl px-4 py-3">
+          <input type="date" id="eta" name="eta" value="{{ eta_iso }}" class="w-full border rounded-xl px-4 py-3">
         </div>
         <div>
           <label class="text-xs text-gray-500">New Status</label>
           <select id="status" name="status" class="w-full border rounded-xl px-4 py-3">
-            <option value="Not Yet Received">Not Yet Received</option>
-            <option value="SUBMITTED">SUBMITTED</option>
-            <option value="IN PROGRESS">IN PROGRESS</option>
-            <option value="REJECTED">REJECTED</option>
-            <option value="SILENCED">SILENCED</option>
-            <option value="COMPLETED">COMPLETED</option>
+            <!-- Populated from /api/config; current status pre-selected -->
           </select>
         </div>
       </div>
-      <textarea id="comment" name="comment" rows="3" placeholder="Enter comment / action taken / observation..." class="mt-4 w-full border rounded-2xl px-4 py-3"></textarea>
-      <button type="submit" class="mt-4 w-full bg-blue-900 text-white py-4 rounded-2xl font-medium hover:bg-blue-800">LOG UPDATE</button>
+      <textarea id="comment" name="comment" rows="3"
+                placeholder="Enter comment / action taken / observation..."
+                class="mt-4 w-full border rounded-2xl px-4 py-3"></textarea>
+      <button type="submit" id="updateBtn"
+              class="mt-4 w-full bg-blue-900 text-white py-4 rounded-2xl font-medium hover:bg-blue-800">
+        LOG UPDATE
+      </button>
     </form>
   </div>
 
-  <!-- Activity Log with Timestamp -->
+  <!-- Activity Log -->
   <div class="mt-8 bg-white rounded-3xl shadow p-8">
     <h3 class="font-semibold mb-4">Activity Log & Comments</h3>
     <div id="activityLog" class="space-y-3">
-      {% for event in events %}
-      <div class="bg-gray-50 p-4 rounded-2xl text-sm">
-        <div class="flex justify-between items-baseline">
-          <span class="font-medium uppercase">{{ event.event_type }}</span>
-          <span class="text-gray-500 text-xs">{{ event.timestamp or event.timestamp_ist or 'Just now' }}</span>
+      {% if events %}
+        {% for event in events %}
+        <div class="bg-gray-50 p-4 rounded-2xl text-sm">
+          <div class="flex justify-between items-baseline">
+            <span class="font-medium uppercase">{{ event.event_type or 'EVENT' }}</span>
+            <span class="text-gray-500 text-xs">{{ event.timestamp or 'Just now' }}</span>
+          </div>
+          {% if event.comment_text %}<p class="mt-2 text-gray-700 whitespace-pre-wrap">{{ event.comment_text }}</p>{% endif %}
+          {% if event.eta_new %}<p class="text-xs text-blue-600 mt-1">ETA → {{ event.eta_new }}</p>{% endif %}
+          {% if event.status_new %}<p class="text-xs text-green-600">Status → {{ event.status_new }}</p>{% endif %}
         </div>
-        {% if event.comment_text %}<p class="mt-2 text-gray-700">{{ event.comment_text }}</p>{% endif %}
-        {% if event.eta_new %}<p class="text-xs text-blue-600 mt-1">ETA → {{ event.eta_new }}</p>{% endif %}
-        {% if event.status_new %}<p class="text-xs text-green-600">Status → {{ event.status_new }}</p>{% endif %}
-      </div>
-      {% endfor %}
+        {% endfor %}
+      {% else %}
+        <p class="text-sm text-gray-500 italic">No activity yet.</p>
+      {% endif %}
     </div>
   </div>
 
@@ -93,22 +112,54 @@
 </div>
 
 <script>
+const currentStatus = {{ status|tojson }};
+
+async function loadStatusOptions() {
+  try {
+    const res = await fetch('/api/config');
+    const config = await res.json();
+    const sel = document.getElementById('status');
+    const statuses = (config.statuses && config.statuses.length)
+      ? config.statuses
+      : ['Not Yet Received','SUBMITTED','IN PROGRESS','REJECTED','SILENCED','COMPLETED'];
+    sel.innerHTML = statuses.map(s =>
+      `<option value="${s}" ${s === currentStatus ? 'selected' : ''}>${s}</option>`).join('');
+  } catch (e) {
+    console.error('Status load failed:', e);
+  }
+}
+
 document.getElementById('updateForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const formData = new FormData(e.target);
-  const data = Object.fromEntries(formData);
-  const res = await fetch('/api/update_record', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(data)
-  });
-  if (res.ok) {
-    alert('Update logged successfully');
+  const btn = document.getElementById('updateBtn');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'SAVING...';
+
+  try {
+    const data = Object.fromEntries(new FormData(e.target));
+    const res = await fetch('/api/update_record', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const body = await res.json();
+    if (!res.ok || body.error) {
+      alert('Error: ' + (body.error || 'Failed to log update'));
+      return;
+    }
+    alert(body.message || 'Update logged successfully');
     location.reload();
-  } else {
-    alert('Error logging update');
+  } catch (err) {
+    alert('Network error. Please try again.');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
   }
 });
+
+window.addEventListener('DOMContentLoaded', loadStatusOptions);
 </script>
 </body>
 </html>
