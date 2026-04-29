@@ -217,10 +217,11 @@ def log_scan_event(qr_id, event_type="SCAN", comment_text="", eta_new="", status
 
 def fetch_submission(qr_id):
     """Return (record_id, record_dict) for a qr_id, or (None, None) if not found."""
-    # Zoho criteria string syntax
-    criteria = f'qr_id == "{qr_id}"'
+    # Zoho v2.1 criteria — no spaces around ==, value in double quotes
+    criteria = f'qr_id=="{qr_id}"'
     resp = zoho_get('Narada_Submissions_Report', criteria=criteria, max_records=1)
-    rows = resp.get('data', [])
+    print(f"[fetch_submission] qr_id={qr_id!r} criteria={criteria!r} response={resp}")
+    rows = resp.get('data', []) or []
     if not rows:
         return None, None
     row = rows[0]
@@ -228,7 +229,7 @@ def fetch_submission(qr_id):
 
 
 def fetch_events(qr_id, limit=200):
-    criteria = f'qr_id == "{qr_id}"'
+    criteria = f'qr_id=="{qr_id}"'
     resp = zoho_get('Narada_Scan_Events_Report', criteria=criteria, max_records=limit)
     events = resp.get('data', []) or []
     # newest first
@@ -340,7 +341,14 @@ def scan_dashboard(qr_id):
     try:
         record_id, record = fetch_submission(qr_id)
         if not record:
-            return f"QR ID {qr_id} not found", 404
+            # Surface Zoho's actual response on 404 so we can debug fast.
+            debug = zoho_get('Narada_Submissions_Report', criteria=f'qr_id=="{qr_id}"', max_records=1)
+            return (
+                f"<h2>QR ID {qr_id} not found</h2>"
+                f"<p>Zoho criteria response (debug):</p>"
+                f"<pre>{debug}</pre>",
+                404,
+            )
 
         # Log this scan (best-effort)
         log_scan_event(qr_id, event_type='SCAN')
