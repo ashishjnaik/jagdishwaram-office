@@ -22,6 +22,19 @@ Date formats expected by Zoho:
   datetime -> dd-MMM-yyyy HH:mm:ss  (e.g. 30-Apr-2026 14:35:09)
 """
 
+# Canonical status values - MUST match Narada_Submissions.status dropdown
+# choices in Zoho Creator AND Narada_Scan_Events.status_new choices.
+# Source of truth: Config_Status_Report (master list).
+VALID_STATUSES = (
+    'Not Yet Received',
+    'SUBMITTED',
+    'IN PROGRESS',
+    'REJECTED',
+    'SILENCED',
+    'COMPLETED',
+)
+DEFAULT_STATUS = 'Not Yet Received'
+
 from flask import Blueprint, request, jsonify, render_template
 import os
 import time
@@ -290,7 +303,7 @@ def generate_qr():
             'expected_turnaround_time': to_zoho_date(eta),
             'additional_notes': notes,
             'qr_generation_timestamp': to_zoho_datetime(now_ist),
-            'status': 'Not Yet Received',
+            'status': DEFAULT_STATUS,
         }
         if citizen_contact:
             record['citizen_contact_number'] = citizen_contact
@@ -365,6 +378,11 @@ def update_record():
 
         if not qr_id:
             return jsonify({'error': 'qr_id missing'}), 400
+
+        if status_new and status_new not in VALID_STATUSES:
+            return jsonify({
+                'error': f"Invalid status '{status_new}'. Must be one of: {', '.join(VALID_STATUSES)}"
+            }), 400
 
         record_id, record = fetch_submission(qr_id)
         if not record:
