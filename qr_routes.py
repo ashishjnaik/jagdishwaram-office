@@ -104,7 +104,11 @@ def get_headers():
 
 
 def zoho_get(report_link_name, criteria='', max_records=200):
+    """v2.1 max_records ONLY accepts 200, 500, or 1000. Coerce anything else."""
     url = f"{ZOHO_DOMAIN}/creator/v2.1/data/{ZOHO_OWNER}/{ZOHO_APP}/report/{report_link_name}"
+    if max_records not in (200, 500, 1000):
+        # Pick smallest acceptable value >= requested, default to 200
+        max_records = 200 if max_records <= 200 else (500 if max_records <= 500 else 1000)
     params = {'max_records': max_records}
     if criteria:
         params['criteria'] = criteria
@@ -217,9 +221,10 @@ def log_scan_event(qr_id, event_type="SCAN", comment_text="", eta_new="", status
 
 def fetch_submission(qr_id):
     """Return (record_id, record_dict) for a qr_id, or (None, None) if not found."""
-    # Zoho v2.1 criteria — no spaces around ==, value in double quotes
+    # Zoho v2.1 criteria — no spaces around ==, value in double quotes.
+    # max_records of 200 is the smallest value Zoho v2.1 accepts.
     criteria = f'qr_id=="{qr_id}"'
-    resp = zoho_get('Narada_Submissions_Report', criteria=criteria, max_records=1)
+    resp = zoho_get('Narada_Submissions_Report', criteria=criteria, max_records=200)
     print(f"[fetch_submission] qr_id={qr_id!r} criteria={criteria!r} response={resp}")
     rows = resp.get('data', []) or []
     if not rows:
