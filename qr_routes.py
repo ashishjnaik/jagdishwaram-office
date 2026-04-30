@@ -376,8 +376,19 @@ def generate_qr():
         notes = (data.get('additional_notes') or '').strip()
         url = (data.get('relevant_url') or '').strip()
 
-        if not all([citizen_name, citizen_email, eta, notes]):
-            return jsonify({'error': 'Mandatory fields missing'}), 400
+        missing = [
+            label for label, value in [
+                ('citizen_name', citizen_name),
+                ('citizen_email_id', citizen_email),
+                ('expected_turnaround_time', eta),
+                ('additional_notes', notes),
+            ] if not value
+        ]
+        if missing:
+            return jsonify({
+                'error': 'Mandatory fields missing',
+                'missing_fields': missing,
+            }), 400
 
         qr_id = generate_qr_id(authority)
         now_ist = get_ist_now()
@@ -399,11 +410,23 @@ def generate_qr():
             record['relevant_url'] = url
 
         zoho_resp = zoho_post('Narada_Submissions', record)
+        print(f"[generate] zoho insert payload={record}")
         print(f"[generate] zoho insert response: {zoho_resp}")
 
-        if zoho_resp.get('code') and zoho_resp.get('code') != 3000:
-            # Zoho convention: code 3000 = success
-            return jsonify({'error': 'Failed to save submission', 'zoho': zoho_resp}), 500
+        # Zoho v2.1 conventions:
+        #   top-level code 3000  = success
+        #   top-level code 3001+ = full failure
+        #   Even on "success" the response can contain per-field errors —
+        #   inspect resp['result'] / resp['error'] for partial rejections.
+        top_code = zoho_resp.get('code') if isinstance(zoho_resp, dict) else None
+        field_errors = zoho_resp.get('error') if isinstance(zoho_resp, dict) else None
+
+        if (top_code and top_code != 3000) or field_errors:
+            return jsonify({
+                'error': 'Failed to save submission',
+                'zoho': zoho_resp,
+                'sent_payload': record,
+            }), 502
 
         # Log GENERATE event (non-blocking)
         log_scan_event(qr_id, event_type='GENERATE', comment_text='QR generated')
@@ -425,11 +448,12 @@ def generate_qr():
 
 @qr_bp.route('/scan/<qr_id>', methods=['GET'])
 def scan_dashboard(qr_id):
+    from flask import make_response
     try:
         record_id, record = fetch_submission(qr_id)
         if not record:
             # Surface Zoho's actual response on 404 so we can debug fast.
-            debug = zoho_get('Narada_Submissions_Report', criteria=f'qr_id=="{qr_id}"', max_records=1)
+            debug = zoho_get('Narada_Submissions_Report', criteria=f'qr_id=="{qr_id}"', max_records=200)
             return (
                 f"<h2>QR ID {qr_id} not found</h2>"
                 f"<p>Zoho criteria response (debug):</p>"
@@ -460,7 +484,16 @@ def scan_dashboard(qr_id):
         except ValueError:
             pass
 
-        return render_template(
+        # Zoho's URL field returns a dict {url, title}; flatten if so.
+        raw_url = record.get('relevant_url', '')
+        if isinstance(raw_url, dict):
+            raw_url = raw_url.get('url') or raw_url.get('value') or ''
+
+        # If status came back empty/missing from Zoho, fall back to default for display
+        # but flag it so we know the underlying data is incomplete.
+        actual_status = record.get('status') or 'Not Yet Received'
+
+        rendered = render_template(
             'qr_dashboard.html',
             qr_id=qr_id,
             name=record.get('citizen_name', ''),
@@ -471,10 +504,15 @@ def scan_dashboard(qr_id):
             eta=display_date(record.get('expected_turnaround_time', '')),
             eta_iso=eta_iso,
             note=record.get('additional_notes', ''),
-            url=record.get('relevant_url', ''),
-            status=record.get('status', 'Not Yet Received'),
+            url=raw_url,
+            status=actual_status,
             events=events,
         )
+        resp = make_response(rendered)
+        # Prevent Cloudflare/browser from serving a stale dashboard after a status update.
+        resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        resp.headers['Pragma'] = 'no-cache'
+        return resp
     except Exception as e:
         print('[scan] error:', traceback.format_exc())
         return f"Error loading record: {e}", 500
