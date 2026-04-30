@@ -64,6 +64,36 @@ ZOHO_ACCOUNTS_DOMAIN = os.environ.get('ZOHO_ACCOUNTS_DOMAIN', 'https://accounts.
 
 _token_cache = {'token': None, 'expires_at': 0}
 
+# Cache for code->name lookup maps (Authority + Submission Type). 5-minute TTL
+# avoids two Zoho calls on every scan while still picking up master-data edits
+# within minutes.
+_lookup_cache = {'authority': {}, 'submission_type': {}, 'expires_at': 0}
+
+
+def get_lookup_maps():
+    """Return (authority_map, submission_type_map) where map = {code: name}."""
+    now = time.time()
+    if _lookup_cache['expires_at'] > now and _lookup_cache['authority']:
+        return _lookup_cache['authority'], _lookup_cache['submission_type']
+    try:
+        auth = zoho_get('Config_Authority_Registry_Report', max_records=200)
+        types = zoho_get('Config_Submission_Types_Report', max_records=200)
+        auth_map = {
+            r.get('authority_registry_code'): r.get('authority_name')
+            for r in auth.get('data', []) if r.get('authority_registry_code')
+        }
+        type_map = {
+            r.get('submission_type_code'): r.get('submission_type_name')
+            for r in types.get('data', []) if r.get('submission_type_code')
+        }
+        _lookup_cache['authority'] = auth_map
+        _lookup_cache['submission_type'] = type_map
+        _lookup_cache['expires_at'] = now + 300  # 5 min TTL
+        return auth_map, type_map
+    except Exception as e:
+        print(f"[lookup_maps] failed, falling back to empty: {e}")
+        return {}, {}
+
 
 # ---------------------------------------------------------------------------
 # Zoho helpers
@@ -195,25 +225,77 @@ def create_qr_image(short_url):
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
 
-def log_scan_event(qr_id, event_type="SCAN", comment_text="", eta_new="", status_new=""):
-    """Append one row to Narada_Scan_Events. Best-effort; never raises."""
+def build_client_descriptor():
+    """Compose a structured client-info string from Sec-CH-UA hints, falling
+    back to legacy User-Agent. Sec-CH-UA gives cleaner browser/OS/mobile data
+    than parsing the UA string."""
+    ua_brand = request.headers.get('Sec-CH-UA', '').strip()
+    ua_mobile = request.headers.get('Sec-CH-UA-Mobile', '').strip()  # ?0 / ?1
+    ua_platform = request.headers.get('Sec-CH-UA-Platform', '').strip().strip('"')
+    raw_ua = request.headers.get('User-Agent', '').strip()
+
+    parts = []
+    if ua_platform:
+        parts.append(f"OS={ua_platform}")
+    if ua_mobile:
+        parts.append("Mobile=Yes" if ua_mobile == '?1' else "Mobile=No")
+    if ua_brand:
+        parts.append(f"Browser={ua_brand}")
+    if not parts:
+        # No CH-UA hints (older browser, server-side scan, etc.) — fall back.
+        return raw_ua[:1000] or 'Unknown'
+
+    descriptor = ' | '.join(parts)
+    # Append a snippet of raw UA for forensic completeness, capped to fit Zoho's text field.
+    if raw_ua:
+        descriptor += f" | RawUA={raw_ua}"
+    return descriptor[:1000]
+
+
+def log_scan_event(qr_id, event_type="SCAN", comment_text="", eta_new="", status_new="",
+                   eta_old="", status_old=""):
+    """Append one row to Narada_Scan_Events. Best-effort; never raises.
+
+    For UPDATE events, eta_old/status_old are embedded into comment_text so the
+    activity log reads as a clear transition narrative without a Zoho schema change.
+    """
     try:
         ip = request.headers.get('X-Forwarded-For', request.remote_addr) or 'Unknown'
-        ua = request.headers.get('User-Agent', 'Unknown')[:1000]  # Zoho text field cap
+        client_info = build_client_descriptor()
+
+        # Build a transition narrative for UPDATE events.
+        if event_type == 'UPDATE':
+            transitions = []
+            if eta_old or eta_new:
+                old_disp = display_date(to_zoho_date(eta_old)) if eta_old else '(none)'
+                new_disp = display_date(to_zoho_date(eta_new)) if eta_new else '(unchanged)'
+                if eta_new and old_disp != new_disp:
+                    transitions.append(f"ETA: {old_disp} -> {new_disp}")
+            if status_new and status_new != status_old:
+                transitions.append(f"Status: {status_old or '(none)'} -> {status_new}")
+            if transitions:
+                prefix = '; '.join(transitions)
+                comment_text = f"{prefix}\n{comment_text}".strip() if comment_text else prefix
+
         record = {
             'event_id': generate_event_id(),
             'qr_id': qr_id,
             'event_type': event_type,
             'timestamp': to_zoho_datetime(get_ist_now()),
             'ip_address': ip,
-            'user_agent': ua,
+            'user_agent': client_info,
             'comment_text': comment_text,
         }
         if eta_new:
             record['eta_new'] = to_zoho_date(eta_new)
         if status_new:
             record['status_new'] = status_new
-        return zoho_post('Narada_Scan_Events', record)
+
+        resp = zoho_post('Narada_Scan_Events', record)
+        # Surface dropdown-value errors so we don't silently lose log data.
+        if isinstance(resp, dict) and resp.get('code') and resp.get('code') != 3000:
+            print(f"[scan_event] WARNING zoho rejected event row: {resp}")
+        return resp
     except Exception as e:
         print(f"[scan_event] log failed: {e}")
         return None
@@ -360,16 +442,34 @@ def scan_dashboard(qr_id):
 
         events = fetch_events(qr_id)
 
+        # Resolve authority code -> full name and submission type code -> full name
+        auth_map, type_map = get_lookup_maps()
+        auth_code = record.get('recipient_authority_code', '')
+        type_code = record.get('application_type', '')
+        authority_display = (
+            f"{auth_map[auth_code]} ({auth_code})" if auth_code in auth_map else auth_code
+        )
+        sub_type_display = (
+            f"{type_map[type_code]} ({type_code})" if type_code in type_map else type_code
+        )
+
+        # Convert ETA from Zoho 'DD-MMM-YYYY' to ISO 'YYYY-MM-DD' for the date input prefill
+        eta_iso = ''
+        try:
+            eta_iso = datetime.strptime(record.get('expected_turnaround_time', ''), '%d-%b-%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            pass
+
         return render_template(
             'qr_dashboard.html',
             qr_id=qr_id,
             name=record.get('citizen_name', ''),
             email=record.get('citizen_email_id', ''),
             contact=record.get('citizen_contact_number', ''),
-            authority=record.get('recipient_authority_code', ''),
-            sub_type=record.get('application_type', ''),
+            authority=authority_display,
+            sub_type=sub_type_display,
             eta=display_date(record.get('expected_turnaround_time', '')),
-            eta_iso=record.get('expected_turnaround_time', ''),
+            eta_iso=eta_iso,
             note=record.get('additional_notes', ''),
             url=record.get('relevant_url', ''),
             status=record.get('status', 'Not Yet Received'),
@@ -401,10 +501,11 @@ def update_record():
         if not record:
             return jsonify({'error': 'Submission not found'}), 404
 
-        # Decide whether anything actually changed -> patch the submission
+        # Capture OLD values before patching so the activity log can show a transition.
+        current_eta_zoho = record.get('expected_turnaround_time', '')  # 'DD-MMM-YYYY'
         current_eta_iso = ''
         try:
-            current_eta_iso = datetime.strptime(record.get('expected_turnaround_time', ''), '%d-%b-%Y').strftime('%Y-%m-%d')
+            current_eta_iso = datetime.strptime(current_eta_zoho, '%d-%b-%Y').strftime('%Y-%m-%d')
         except ValueError:
             pass
         current_status = record.get('status', '')
@@ -415,14 +516,24 @@ def update_record():
         if status_new and status_new != current_status:
             patch_payload['status'] = status_new
 
-        patched = False
+        patched_fields = []
         if patch_payload:
             patch_resp = zoho_patch('Narada_Submissions_Report', record_id, patch_payload)
-            print(f"[update] patch response: {patch_resp}")
-            patched = True
+            print(f"[update] patch payload={patch_payload} response={patch_resp}")
+            # Detect partial / full PATCH failure. Zoho v2.1 success = code 3000.
+            patch_code = patch_resp.get('code') if isinstance(patch_resp, dict) else None
+            if patch_code and patch_code != 3000:
+                # Surface the failure to the user instead of silently logging an event.
+                return jsonify({
+                    'error': 'Failed to update submission record',
+                    'zoho_code': patch_code,
+                    'zoho_message': patch_resp.get('message') or patch_resp.get('error'),
+                    'attempted_fields': list(patch_payload.keys()),
+                }), 502
+            patched_fields = list(patch_payload.keys())
 
-        # Append event (UPDATE if values changed, COMMENT if just a comment, otherwise NOOP-comment)
-        if patched:
+        # Choose event type
+        if patched_fields:
             event_type = 'UPDATE'
         elif comment:
             event_type = 'COMMENT'
@@ -435,9 +546,15 @@ def update_record():
             comment_text=comment,
             eta_new=eta_new if 'expected_turnaround_time' in patch_payload else '',
             status_new=status_new if 'status' in patch_payload else '',
+            eta_old=current_eta_iso if 'expected_turnaround_time' in patch_payload else '',
+            status_old=current_status if 'status' in patch_payload else '',
         )
 
-        return jsonify({'success': True, 'patched': patched, 'event_type': event_type})
+        return jsonify({
+            'success': True,
+            'patched_fields': patched_fields,
+            'event_type': event_type,
+        })
     except Exception as e:
         print('[update] error:', traceback.format_exc())
         return jsonify({'error': str(e)}), 500
