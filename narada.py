@@ -1,5 +1,5 @@
 """
-qr_routes.py - Narada QR Tracking System (Zoho Creator JDO backend) - v1.0-zoho-baseline
+qr_routes.py - Narada QR Tracking System (Zoho Creator JDO backend)
 
 Canonical naming table (DO NOT DRIFT)
 -------------------------------------

@@ -6,13 +6,12 @@
 
 **Applicant:** Ashish Jagdish Naik (Pro Se / स्वयं-प्रतिनिधी)
 
-**Purpose:** Public accountability portal exposing 11 years of institutional 
-failure across 16 parallel administrative and judicial threads.
+**Purpose:** Public Transparency and accountability portal exposing 11 years of institutional 
+failure across multiple administrative and judicial threads.
 
 **Three court orders — all in applicant's favour.**  
 **Zero enforcement — documented.**  
 **सत्यमेव जयते.**
 
 ---
-
-Built with Claude AI | Jagdishwaram Digital Office | 2026
+Built in collaboration with AI | Jagdishwaram Digital Office | 2026

@@ -1,0 +1,288 @@
+"""
+Hanuman agent routes.
+  GET  /field        — field capture form (HITL only)
+  POST /field/submit — receives form data, writes .txt + uploads files to Drive Chronicle Inbox
+  POST /capture      — lightweight capture stub
+"""
+import io
+import os
+from datetime import datetime
+
+import pytz
+from flask import Blueprint, jsonify, render_template, request
+
+hanuman_bp = Blueprint('hanuman', __name__)
+
+# ── Config ────────────────────────────────────────────────────────────────────
+
+HANUMAN_INBOX_FOLDER_ID = os.environ.get('HANUMAN_INBOX_FOLDER_ID')
+GOOGLE_QUOTA_USER = os.environ.get('GOOGLE_QUOTA_USER', 'ashish.j.naik@gmail.com')
+
+AUTHORITY_NAMES = {
+    'MOR': 'Tehsildar Vasai Office',
+    'NPS': 'SDO Vasai Sub-Division',
+    'DMD': 'District Collector Palghar',
+    'EAF': 'Arnala Coastal Police Station',
+    'RPD': 'ACP Nalasopara Division',
+    'AGD': 'Police Commissioner MBVV',
+    'SIC': 'State Information Commission Maharashtra',
+    'RPO': 'Regional Passport Office',
+    'JMC': '4th JMFC Vasai',
+    'JDC': 'District Court Palghar',
+    'HCB': 'High Court Bombay',
+}
+
+APP_TYPE_NAMES = {
+    'APPL': 'General Application',
+    'PETI': 'Petition',
+    'RTIA': 'Right to Information',
+    'COMP': 'Complaint',
+}
+
+# ── Drive helpers ─────────────────────────────────────────────────────────────
+
+def _get_drive_service():
+    """Return an authenticated Drive v3 service, or None / error string on failure."""
+    try:
+        import json as _json
+        from google.auth.transport.requests import Request
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build as _build
+
+        token_json = os.environ.get('GOOGLE_USER_TOKEN')
+        if not token_json:
+            print('DEBUG: GOOGLE_USER_TOKEN missing from Railway env vars')
+            return None
+
+        scopes = [
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive',
+        ]
+        creds = Credentials.from_authorized_user_info(_json.loads(token_json), scopes)
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        return _build('drive', 'v3', credentials=creds)
+    except Exception as e:
+        print(f'CRITICAL ERROR in _get_drive_service: {e}')
+        return f'AUTH_ERROR: {e}'
+
+
+def _write_to_inbox(text_content: str, filename: str) -> dict:
+    """Upload a plain-text file to the Hanuman Chronicle Inbox folder."""
+    try:
+        from googleapiclient.http import MediaIoBaseUpload
+    except ImportError:
+        return {'ok': False, 'error': 'google-api-python-client not installed'}
+
+    service = _get_drive_service()
+    if isinstance(service, str) and 'AUTH_ERROR' in service:
+        return {'ok': False, 'error': service}
+    if not service:
+        print(f'[HANUMAN LOCAL FALLBACK] {filename}')
+        print(text_content[:300])
+        return {'ok': False, 'error': 'Drive not configured — note stored locally only'}
+
+    try:
+        meta = {'name': filename, 'parents': [HANUMAN_INBOX_FOLDER_ID], 'mimeType': 'text/plain'}
+        media = MediaIoBaseUpload(
+            io.BytesIO(text_content.encode('utf-8')),
+            mimetype='text/plain',
+            resumable=False,
+        )
+        f = service.files().create(
+            body=meta, media_body=media, fields='id,name',
+            supportsAllDrives=True, quotaUser=GOOGLE_QUOTA_USER,
+        ).execute()
+        return {'ok': True, 'file_id': f.get('id'), 'file_name': f.get('name')}
+    except Exception as e:
+        print(f'ERROR: Drive inbox write failed: {e}')
+        return {'ok': False, 'error': str(e)}
+
+
+def _upload_binary_to_inbox(data: bytes, filename: str, content_type: str) -> bool:
+    """Upload any binary file (photo, PDF, audio) to the Chronicle Inbox folder."""
+    try:
+        from googleapiclient.http import MediaIoBaseUpload
+    except ImportError:
+        return False
+
+    service = _get_drive_service()
+    if not service or isinstance(service, str):
+        return False
+    try:
+        meta = {'name': filename, 'parents': [HANUMAN_INBOX_FOLDER_ID]}
+        media = MediaIoBaseUpload(
+            io.BytesIO(data),
+            mimetype=content_type or 'application/octet-stream',
+            resumable=False,
+        )
+        service.files().create(
+            body=meta, media_body=media, fields='id',
+            supportsAllDrives=True, quotaUser=GOOGLE_QUOTA_USER,
+        ).execute()
+        return True
+    except Exception as e:
+        print(f'WARNING: Binary upload failed (non-fatal): {e}')
+        return False
+
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@hanuman_bp.route('/field', methods=['GET'])
+def field():
+    return render_template('field.html')
+
+
+@hanuman_bp.route('/field/submit', methods=['POST'])
+def field_submit():
+    """
+    Accepts Hanuman field capture form.
+    Form fields (from templates/field.html):
+      capture_id, ingestion_timestamp — pre-generated by client JS
+      when_field, where_field, what   — core capture fields
+      authority, apptype, labels      — context (all optional)
+      url, references, annotation     — observation (all optional)
+      photos (multiple), docs (multiple), audio (single) — file attachments
+    """
+    try:
+        capture_id    = request.form.get('capture_id', '').strip()
+        ingestion_ts  = request.form.get('ingestion_timestamp', '').strip()
+        when_field    = request.form.get('when_field', '').strip()
+        where_field   = request.form.get('where_field', '').strip()
+        what          = request.form.get('what', '').strip()
+        authority     = request.form.get('authority', '').strip()
+        apptype       = request.form.get('apptype', '').strip()
+        labels        = request.form.get('labels', '').strip()
+        url_field     = request.form.get('url', '').strip()
+        references    = request.form.get('references', '').strip()
+        annotation    = request.form.get('annotation', '').strip()
+        photo_files   = request.files.getlist('photos')
+        doc_files     = request.files.getlist('docs')
+        audio_file    = request.files.get('audio')
+
+        if not what:
+            return jsonify({'ok': False, 'error': 'Field observation (What) is required'}), 400
+
+        # Fallback IDs if client did not send them (should not happen in practice)
+        if not capture_id:
+            ist = pytz.timezone('Asia/Kolkata')
+            now = datetime.now(ist)
+            capture_id   = f"Chronicle-AJN-{now.strftime('%Y%b%d')}-{now.strftime('%H%M%S')}"
+            ingestion_ts = now.strftime('%d %B %Y | %I:%M %p IST')
+
+        # ── Build .txt content ───────────────────────────────────────────────
+        SEP1 = '═' * 56
+        SEP2 = '─' * 56
+        lines = [
+            SEP1,
+            'HANUMAN FIELD NOTE',
+            f'Capture ID  : {capture_id}',
+            f'Citizen ID  : AJN',
+            f'Timestamp   : {ingestion_ts}',
+            f'When        : {when_field}',
+            f'Where       : {where_field}',
+        ]
+        if authority:
+            lines.append(f'Authority   : {authority} — {AUTHORITY_NAMES.get(authority, "")}')
+        if apptype:
+            lines.append(f'App Type    : {apptype} — {APP_TYPE_NAMES.get(apptype, "")}')
+        if labels:
+            lines.append(f'Labels      : {labels}')
+        lines += [SEP1, '', '## नोंद / What (Field Event)', what, '']
+
+        if url_field:
+            lines += ['## संदर्भ URL (Relevant URL)', url_field, '']
+        if references:
+            lines += ['## संदर्भ (References)', references, '']
+        if annotation:
+            lines += [
+                '## व्यासांची टिप्पणी (Annotation by Citizen aka HITL aka Vyasa)',
+                annotation, '',
+            ]
+
+        valid_photos = [f for f in photo_files if f and f.filename]
+        valid_docs   = [f for f in doc_files   if f and f.filename]
+
+        if valid_photos:
+            lines.append('## छायाचित्र (Photos Attached)')
+            for i, pf in enumerate(valid_photos, 1):
+                ext = pf.filename.rsplit('.', 1)[-1] if '.' in pf.filename else 'jpg'
+                lines.append(f'Photo {i}: {capture_id}-photo{i}.{ext}')
+            lines.append('')
+
+        if valid_docs:
+            lines.append('## दस्तऐवज (Documents Attached)')
+            for i, df in enumerate(valid_docs, 1):
+                lines.append(f'Doc {i}: {capture_id}-doc{i}.pdf')
+            lines.append('')
+
+        if audio_file and audio_file.filename:
+            ext = audio_file.filename.rsplit('.', 1)[-1] if '.' in audio_file.filename else 'm4a'
+            lines += [
+                '## ऑडिओ/व्हिडिओ (Audio/Video Attached)',
+                f'{capture_id}-audio.{ext}', '',
+            ]
+
+        lines += [
+            SEP2,
+            'जय हनुमान। सत्यमेव जयते।',
+            'www.jagdishwaram-office.org | info@jagdishwaram-office.org',
+            SEP2,
+        ]
+        txt_content  = '\n'.join(lines)
+        txt_filename = f'{capture_id}.txt'
+
+        # ── Upload .txt to Drive ─────────────────────────────────────────────
+        write_result = _write_to_inbox(txt_content, txt_filename)
+
+        # ── Upload photos ────────────────────────────────────────────────────
+        photos_uploaded = 0
+        for i, pf in enumerate(valid_photos, 1):
+            ext  = pf.filename.rsplit('.', 1)[-1] if '.' in pf.filename else 'jpg'
+            if _upload_binary_to_inbox(pf.read(), f'{capture_id}-photo{i}.{ext}', pf.content_type):
+                photos_uploaded += 1
+
+        # ── Upload documents ─────────────────────────────────────────────────
+        docs_uploaded = 0
+        for i, df in enumerate(valid_docs, 1):
+            if _upload_binary_to_inbox(df.read(), f'{capture_id}-doc{i}.pdf', 'application/pdf'):
+                docs_uploaded += 1
+
+        # ── Upload audio/video ───────────────────────────────────────────────
+        audio_uploaded = False
+        if audio_file and audio_file.filename:
+            ext = audio_file.filename.rsplit('.', 1)[-1] if '.' in audio_file.filename else 'm4a'
+            audio_uploaded = _upload_binary_to_inbox(
+                audio_file.read(), f'{capture_id}-audio.{ext}', audio_file.content_type
+            )
+
+        return jsonify({
+            'ok':              write_result.get('ok', False),
+            'ref':             capture_id,
+            'drive_file':      write_result.get('file_name', txt_filename),
+            'drive_file_id':   write_result.get('file_id'),
+            'photos_uploaded': photos_uploaded,
+            'docs_uploaded':   docs_uploaded,
+            'audio_uploaded':  audio_uploaded,
+            'error':           write_result.get('error') if not write_result.get('ok') else None,
+        })
+
+    except Exception as e:
+        print(f'ERROR field_submit: {e}')
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+
+@hanuman_bp.route('/capture', methods=['POST'])
+def capture():
+    """Lightweight capture stub — Hanuman's minimal ingest endpoint."""
+    try:
+        data = request.get_json()
+        capture_type = data.get('type', 'note')
+        return jsonify({
+            'status': 'captured',
+            'type': capture_type,
+            'timestamp': datetime.now().isoformat(),
+            'message': f'Hanuman ने {capture_type} सुरक्षित केले',
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

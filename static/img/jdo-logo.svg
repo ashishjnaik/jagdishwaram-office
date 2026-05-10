@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" fill="none">
+  <defs>
+
+    <!-- Shield fill: deep navy top → warm parchment bottom -->
+    <linearGradient id="shieldFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0d1f44"/>
+      <stop offset="42%"  stop-color="#132d5e"/>
+      <stop offset="58%"  stop-color="#b09a6e"/>
+      <stop offset="100%" stop-color="#e8d8b0"/>
+    </linearGradient>
+
+    <!-- Shield outer border: bronze-gold -->
+    <linearGradient id="borderGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#6b4e10"/>
+      <stop offset="30%"  stop-color="#d4a843"/>
+      <stop offset="65%"  stop-color="#c4882a"/>
+      <stop offset="100%" stop-color="#6b4e10"/>
+    </linearGradient>
+
+    <!-- Eye iris: lighter blue-grey centre → dark navy edge -->
+    <radialGradient id="irisGrad" cx="42%" cy="36%" r="58%">
+      <stop offset="0%"   stop-color="#7a9ac4"/>
+      <stop offset="55%"  stop-color="#2a4a7f"/>
+      <stop offset="100%" stop-color="#09172e"/>
+    </radialGradient>
+
+    <!-- Pupil depth -->
+    <radialGradient id="pupilGrad" cx="45%" cy="40%" r="55%">
+      <stop offset="0%"   stop-color="#1a2a44"/>
+      <stop offset="100%" stop-color="#040c18"/>
+    </radialGradient>
+
+    <!-- Ray glow at source -->
+    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#f5d060" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#f5d060" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Clip inside shield for circuit lines -->
+    <clipPath id="shieldClip">
+      <path d="M 26 43 Q 26 33 37 33 L 163 33 Q 174 33 174 43
+               L 174 138 Q 171 208 100 246 Q 29 208 26 138 Z"/>
+    </clipPath>
+
+  </defs>
+
+  <!-- ══ SHIELD OUTER (bronze border — slightly larger) ══ -->
+  <path d="M 20 43 Q 20 26 37 26 L 163 26 Q 180 26 180 43
+           L 180 140 Q 177 215 100 249 Q 23 215 20 140 Z"
+        fill="url(#borderGrad)"/>
+
+  <!-- ══ SHIELD INNER FILL ══ -->
+  <path d="M 26 43 Q 26 33 37 33 L 163 33 Q 174 33 174 43
+           L 174 138 Q 171 208 100 246 Q 29 208 26 138 Z"
+        fill="url(#shieldFill)"/>
+
+  <!-- ══ RAYS (emanate from above eye, some extend beyond shield top) ══ -->
+  <!-- Soft glow at ray source -->
+  <ellipse cx="100" cy="72" rx="34" ry="22" fill="url(#glowGrad)"/>
+
+  <!-- Rays: translate to source, then rotate each line -->
+  <g transform="translate(100,72)">
+    <!-- Central ray — straight up -->
+    <line x1="0" y1="-4" x2="0"   y2="-68" stroke="#e8c040" stroke-width="3.8" stroke-linecap="round" opacity="0.95"/>
+    <!-- ±18° -->
+    <line x1="0" y1="-4" x2="0"   y2="-64" stroke="#e8c040" stroke-width="3.0" stroke-linecap="round" opacity="0.85" transform="rotate(18)"/>
+    <line x1="0" y1="-4" x2="0"   y2="-64" stroke="#e8c040" stroke-width="3.0" stroke-linecap="round" opacity="0.85" transform="rotate(-18)"/>
+    <!-- ±36° -->
+    <line x1="0" y1="-4" x2="0"   y2="-57" stroke="#e8c040" stroke-width="2.4" stroke-linecap="round" opacity="0.72" transform="rotate(36)"/>
+    <line x1="0" y1="-4" x2="0"   y2="-57" stroke="#e8c040" stroke-width="2.4" stroke-linecap="round" opacity="0.72" transform="rotate(-36)"/>
+    <!-- ±54° -->
+    <line x1="0" y1="-4" x2="0"   y2="-48" stroke="#e8c040" stroke-width="1.9" stroke-linecap="round" opacity="0.55" transform="rotate(54)"/>
+    <line x1="0" y1="-4" x2="0"   y2="-48" stroke="#e8c040" stroke-width="1.9" stroke-linecap="round" opacity="0.55" transform="rotate(-54)"/>
+    <!-- ±72° -->
+    <line x1="0" y1="-4" x2="0"   y2="-38" stroke="#e8c040" stroke-width="1.4" stroke-linecap="round" opacity="0.38" transform="rotate(72)"/>
+    <line x1="0" y1="-4" x2="0"   y2="-38" stroke="#e8c040" stroke-width="1.4" stroke-linecap="round" opacity="0.38" transform="rotate(-72)"/>
+  </g>
+
+  <!-- ══ EYE SCLERA (almond / lens shape) ══ -->
+  <!-- Eye centre y=112 — upper 45% of shield height -->
+  <path d="M 36 112 Q 68 70 100 70 Q 132 70 164 112
+           Q 132 154 100 154 Q 68 154 36 112 Z"
+        fill="#f0e4c8"/>
+
+  <!-- ══ IRIS ══ -->
+  <circle cx="100" cy="112" r="33" fill="url(#irisGrad)"/>
+
+  <!-- Iris concentric rings for texture -->
+  <circle cx="100" cy="112" r="33" fill="none" stroke="#3d5c8a" stroke-width="1.2" opacity="0.35"/>
+  <circle cx="100" cy="112" r="26" fill="none" stroke="#2a4070" stroke-width="0.9" opacity="0.28"/>
+  <circle cx="100" cy="112" r="20" fill="none" stroke="#1a2e58" stroke-width="0.7" opacity="0.22"/>
+
+  <!-- ══ PUPIL ══ -->
+  <circle cx="100" cy="112" r="19" fill="url(#pupilGrad)"/>
+
+  <!-- ══ CATCHLIGHT HIGHLIGHTS ══ -->
+  <circle cx="112" cy="99"  r="8.5" fill="white" opacity="0.88"/>
+  <circle cx="88"  cy="106" r="3.5" fill="white" opacity="0.42"/>
+
+  <!-- ══ EYE OUTLINE ══ -->
+  <path d="M 36 112 Q 68 70 100 70 Q 132 70 164 112
+           Q 132 154 100 154 Q 68 154 36 112 Z"
+        fill="none" stroke="#0d1f44" stroke-width="2.8"/>
+
+  <!-- Upper eyelid crease -->
+  <path d="M 36 112 Q 68 75 100 75 Q 132 75 164 112"
+        fill="none" stroke="#0d1f44" stroke-width="1.6" opacity="0.5"/>
+
+  <!-- ══ CIRCUIT BOARD PATTERN (lower shield) ══ -->
+  <g clip-path="url(#shieldClip)" stroke="#0d1f44" stroke-linecap="round" fill="#0d1f44" opacity="0.48">
+
+    <!-- Main horizontal bus -->
+    <line x1="42"  y1="178" x2="158" y2="178" stroke-width="1.6"/>
+
+    <!-- Vertical traces rising from bus -->
+    <line x1="60"  y1="160" x2="60"  y2="178" stroke-width="1.5"/>
+    <line x1="80"  y1="165" x2="80"  y2="178" stroke-width="1.5"/>
+    <line x1="100" y1="157" x2="100" y2="178" stroke-width="1.5"/>
+    <line x1="120" y1="165" x2="120" y2="178" stroke-width="1.5"/>
+    <line x1="140" y1="160" x2="140" y2="178" stroke-width="1.5"/>
+
+    <!-- Branch traces -->
+    <line x1="60"  y1="160" x2="70"  y2="153" stroke-width="1.3"/>
+    <line x1="70"  y1="153" x2="80"  y2="153" stroke-width="1.3"/>
+    <line x1="120" y1="165" x2="130" y2="158" stroke-width="1.3"/>
+    <line x1="130" y1="158" x2="140" y2="158" stroke-width="1.3"/>
+
+    <!-- Secondary horizontal bus -->
+    <line x1="56"  y1="198" x2="144" y2="198" stroke-width="1.5"/>
+
+    <!-- Traces down to secondary bus -->
+    <line x1="72"  y1="178" x2="72"  y2="198" stroke-width="1.4"/>
+    <line x1="100" y1="178" x2="100" y2="198" stroke-width="1.4"/>
+    <line x1="128" y1="178" x2="128" y2="198" stroke-width="1.4"/>
+
+    <!-- Tertiary branch toward point -->
+    <line x1="86"  y1="198" x2="86"  y2="213" stroke-width="1.3"/>
+    <line x1="114" y1="198" x2="114" y2="213" stroke-width="1.3"/>
+    <line x1="86"  y1="213" x2="114" y2="213" stroke-width="1.3"/>
+    <line x1="100" y1="213" x2="100" y2="224" stroke-width="1.3"/>
+
+    <!-- Junction pads (dots) -->
+    <circle cx="60"  cy="178" r="3.5"/>
+    <circle cx="80"  cy="178" r="3.5"/>
+    <circle cx="100" cy="178" r="3.5"/>
+    <circle cx="120" cy="178" r="3.5"/>
+    <circle cx="140" cy="178" r="3.5"/>
+    <circle cx="72"  cy="198" r="3.0"/>
+    <circle cx="100" cy="198" r="3.0"/>
+    <circle cx="128" cy="198" r="3.0"/>
+    <circle cx="86"  cy="213" r="2.5"/>
+    <circle cx="114" cy="213" r="2.5"/>
+
+    <!-- SMD component pads (small squares) -->
+    <rect x="51"  y="148" width="10" height="10" rx="2" fill="none" stroke-width="1.6"/>
+    <rect x="139" y="148" width="10" height="10" rx="2" fill="none" stroke-width="1.6"/>
+
+  </g>
+
+  <!-- ══ INNER SHIELD ACCENT BORDER (subtle gold) ══ -->
+  <path d="M 31 45 Q 31 38 39 38 L 161 38 Q 169 38 169 45
+           L 169 137 Q 166 203 100 240 Q 34 203 31 137 Z"
+        fill="none" stroke="#c9a030" stroke-width="0.9" opacity="0.32"/>
+
+  <!-- Corner ornaments (small gold squares — top inside corners) -->
+  <rect x="35" y="38" width="8" height="8" rx="1.5" fill="#c9a030" opacity="0.55"/>
+  <rect x="157" y="38" width="8" height="8" rx="1.5" fill="#c9a030" opacity="0.55"/>
+
+</svg>
