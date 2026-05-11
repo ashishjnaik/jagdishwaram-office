@@ -12,7 +12,7 @@ from datetime import datetime
 
 import pytz
 from flask import Blueprint, jsonify, redirect, request, session
-from narada import zoho_post
+from narada import zoho_post, build_client_descriptor
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -180,12 +180,14 @@ def write_to_us():
 
         ist = pytz.timezone('Asia/Kolkata')
         ts  = datetime.now(ist).strftime('%d-%b-%Y %H:%M:%S')
+        client_info = build_client_descriptor()
 
         record = {
-            'Name':      {'first_name': name},
-            'Email':     email,
-            'Comments':  comments,
-            'Timestamp': ts,
+            'Name':       name,
+            'Email':      email,
+            'Comments':   comments,
+            'Timestamp':  ts,
+            'User_Agent': client_info,
         }
         zoho_resp = zoho_post('Write_To_Us', record)
         if zoho_resp.get('code') == 3000:
@@ -210,10 +212,12 @@ def yaksha_prashna():
 
         ist = pytz.timezone('Asia/Kolkata')
         ts  = datetime.now(ist).strftime('%d-%b-%Y %H:%M:%S')
+        client_info = build_client_descriptor()
 
         record = {
             'Yaksha_Prashna': question,
             'Timestamp':      ts,
+            'User_Agent':     client_info,
         }
         zoho_resp = zoho_post('Yaksha_Prashna_Yudhishthira', record)
         if zoho_resp.get('code') != 3000:
