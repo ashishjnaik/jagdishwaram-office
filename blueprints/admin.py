@@ -10,7 +10,9 @@ import os
 import uuid
 from datetime import datetime
 
+import pytz
 from flask import Blueprint, jsonify, redirect, request, session
+from narada import zoho_post
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -161,3 +163,63 @@ def callback():
            <a href="/login">🔄 Try Again</a></p>
         </body></html>
         """, 400
+
+
+# ── /api/write-to-us ─────────────────────────────────────────────────────────
+
+@admin_bp.route('/api/write-to-us', methods=['POST'])
+def write_to_us():
+    try:
+        data     = request.get_json(force=True) or {}
+        name     = (data.get('name') or '').strip()
+        email    = (data.get('email') or '').strip()
+        comments = (data.get('comments') or '').strip()
+
+        if not all([name, email, comments]):
+            return jsonify({'ok': False, 'error': 'Name, email and comments are required'}), 400
+
+        ist = pytz.timezone('Asia/Kolkata')
+        ts  = datetime.now(ist).strftime('%d-%b-%Y %H:%M:%S')
+
+        record = {
+            'Name':      {'first_name': name},
+            'Email':     email,
+            'Comments':  comments,
+            'Timestamp': ts,
+        }
+        zoho_resp = zoho_post('Write_To_Us', record)
+        if zoho_resp.get('code') == 3000:
+            return jsonify({'ok': True})
+        print(f'WARNING write_to_us Zoho: {zoho_resp}')
+        return jsonify({'ok': False, 'error': zoho_resp.get('message', 'Zoho write failed')}), 500
+    except Exception as e:
+        print(f'ERROR write_to_us: {e}')
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+
+# ── /api/yaksha-prashna ───────────────────────────────────────────────────────
+
+@admin_bp.route('/api/yaksha-prashna', methods=['POST'])
+def yaksha_prashna():
+    try:
+        data     = request.get_json(force=True) or {}
+        question = (data.get('question') or '').strip()
+
+        if not question:
+            return jsonify({'ok': False, 'error': 'Question is required'}), 400
+
+        ist = pytz.timezone('Asia/Kolkata')
+        ts  = datetime.now(ist).strftime('%d-%b-%Y %H:%M:%S')
+
+        record = {
+            'Yaksha_Prashna': question,
+            'Timestamp':      ts,
+        }
+        zoho_resp = zoho_post('Yaksha_Prashna_Yudhishthira', record)
+        if zoho_resp.get('code') != 3000:
+            print(f'WARNING yaksha_prashna Zoho: {zoho_resp}')
+        # Always return ok — standard response is shown regardless of Zoho write status
+        return jsonify({'ok': True})
+    except Exception as e:
+        print(f'ERROR yaksha_prashna: {e}')
+        return jsonify({'ok': True})

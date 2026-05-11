@@ -1053,6 +1053,57 @@
       .tool-card.solo { max-width: 100%; }
       .tools-dock { display: none; }
     }
+
+    /* ── YUDHISHTHIRA CHIP + MODAL ── */
+    .ai-chip {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 9px 16px;
+      font-size: 12px;
+      font-family: var(--font-body);
+      color: var(--subtle);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      z-index: 100;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .ai-chip:hover { border-color: var(--accent); color: var(--ink); }
+    .ai-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.6; }
+    .ai-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200; align-items: flex-end; justify-content: flex-end; padding: 28px;
+    }
+    .ai-modal-overlay.open { display: flex; }
+    .ai-modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; max-width: 340px; width: 100%;
+    }
+    .ai-modal-title { font-family: var(--font-head); font-size: 17px; color: var(--ink); margin-bottom: 8px; }
+    .ai-modal-body  { font-size: 13px; color: var(--subtle); line-height: 1.65; margin-bottom: 16px; }
+    .ai-modal-textarea {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--ink); font-family: var(--font-body); font-size: 13px;
+      padding: 8px 10px; resize: vertical; min-height: 80px; margin-bottom: 10px;
+    }
+    .ai-modal-textarea:focus { outline: none; border-color: var(--subtle); }
+    .ai-modal-textarea::placeholder { color: var(--subtle); opacity: 0.6; }
+    .ai-modal-submit {
+      width: 100%; background: var(--accent); border: none; border-radius: 6px;
+      color: #fff; font-family: var(--font-body); font-size: 12px;
+      padding: 7px 16px; cursor: pointer; margin-bottom: 8px;
+    }
+    .ai-modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ai-modal-close {
+      font-size: 12px; color: var(--subtle); border: 1px solid var(--border);
+      background: transparent; border-radius: 6px; padding: 5px 12px;
+      cursor: pointer; font-family: var(--font-body);
+    }
+    .ai-modal-close:hover { color: var(--ink); border-color: var(--subtle); }
   </style>
 </head>
 <body>
@@ -1138,7 +1189,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Municipal Corporation</div>
-            <a class="d-card-link" href="/kurukshetra?label=MOR" target="_blank">↗ Case Documents</a>
+            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
           </div>
         </div>
 
@@ -1150,7 +1201,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Judicial System</div>
-            <a class="d-card-link" href="/kurukshetra?label=JMC" target="_blank">↗ Case Documents</a>
+            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
           </div>
         </div>
 
@@ -1163,7 +1214,7 @@
           <div class="d-card-content">
             <div class="d-card-name">Ashish J. Naik &amp; Family</div>
             <div class="d-card-sub">Fighting since 2015 · Article 21 · Easement of Necessity Article 13</div>
-            <a class="d-card-link" href="/kurukshetra">↗ All Case Documents</a>
+            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ All Case Documents</a>
           </div>
         </div>
 
@@ -1175,7 +1226,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Police Department</div>
-            <a class="d-card-link" href="/kurukshetra?label=EAF" target="_blank">↗ Case Documents</a>
+            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
           </div>
         </div>
 
@@ -1187,7 +1238,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Revenue &amp; Administration</div>
-            <a class="d-card-link" href="/kurukshetra?label=DMD" target="_blank">↗ Case Documents</a>
+            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
           </div>
         </div>
 
@@ -1206,7 +1257,7 @@
 
       <!-- LEFT: HITL Posts -->
       <div class="posts-column">
-        <div class="col-label">Ashish J. Naik's Personal Feed · Fetched from Zoho</div>
+        <div class="col-label">Ashish J Naik (Founders) Personal Feed</div>
 
         <!-- Post card 1 — placeholder -->
         <div class="post-card">
@@ -1255,7 +1306,7 @@
 
       <!-- RIGHT: Social handles -->
       <div class="social-column">
-        <div class="col-label">JDO Social Feed</div>
+        <div class="col-label">JDO Social Updates</div>
 
         <!-- X / Twitter timeline -->
         <div class="social-widget-box">
@@ -1306,8 +1357,8 @@
               <input class="form-input" type="email" id="visitor-email" name="visitor_email" placeholder="your@email.com" required>
             </div>
             <div class="form-row">
-              <label class="form-label" for="visitor-comments">Comments</label>
-              <textarea class="form-textarea" id="visitor-comments" name="comments" rows="3" placeholder="Your message, question, or feedback…"></textarea>
+              <label class="form-label" for="visitor-comments">Comments <span class="required-star">*</span></label>
+              <textarea class="form-textarea" id="visitor-comments" name="comments" rows="3" placeholder="Your message, question, or feedback…" required></textarea>
             </div>
             <button class="form-submit" type="submit">Submit →</button>
           </form>
@@ -1672,21 +1723,99 @@ fadeTargets.forEach(el => {
   fadeObserver.observe(el);
 });
 
-function submitWriteForm(e) {
+async function submitWriteForm(e) {
   e.preventDefault();
-  const payload = {
-    visitor_name:  document.getElementById('visitor-name').value.trim(),
-    visitor_email: document.getElementById('visitor-email').value.trim(),
-    comments:      document.getElementById('visitor-comments').value.trim(),
-  };
-  // Prototype: log to console. Production → Flask POST /api/visitor-message → Zoho VisitorMessages form.
-  console.log('[Write to Us]', payload);
-  document.getElementById('write-form').style.display = 'none';
-  document.getElementById('form-success').style.display = 'block';
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    const res  = await fetch('/api/write-to-us', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:     document.getElementById('visitor-name').value.trim(),
+        email:    document.getElementById('visitor-email').value.trim(),
+        comments: document.getElementById('visitor-comments').value.trim(),
+      }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('write-form').style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Submit →';
+      alert('Could not send message: ' + (data.error || 'server error'));
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Submit →';
+    alert('Network error — please try again.');
+  }
 }
 </script>
 
 <!-- X / Twitter timeline widget -->
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<!-- ══ YUDHISHTHIRA CHIP ══ -->
+<div class="ai-chip" onclick="document.getElementById('ai-modal').classList.add('open')">
+  <div class="ai-chip-dot"></div>
+  युधिष्ठिर · Ask
+</div>
+
+<div class="ai-modal-overlay" id="ai-modal">
+  <div class="ai-modal">
+    <div class="ai-modal-title">युधिष्ठिर · Yudhishthira</div>
+    <div id="yudh-form-state">
+      <p class="ai-modal-body">Type your question about rights, Foundation work, or how to use these tools.</p>
+      <textarea class="ai-modal-textarea" id="yudh-question" rows="4"
+        placeholder="Your question…"></textarea>
+      <button class="ai-modal-submit" id="yudh-submit" onclick="submitYaksha()">Send Question →</button>
+      <button class="ai-modal-close" onclick="closeYudh()">Close</button>
+    </div>
+    <div id="yudh-success-state" style="display:none">
+      <p class="ai-modal-body" style="color:var(--ink)">
+        Yudhishthira had received the Yaksha Prashna; However, unable to respond now.<br><br>
+        Please use the <strong>Write To Us</strong> section above to get a response from Jagdishwaram Digital Office, or send an email at
+        <a href="mailto:info@jagdishwaram-office.org" style="color:var(--accent)">info@jagdishwaram-office.org</a>
+        with your questions.
+      </p>
+      <button class="ai-modal-close" onclick="closeYudh()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function submitYaksha() {
+  const question = document.getElementById('yudh-question').value.trim();
+  if (!question) return;
+  const btn = document.getElementById('yudh-submit');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    await fetch('/api/yaksha-prashna', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    });
+  } catch (_) {}
+  document.getElementById('yudh-form-state').style.display = 'none';
+  document.getElementById('yudh-success-state').style.display = 'block';
+}
+
+function closeYudh() {
+  document.getElementById('ai-modal').classList.remove('open');
+  // Reset to form state for next open
+  setTimeout(() => {
+    document.getElementById('yudh-form-state').style.display = 'block';
+    document.getElementById('yudh-success-state').style.display = 'none';
+    document.getElementById('yudh-question').value = '';
+    const btn = document.getElementById('yudh-submit');
+    btn.disabled = false;
+    btn.textContent = 'Send Question →';
+  }, 300);
+}
+</script>
 </body>
 </html>

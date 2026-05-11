@@ -506,6 +506,12 @@
       </div>
 
       <div class="form-row">
+        <label class="form-label" for="f-caseurl">Case File URL · अतिरिक्त पूर्व-संदर्भ URL <span class="opt">(optional)</span></label>
+        <input class="form-input" type="url" id="f-caseurl"
+          placeholder="https://drive.google.com/drive/folders/...">
+      </div>
+
+      <div class="form-row">
         <label class="form-label" for="f-references">References <span class="opt">(optional)</span></label>
         <input class="form-input" type="text" id="f-references"
           placeholder="Tehsildar Order 01 Mar 2024 §21 · Inward No. 4521/2025">
@@ -658,6 +664,11 @@ function buildTxt(cid, ingestTs, vals, files) {
     L.push(vals.url);
     L.push('');
   }
+  if (vals.caseUrl) {
+    L.push('## अतिरिक्त पूर्व-संदर्भ URL (Case File URL)');
+    L.push(vals.caseUrl);
+    L.push('');
+  }
 
   if (vals.references) {
     L.push('## संदर्भ (References)');
@@ -778,6 +789,7 @@ async function handleSubmit(e) {
     appType:    document.getElementById('f-apptype').value,
     labels:     allLabels,
     url:        document.getElementById('f-url').value,
+    caseUrl:    document.getElementById('f-caseurl').value,
     references: document.getElementById('f-references').value,
     annotation: document.getElementById('f-annotation').value,
   };
@@ -797,8 +809,9 @@ async function handleSubmit(e) {
   fd.append('authority',   vals.authority);
   fd.append('apptype',     vals.appType);
   fd.append('labels',      vals.labels);
-  fd.append('url',         vals.url);
-  fd.append('references',  vals.references);
+  fd.append('url',           vals.url);
+  fd.append('case_file_url', vals.caseUrl);
+  fd.append('references',    vals.references);
   fd.append('annotation',  vals.annotation);
   photos.forEach(f => fd.append('photos', f));
   docs.forEach(f => fd.append('docs', f));

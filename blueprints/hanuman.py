@@ -154,6 +154,7 @@ def field_submit():
         apptype       = request.form.get('apptype', '').strip()
         labels        = request.form.get('labels', '').strip()
         url_field     = request.form.get('url', '').strip()
+        case_file_url = request.form.get('case_file_url', '').strip()
         references    = request.form.get('references', '').strip()
         annotation    = request.form.get('annotation', '').strip()
         photo_files   = request.files.getlist('photos')
@@ -192,6 +193,8 @@ def field_submit():
 
         if url_field:
             lines += ['## संदर्भ URL (Relevant URL)', url_field, '']
+        if case_file_url:
+            lines += ['## अतिरिक्त पूर्व-संदर्भ URL (Case File URL)', case_file_url, '']
         if references:
             lines += ['## संदर्भ (References)', references, '']
         if annotation:
