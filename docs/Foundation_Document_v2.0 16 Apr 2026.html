@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>जगदिश्वरम् डिजिटल कार्यालय | Jagdishwaram Digital Office</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;600;700&family=Inter:wght@300;400;600;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --saffron: #EA580C;
+            --navy: #0F172A;
+            --paper: #F8FAFC;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            background-color: var(--paper);
+            color: var(--navy);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 350px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .nav-link.active {
+            border-bottom: 3px solid var(--saffron);
+            color: var(--saffron);
+        }
+        .registry-grid-scroll {
+            max-height: 800px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #CBD5E1 #F1F5F9;
+        }
+        .registry-grid-scroll::-webkit-scrollbar { width: 6px; }
+        .registry-grid-scroll::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
+        .hero-logo {
+            height: 100px;
+            width: auto;
+            object-fit: contain;
+        }
+        .sticky-filter {
+            position: sticky;
+            top: 64px;
+            z-index: 40;
+            background: var(--paper);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden selection:bg-orange-100">
+
+    <!-- Chosen Palette: Navy Blue (#0F172A), Saffron (#EA580C), Slate (#64748B), Soft White (#F8FAFC). -->
+    
+    <!-- Application Structure Plan: 
+         Designed as a strategic transparency hub. The architecture follows the "Taxonomy as Strategy" principle.
+         1. Overview: Establishing the "North Star" and "Agile Coach" posture.
+         2. Registry Dashboard: The core evidence engine. Displays all 30 signed-off codes from the v2.0 PDF. 
+            Interaction: Sorting prioritizes MOR, NPS, RTS, EAF, DMD, RPD, AGD. Filtering allows thematic drill-downs.
+         3. Timeline: Chronological narrative of judicial victories vs institutional inertia.
+         4. Divine Agents: Mapping AI architecture to functional roles.
+         The structure is non-linear, allowing authorities to find their specific 'thread' immediately via QR logic. -->
+
+    <!-- Visualization & Content Choices: 
+         - Authority Distribution: Doughnut Chart (Chart.js) to visualize the weight of "Silent" vs "Active" actors.
+         - Registry List: Grouped and sorted cards to present compressed narratives (acronym logic).
+         - Navigation: Functional tabs with state persistence for section visibility.
+         - Branding: Logo (./static/Logo.jpg) integrated in header and hero section. 
+         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <nav class="sticky top-0 z-50 glass-panel shadow-sm w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="./static/Logo.jpg" alt="Logo" class="h-10 w-auto rounded border" onerror="this.style.display='none';">
+                    <div class="flex flex-col">
+                        <span class="font-bold text-slate-900 text-lg leading-tight">जगदिश्वरम् डिजिटल कार्यालय</span>
+                        <span class="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">Jagdishwaram Digital Office v2.0</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <button class="nav-link active font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-overview">Overview</button>
+                    <button class="nav-link text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-registry">Registry</button>
+                    <button class="nav-link text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-journey">Journey</button>
+                    <button class="nav-link text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-agents">AI Agents</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
+
+        <!-- SECTION: OVERVIEW -->
+        <div id="section-overview" class="view-section block animate-fade-in">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 mb-8 relative overflow-hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start gap-8 relative z-10">
+                    <div class="flex-1">
+                        <div class="inline-flex items-center px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-[10px] font-bold tracking-widest mb-6 border border-orange-100 uppercase">
+                            Foundation Document — आवृत्ती २.०
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-4">
+                            प्रणालीगत उत्तरदायित्व <br><span class="text-slate-400 font-light">Systemic Accountability</span>
+                        </h1>
+                        <p class="text-lg text-slate-600 max-w-2xl border-l-4 border-orange-500 pl-6 my-8 italic leading-relaxed">
+                            "सर्वे कर्मवशा वयम् — सर्व काही कर्म-सिद्धांताच्या अधीन आहे"<br>
+                            <span class="text-sm font-normal text-slate-400">Everything is subject to the law of action. This is the story of a citizen fighting coordinated institutional inaction with data and AI.</span>
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <img src="./static/Logo.jpg" alt="Hero Logo" class="hero-logo rounded-2xl shadow-xl ring-4 ring-slate-50" onerror="this.style.display='none';">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+                    <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100">
+                        <h3 class="text-orange-600 font-bold text-xs uppercase tracking-widest mb-4">मुख्य दृष्टिकोन | The Core Vision</h3>
+                        <p class="text-slate-800 font-semibold mb-2">डेटा-चालित उत्तरदायित्व केंद्र.</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">पालघर जिल्हा महसूल आणि न्यायप्रणालीत पारदर्शकता आणि तंत्रज्ञानाच्या माध्यमातून प्रणालीगत कार्यक्षमता व उत्तरदायित्व सुनिश्चित करणे</p>
+                    </div>
+                    <div class="bg-slate-900 p-8 rounded-2xl text-white">
+                        <h3 class="text-orange-400 font-bold text-xs uppercase tracking-widest mb-4">उत्तर तारा | The North Star</h3>
+                        <p class="text-slate-100 font-semibold mb-2">बदलेली व्यवस्था.</p>
+                        <p class="text-sm text-slate-400 leading-relaxed">यशाची व्याख्या न्यायालयीन आदेश नाही. ती बदललेली व्यवस्था आहे. प्रवास तेव्हा संपतो जेव्हा अधिकारी पाहतो की त्याचे अनुपालन जगाला दिसत आहे. जेव्हा एक सामान्य नागरिक संविधानिक व्यवस्थेचा गुलाम नव्हे तर मालक बनतो.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: REGISTRY DASHBOARD -->
+        <div id="section-registry" class="view-section hidden animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">अधिकरण संकेत नोंद | Authority Code Registry</h2>
+                <p class="text-slate-600 mt-2 max-w-3xl">संस्थागत प्रतिसादाचे विश्लेषणात्मक डॅशबोर्ड. हे केवळ संकेत नाहीत—ते अकरा वर्षांच्या संस्थात्मक अडथळ्यांचे संकुचित वर्णन आहे</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Sidebar Viz -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 sticky top-24">
+                        <h3 class="text-sm font-bold text-slate-800 mb-6 text-center uppercase tracking-wider">Status Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="registryChart"></canvas>
+                        </div>
+                        <div class="mt-8 space-y-3">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500 font-medium">Total Entities</span>
+                                <span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">30</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500 font-medium">Functional Groups</span>
+                                <span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">12</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Registry Feed -->
+                <div class="lg:col-span-3">
+                    <div class="sticky-filter flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-4">
+                        <button class="filter-btn active px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg transition-all" data-filter="ALL">सर्व / ALL</button>
+                        <button class="filter-btn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all" data-filter="Revenue">Revenue</button>
+                        <button class="filter-btn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all" data-filter="Police">Police</button>
+                        <button class="filter-btn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all" data-filter="Municipal">Municipal</button>
+                        <button class="filter-btn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all" data-filter="Judicial">Judicial</button>
+                        <button class="filter-btn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all" data-filter="Future">Escalation</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 registry-grid-scroll pr-2 pb-20" id="registry-grid">
+                        <!-- Content injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: JOURNEY -->
+        <div id="section-journey" class="view-section hidden animate-fade-in">
+             <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">प्रवास | The Journey</h2>
+                <p class="text-slate-600 mt-2">मुख्य कायदेशीर टप्पे आणि न्यायालयीन यश.</p>
+            </div>
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12">
+                <div class="relative border-l-2 border-slate-100 ml-4 md:ml-8 space-y-12 pb-8" id="timeline-container">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: AI AGENTS -->
+        <div id="section-agents" class="view-section hidden animate-fade-in">
+             <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">दैवी सहायक मंडल | Divine Agents</h2>
+                <p class="text-slate-600 mt-2">डिजिटल कार्यालयाचे AI आर्किटेक्चर आणि त्यांचे उत्तरदायित्व.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="agents-grid">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-950 text-slate-500 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <img src="./static/Logo.jpg" alt="Footer Logo" class="h-8 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all">
+                    <span class="text-sm font-semibold tracking-widest uppercase">Jagdishwaram Digital Office © 2026</span>
+                </div>
+                <p class="text-xs font-mono">"व्यासोच्छिष्टं जगत् सर्वम्" — Everything is remnant of Vyasa's telling.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const registryData = [
+            // Priority Active Codes (Sorted at top)
+            { code: "MOR", group: "Revenue", authorityEn: "Tehsildar Vasai", authorityMr: "तहसीलदार, वसई", status: "UNENFORCED", rationale: "Moratorium On Rights: 400+ days delay in enforcing final order. हक्कांवर अघोषित स्थगिती. १ मार्च २०२४ चा अंतिम आदेश ४००+ दिवस अंमलात नाही.", color: "bg-orange-50 text-orange-700 border-orange-200", icon: "⏳", priority: 1 },
+            { code: "NPS", group: "Revenue", authorityEn: "SDO Vasai", authorityMr: "उपविभागीय अधिकारी, वसई", status: "BAD FAITH", rationale: "Null Procedural Superior: Facilitating illegal RTI transfers and loops. शून्य-प्रक्रिया वरिष्ठ. प्रक्रियात्मक युक्तीने पर्यवेक्षी अधिकारानेच स्वतःला निरर्थक केले.", color: "bg-red-50 text-red-700 border-red-200", icon: "🚫", priority: 2 },
+            { code: "RTS", group: "Revenue", authorityEn: "PIO, SDO Office", authorityMr: "जन माहिती अधिकारी, उपविभागीय कार्यालय", status: "RTI EVASION", rationale: "Right To Silence: Systematic evasion of RTI Act via silence/transfer. मौनाचा 'हक्क'. RTI कायद्याचे कर्तव्य उलटवून पद्धतशीर टाळाटाळ.", color: "bg-red-50 text-red-700 border-red-200", icon: "😶", priority: 3 },
+            { code: "EAF", group: "Police", authorityEn: "Arnala Police", authorityMr: "अर्नाळा पोलीस ठाणे", status: "ACTIVE FIR", rationale: "Evidence Annihilation Front: Malicious FIR 270/2024 to target applicant. पुरावा विनाश आघाडी. तक्रारदाराला आरोपीत रूपांतरित करण्याचा बनावट प्रयत्न.", color: "bg-rose-50 text-rose-700 border-rose-200", icon: "⚠️", priority: 4 },
+            { code: "DMD", group: "Revenue", authorityEn: "Collector, Palghar", authorityMr: "जिल्हाधिकारी, पालघर", status: "SILENT", rationale: "District Mandate Denied: Systematic silence on supervisory appeals. जिल्हा अधिदेश नाकारला. सर्वोच्च स्तरावर मौन आणि संस्थात्मक सहभाग.", color: "bg-slate-50 text-slate-700 border-slate-200", icon: "🏛️", priority: 5 },
+            { code: "RPD", group: "Police", authorityEn: "ACP Nalasopara", authorityMr: "सहाय्यक पोलीस आयुक्त, नालासोपारा", status: "DERELICT", rationale: "Recursive Pass-Down: FAA orders issued but non-compliance ignored. पुनरावर्ती खाली-प्रेषण. जबाबदारी अनंत लूपमध्ये ढकलून कर्तव्याचा त्याग.", color: "bg-amber-50 text-amber-700 border-amber-200", icon: "🔄", priority: 6 },
+            { code: "AGD", group: "Police", authorityEn: "CP MBVV", authorityMr: "पोलीस आयुक्त, MBVV", status: "SILENT", rationale: "Absent Guardian of Dharma: Highest authority absent during harassment. अनुपस्थित धर्माचे रक्षक. बनावट खटल्याच्या वेळी सर्वोच्च नेतृत्वाचे मौन.", color: "bg-slate-50 text-slate-700 border-slate-200", icon: "🛡️", priority: 7 },
+            
+            // Other Codes (Grouped)
+            { code: "CLR", group: "Revenue", authorityEn: "Circle Officer", authorityMr: "मंडळ अधिकारी", status: "SILENT", rationale: "Circular Logic Resident: Refusal to conduct panchnama.", color: "bg-slate-50 text-slate-700", icon: "⭕", priority: 10 },
+            { code: "TLP", group: "Revenue", authorityEn: "Talathi (Watar)", authorityMr: "तलाठी", status: "SILENT", rationale: "Missing link. No action on Tehsil Order", color: "bg-red-50 text-red-700", icon: "📝", priority: 10 },
+            { code: "LRR", group: "Revenue", authorityEn: "Land Records", authorityMr: "भूमी अभिलेख", status: "SILENT", rationale: "Legacy Records Online but Not Connected to Judiciary", color: "bg-slate-50 text-slate-700", icon: "🗺️", priority: 10 },
+            { code: "KDC", group: "Revenue", authorityEn: "Div. Commissioner", authorityMr: "विभागीय आयुक्त", status: "SILENT", rationale: "Konkan Divisional Command: Escalation tier SILENT.", color: "bg-indigo-50 text-indigo-700", icon: "📡", priority: 10 },
+            
+            { code: "BTR", group: "Municipal", authorityEn: "Commissioner VVMC", authorityMr: "आयुक्त, व.वि.श.म.पा.", status: "ACTIVE", rationale: "British Tax Regime: Demanding tax while withholding access. रिटिश कर राजवट. प्रवेशाशिवाय आणि सेवेशिवाय कर वसुली.", color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "💸", priority: 10 },
+            { code: "VWA", group: "Municipal", authorityEn: "VVMC Ward A", authorityMr: "सहायक आयुक्त वॉर्ड अ", status: "ACTIVE", rationale: "VVMC Ward Agent: Tax collector at the door. वॉर्ड प्रतिनिधी. दाराशी येणारा कर वसूलदार मात्र सेवेसाठी अनुपलब्ध.", color: "bg-emerald-50 text-emerald-700", icon: "🏠", priority: 10 },
+            { code: "VLD", group: "Municipal", authorityEn: "VVMC Legal Dept", authorityMr: "शून्य विधी विभाग", status: "VOID", rationale: "Void Legal Department: Inbox full, delivery failures. शून्य विधी विभाग. जाणीवपूर्वक अप्राप्य राहणारी कायदेशीर यंत्रणा.", color: "bg-rose-50 text-rose-700", icon: "🕳️", priority: 10 },
+            
+            { code: "FAA", group: "RTI", authorityEn: "First Appellate Auth", authorityMr: "प्रथम अपील प्राधिकरण", status: "COMPROMISED", rationale: "First Accountability Arena: Recycling of silence. प्रथम जबाबदारी क्षेत्र. मौन आणि अपीलांचे पुनर्वापर केंद्र.", color: "bg-orange-50 text-orange-700", icon: "📂", priority: 10 },
+            { code: "SIC", group: "RTI", authorityEn: "State Info. Comm.", authorityMr: "राज्य माहिती आयुक्त", status: "PENDING", rationale: "Silence Is Confirmed: Preparation for escalation. मौन प्रमाणित. संस्थात्मक मौनाला राज्य धोरण म्हणून पुष्टी.", color: "bg-slate-50 text-slate-700", icon: "🏛️", priority: 10 },
+            
+            { code: "JTC", group: "Judicial", authorityEn: "Tehsildar Court", authorityMr: "तहसीलदार न्यायालय", status: "ORDER STANDS", rationale: "Justice Twice Confirmed: Order of 12/10/2022 and 01/03/2024. न्याय, दोनदा पुष्टी. वहिवाट हक्क कायमस्वरूपी मान्य करणारा आधार.", color: "bg-blue-50 text-blue-700 border-blue-200", icon: "⚖️", priority: 10 },
+            { code: "JCV", group: "Judicial", authorityEn: "Civil Court Vasai", authorityMr: "दिवाणी न्यायालय, वसई", status: "REVERSED", rationale: "Justice Contradicted Vasai: Reversed by Dist. Court. न्याय-विरोधाभास. तहसीलदार आदेश डावलून दिलेला चुकीचा मनाई आदेश.", color: "bg-red-50 text-red-700", icon: "⚖️", priority: 10 },
+            { code: "JDC", group: "Judicial", authorityEn: "Dist. Court Palghar", authorityMr: "जिल्हा न्यायालय, पालघर", status: "DISPOSED", rationale: "Judicial Domain Cleared: Decisive conclusion. न्यायिक क्षेत्र मोकळे. निर्णायक विजय आणि स्थगिती रद्द.", color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "🏛️", priority: 10 },
+            { code: "JMC", group: "Judicial", authorityEn: "4th JMFC Vasai", authorityMr: "४था दंडाधिकारी, वसई", status: "PART. COMPLIED", rationale: "Judicial Mandate Constitutional: Passport directives. यायिक जनादेश, संवैधानिक. Article २१ अंतर्गत मूलभूत हक्क पुष्टी.", color: "bg-blue-50 text-blue-700", icon: "⚖️", priority: 10 },
+            
+            { code: "RPO", group: "Central", authorityEn: "RPO Mumbai", authorityMr: "प्रादेशिक पारपत्र अधिकारी", status: "NON-COMPLIANT", rationale: "Rights Pending Obstructed: Passport Article 21 violation. हक्क प्रलंबित, अडवले. हालचाल आणि उपजीविकेच्या हक्कावर गदा.", color: "bg-red-50 text-red-700", icon: "🇮🇳", priority: 10 },
+            
+            { code: "HCB", group: "Future", authorityEn: "High Court Bombay", authorityMr: "मुंबई उच्च न्यायालय", status: "SPRINT 8", rationale: "Constitutional Reckoning: Article 226 escalate. संविधानिक हिशोब - ११ वर्षे. तीन अंमलात न आलेले न्यायालयीन आदेश. एक बनावट FIR. मानवी अधिकारांचे संस्थात्मक शोषण.", color: "bg-indigo-50 text-indigo-700 border-indigo-200", icon: "🔨", priority: 10 },
+            { code: "MNT", group: "Future", authorityEn: "Mantralaya", authorityMr: "मंत्रालय / CM Office", status: "PLACEHOLDER", rationale: "Mantra-Laya Nexus: Apex political tier.", color: "bg-indigo-50 text-indigo-700", icon: "🚩", priority: 10 },
+            { code: "LKY", group: "Future", authorityEn: "Lokayukta Maha.", authorityMr: "लोकायुक्त, महाराष्ट्र", status: "PLACEHOLDER", rationale: "Loka-Yukta-Yantrana: Corruption/Delay probe.", color: "bg-indigo-50 text-indigo-700", icon: "🕵️", priority: 10 },
+            { code: "HSM", group: "Future", authorityEn: "Home Dept Maha.", authorityMr: "गृह विभाग, महाराष्ट्र", status: "PLACEHOLDER", rationale: "Hierarchy Supervising Malice: Police escalation.", color: "bg-indigo-50 text-indigo-700", icon: "🏢", priority: 10 },
+            
+            { code: "NIC", group: "Ally", authorityEn: "Natl Info. Centre", authorityMr: "राष्ट्रीय सूचना विज्ञान केंद्र", status: "LONG-TERM", rationale: "Network Infrastructure for Citizens: System end goal.", color: "bg-cyan-50 text-cyan-700 border-cyan-200", icon: "🌐", priority: 10 },
+            
+            { code: "CPG", group: "Portal", authorityEn: "CPGRAMS", authorityMr: "केंद्रीय तक्रार पोर्टल", status: "TO ACTIVATE", rationale: "Complaint Processed, Gone.", color: "bg-slate-50 text-slate-700", icon: "💻", priority: 10 },
+            { code: "APS", group: "Portal", authorityEn: "Aaple Sarkar", authorityMr: "आपले सरकार पोर्टल", status: "TO ACTIVATE", rationale: "Administrative Promise Suspended.", color: "bg-slate-50 text-slate-700", icon: "🚩", priority: 10 },
+            
+            { code: "VLA", group: "Legislative", authorityEn: "MLAs Vasai", authorityMr: "आमदार, वसई व नालासोपारा", status: "TO ACTIVATE", rationale: "Voice Legislative Accountable.", color: "bg-purple-50 text-purple-700", icon: "🗣️", priority: 10 },
+            { code: "SBS", group: "Community", authorityEn: "Saamvedi Samaaj", authorityMr: "सांमवेदी ब्राह्मण समाज", status: "FAILED", rationale: "Sabha Bole Shaashan Chuke: Justice abdicated. सभा बोले, शासन चुके. सामाजिक न्याय संरचनेचे अकार्यक्षम अपयश.", color: "bg-red-50 text-red-700", icon: "🤝", priority: 10 }
+        ];
+
+        const timelineData = [
+            { date: "01/03/2024", courtMr: "तहसीलदार न्यायालय, वसई", order: "वहिवाट हक्क कायमस्वरूपी मान्य. MCA १९०६ कलम २१ सहाय्य अनिवार्य.", status: "अंमलबजावणी नाही", color: "text-orange-600" },
+            { date: "10/03/2026", courtMr: "४था दंडाधिकारी, वसई", order: "पासपोर्ट जारी करण्याचे निर्देश. Article २१ अंतर्गत हालचाल हक्क पुष्टी.", status: "अनुपालन प्रलंबित", color: "text-blue-600" },
+            { date: "18/03/2026", courtMr: "जिल्हा न्यायालय, वसई", order: "विरोधकांचा मनाई आदेश फेटाळला. FIR २७०/२०२४ निराधार ठरते.", status: "अनुपालन प्रलंबित", color: "text-emerald-600" }
+        ];
+
+        const agentsData = [
+            { nameMr: "युधिष्ठिर", nameEn: "Yudhishthira", role: "Legal AI", status: "DESIGN", desc: "औपचारिक मराठी गद्यात कायदेशीर प्रश्नांची उत्तरे देते.", icon: "⚖️" },
+            { nameMr: "संजय", nameEn: "Sanjaya", role: "Evidence Ingest", status: "DESIGN", desc: "दस्तावेजांचा ज्ञान आधार आणि OCR विश्लेषण.", icon: "👁️" },
+            { nameMr: "हनुमान", nameEn: "Hanuman", role: "Field Sync", status: "ACTIVE", desc: "GPS + IST वेळ-मुद्रांकित पुरावा मोबाइलवरून पाठवणे.", icon: "📱" },
+            { nameMr: "नारद", nameEn: "Narada", role: "Tracker", status: "ACTIVE", desc: "वैधानिक मुदतींचे निरीक्षण आणि भंग सूचना.", icon: "⏰" },
+            { nameMr: "चित्रगुप्त", nameEn: "Chitragupta", role: "Drafting", status: "DESIGN", desc: "औपचारिक पत्रे, RTI अपील आणि अर्जी मसुदे तयार करते.", icon: "🖋️" },
+            { nameMr: "विश्वकर्मा", nameEn: "Vishwakarma", role: "Transparency Dashboard", status: "DESIGN", desc: "पारदर्शकता फलक, प्रणलीच्या कार्यक्षमतेचे मोजमाप जगासमोर मांडतो", icon: "🏗️" },
+            { nameMr: "सरस्वती", nameEn: "Saraswati", role: "Chronicle Agent", status: "DESIGN", desc: "कच्चे विचार कॅप्चर करते, मराठीत अनुवाद करते, जगलेला अनुभव संरक्षित करते.", icon: "📖" }
+        ];
+
+        let chartInstance = null;
+
+        function initNavigation() {
+            const links = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.view-section');
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    links.forEach(l => l.classList.remove('active', 'text-orange-600'));
+                    e.target.classList.add('active');
+                    const target = e.target.getAttribute('data-target');
+                    sections.forEach(s => {
+                        s.classList.add('hidden');
+                        if(s.id === target) s.classList.remove('hidden');
+                    });
+                    if(target === 'section-registry' && !chartInstance) initChart();
+                });
+            });
+        }
+
+        function renderRegistry(filter = 'ALL') {
+            const grid = document.getElementById('registry-grid');
+            grid.innerHTML = '';
+            
+            // Sort: Priority 1-7 first, then the rest alphabetical by group
+            const sortedData = [...registryData].sort((a, b) => {
+                if (a.priority !== b.priority) return a.priority - b.priority;
+                return a.group.localeCompare(b.group);
+            });
+
+            const filtered = filter === 'ALL' ? sortedData : sortedData.filter(d => d.group === filter);
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `bg-white border rounded-2xl p-5 hover:shadow-lg transition-all flex flex-col h-full group border-slate-200`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl grayscale group-hover:grayscale-0 transition-all">${item.icon}</span>
+                            <h4 class="font-black text-slate-900 font-mono text-xl tracking-tighter">${item.code}</h4>
+                        </div>
+                        <span class="text-[9px] font-bold px-2 py-1 rounded border uppercase tracking-wider ${item.color}">${item.status}</span>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">${item.group} Group</div>
+                        <div class="font-bold text-slate-800 text-sm leading-tight">${item.authorityMr}</div>
+                        <div class="text-[11px] text-slate-500 mb-3 italic">${item.authorityEn}</div>
+                        <p class="text-[11px] text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 leading-relaxed">${item.rationale}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function initFilters() {
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    btns.forEach(b => {
+                        b.classList.remove('bg-slate-900', 'text-white', 'active');
+                        b.classList.add('bg-white', 'text-slate-600');
+                    });
+                    e.target.classList.remove('bg-white', 'text-slate-600');
+                    e.target.classList.add('bg-slate-900', 'text-white', 'active');
+                    renderRegistry(e.target.getAttribute('data-filter'));
+                });
+            });
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            timelineData.forEach(item => {
+                const node = document.createElement('div');
+                node.className = "relative pl-10 group";
+                node.innerHTML = `
+                    <div class="absolute left-[-9px] top-1 w-4 h-4 bg-white border-2 border-orange-500 rounded-full group-hover:bg-orange-500 transition-colors"></div>
+                    <div class="text-xs font-mono text-slate-400 mb-1">${item.date}</div>
+                    <h4 class="text-lg font-bold text-slate-900 mb-2">${item.courtMr}</h4>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                        <p class="text-sm font-medium text-slate-700 mb-3">${item.order}</p>
+                        <span class="text-[10px] font-black uppercase tracking-widest ${item.color}">${item.status}</span>
+                    </div>
+                `;
+                container.appendChild(node);
+            });
+        }
+
+        function renderAgents() {
+            const grid = document.getElementById('agents-grid');
+            agentsData.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-5 hover:border-orange-200 transition-all";
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-3xl border border-slate-100 shadow-inner">${agent.icon}</div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">${agent.nameMr} <span class="text-[10px] text-slate-400 font-mono">/ ${agent.nameEn}</span></h4>
+                        <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5 mb-2">${agent.role} · <span class="text-orange-600 font-bold">${agent.status}</span></div>
+                        <p class="text-[11px] text-slate-600 leading-snug">${agent.desc}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('registryChart').getContext('2d');
+            const counts = {};
+            registryData.forEach(d => counts[d.status] = (counts[d.status] || 0) + 1);
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#F97316', '#EF4444', '#F43F5E', '#94A3B8', '#10B981', '#6366F1', '#8B5CF6'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initNavigation();
+            initFilters();
+            renderRegistry();
+            renderTimeline();
+            renderAgents();
+            // Trigger chart init if starting on registry, otherwise handled by nav click
+            if(!document.getElementById('section-registry').classList.contains('hidden')) {
+                setTimeout(initChart, 100);
+            }
+        });
+    </script>
+</body>
+</html>

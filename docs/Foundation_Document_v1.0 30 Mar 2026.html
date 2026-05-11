@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>जगदिश्वरम् डिजिटल कार्यालय | Foundation Document v1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;600;700&family=Inter:wght@300;400;600;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --saffron: #EA580C;
+            --navy: #0F172A;
+            --paper: #F8FAFC;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            background-color: var(--paper);
+            color: var(--navy);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 320px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .nav-link.active {
+            border-bottom: 3px solid var(--saffron);
+            color: var(--saffron);
+        }
+        .registry-grid-scroll {
+            max-height: 800px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #CBD5E1 #F1F5F9;
+        }
+        .registry-grid-scroll::-webkit-scrollbar { width: 6px; }
+        .registry-grid-scroll::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
+        .hero-logo {
+            height: 100px;
+            width: auto;
+            object-fit: contain;
+        }
+        .sticky-filter {
+            position: sticky;
+            top: 64px;
+            z-index: 40;
+            background: var(--paper);
+            padding: 1rem 0;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden selection:bg-orange-100">
+
+    <nav class="sticky top-0 z-50 glass-panel shadow-sm w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="flex flex-col">
+                        <span class="font-bold text-slate-900 text-lg leading-tight">जगदिश्वरम् डिजिटल कार्यालय</span>
+                        <span class="text-[10px] text-slate-500 font-mono tracking-tighter uppercase font-bold">Foundation Document v1.0 — 30 Mar 2026</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <button class="nav-link active font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-overview">Overview</button>
+                    <button class="nav-link text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-registry">Failure Registry</button>
+                    <button class="nav-link text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-journey">Journey</button>
+                    <button class="nav-link text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-architecture">Architecture</button>
+                    <button class="nav-link text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest px-1 py-5 transition-all" data-target="section-agents">Agents</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
+
+        <!-- SECTION: OVERVIEW -->
+        <div id="section-overview" class="view-section block animate-fade-in">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 mb-8 relative overflow-hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start gap-8 relative z-10">
+                    <div class="flex-1">
+                        <div class="inline-flex items-center px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-[10px] font-bold tracking-widest mb-6 border border-orange-100 uppercase">
+                            आवृत्ती १.० — ३० मार्च २०२६
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-4">
+                            संस्थात्मक उत्तरदायित्व <br><span class="text-slate-400 font-light italic">Infrastructure for Justice</span>
+                        </h1>
+                        
+                        <div class="mt-8 flex flex-col sm:flex-row gap-6 items-start">
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex-1">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-2">Author & Pro Se Litigant</p>
+                                <p class="text-lg font-bold text-slate-900 leading-none">आशिष जगदिश नाईक</p>
+                                <p class="text-[11px] text-slate-500 mt-1">Civic AI Engineer | Agile Coach | Former Lead BA (HSBC/CS)</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex-1">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-2">Contact</p>
+                                <p class="text-sm font-bold text-slate-700">ashish.j.naik@gmail.com</p>
+                                <p class="text-sm font-bold text-slate-700">+91 9730731985</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                    <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100">
+                        <h3 class="text-orange-600 font-bold text-xs uppercase tracking-widest mb-4">Vision | दृष्टिकोन</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">एक पारदर्शक, उत्तरदायी आणि तंत्रज्ञान-सक्षम न्यायव्यवस्था — जिथे कोणत्याही नागरिकाला माझ्यासारखे मूलभूत हक्कांसाठी ११ वर्षे वाट पाहावी लागणार नाही.</p>
+                    </div>
+                    <div class="bg-slate-900 p-8 rounded-2xl text-white">
+                        <h3 class="text-orange-400 font-bold text-xs uppercase tracking-widest mb-4">The North Star</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed font-semibold mb-2">Success is not a court order; it is a changed system.</p>
+                        <p class="text-[11px] text-slate-300">प्रवास तेव्हा संपतो जेव्हा अधिकारी पाहतो की त्याचे अनुपालन जगाला दिसत आहे.</p>
+                    </div>
+                    <div class="bg-orange-600 p-8 rounded-2xl text-white">
+                        <h3 class="text-orange-100 font-bold text-xs uppercase tracking-widest mb-4">Mission | ध्येय</h3>
+                        <p class="text-sm text-orange-50 leading-relaxed">Build the infrastructure that makes institutional inaction visible, traceable, and legally actionable in real time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Dimensional Journey Table (Stylized Cards) -->
+             <div class="mb-12">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Multi-Dimensional Journey</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                        <div class="text-[10px] font-bold text-orange-600 uppercase mb-2">Active | High Court</div>
+                        <h4 class="font-bold text-slate-900">Article 226 Petition</h4>
+                        <p class="text-xs text-slate-500 mt-2">Build infrastructure first. File when devastating.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 opacity-60">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Placeholder | Medium-Term</div>
+                        <h4 class="font-bold text-slate-900">NIC Proposal</h4>
+                        <p class="text-xs text-slate-500 mt-2">Propose AI-powered compliance infrastructure to National Informatics Centre.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 opacity-60">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Placeholder | Long-Term</div>
+                        <h4 class="font-bold text-slate-900">Toolkit for Pro Se Litigants</h4>
+                        <p class="text-xs text-slate-500 mt-2">Open-source the method: Narada, Chitragupta, Sanjaya as citizen tools.</p>
+                    </div>
+                </div>
+             </div>
+        </div>
+
+        <!-- SECTION: REGISTRY (Institutional Failure) -->
+        <div id="section-registry" class="view-section hidden animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">संस्थात्मक अपयश | Institutional Failure Registry</h2>
+                <p class="text-slate-600 mt-2 max-w-3xl">Evidence of coordinated institutional bad faith. Documented inaction across 7 key authorities.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 sticky top-24">
+                        <h3 class="text-sm font-bold text-slate-800 mb-6 text-center uppercase tracking-wider">Failure Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="failureChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 registry-grid-scroll pr-2 pb-20" id="failure-grid">
+                        <!-- Content injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: JOURNEY -->
+        <div id="section-journey" class="view-section hidden animate-fade-in">
+             <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">प्रवास आणि आदेश | The Journey & Orders</h2>
+                <p class="text-slate-600 mt-2">Three Court Orders — All in Applicant's Favor — All Unenforced.</p>
+            </div>
+            
+            <div class="bg-slate-900 text-white p-8 rounded-3xl mb-8">
+                <h3 class="text-orange-400 font-bold text-xs uppercase tracking-widest mb-4">Property Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Name</p>
+                        <p class="text-xl font-serif">जगदिश्वरम् (Jagdishwaram)</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Survey No.</p>
+                        <p class="text-sm">39/19, Mouje Watar, Vasai, Palghar</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Nature</p>
+                        <p class="text-sm">वहिवाट हक्क (Easement of Necessity)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12">
+                <div class="relative border-l-2 border-slate-100 ml-4 md:ml-8 space-y-12 pb-8" id="timeline-container">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: ARCHITECTURE -->
+        <div id="section-architecture" class="view-section hidden animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">प्रणाली आर्किटेक्चर | System Architecture</h2>
+                <p class="text-slate-600 mt-2">Layered model of the Digital Office infrastructure.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-white p-6 rounded-2xl border-l-8 border-slate-900 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Layer 0 — Truth</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">ACTIVE</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-slate-800">Google Drive Repository</h4>
+                    <p class="text-sm text-slate-500 mt-1">411+ documents, 9 authority folders, exhibit_summaries.json.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border-l-8 border-orange-500 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Layer 1 — Detection</span>
+                        <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">PENDING</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-slate-800">Narada: Breach Detection</h4>
+                    <p class="text-sm text-slate-500 mt-1">Daily monitoring of 16 threads and statutory deadlines.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border-l-8 border-slate-900 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Layer 2 — Response</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">ACTIVE</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-slate-800">Chitragupta: Automated Drafting</h4>
+                    <p class="text-sm text-slate-500 mt-1">Triggered by breaches → draft → HITL review → submit.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border-l-8 border-orange-500 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Layer 3 — Visibility</span>
+                        <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">LIVE</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-slate-800">Portal + Officer URLs</h4>
+                    <p class="text-sm text-slate-500 mt-1">jagdishwaram-office.org | /officer/MOR etc.</p>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-white p-8 rounded-3xl border border-slate-200">
+                <h3 class="text-xl font-bold mb-6">Current Priorities</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="priority-grid">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: AGENTS -->
+        <div id="section-agents" class="view-section hidden animate-fade-in">
+             <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">दैवी सहायक मंडल | Divine Agents v1.0</h2>
+                <p class="text-slate-600 mt-2">The Six core agents battle-tested on live adversarial conditions.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="agents-grid">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <!-- FOUNDER'S DECLARATION -->
+        <div class="mt-20 border-t border-slate-200 pt-12 pb-20">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="text-orange-600 font-bold text-xl mb-4">|| श्री ||</div>
+                <p class="text-slate-800 text-lg font-medium leading-relaxed italic">
+                    "I, Ashish Jagdish Naik, declare that this document is the living constitution of the Jagdishwaram Digital Office — a civic technology project born from eleven years of institutional failure and one family's refusal to accept that justice must be purchased with time, money, and dignity."
+                </p>
+                <div class="mt-8 text-slate-500 text-sm leading-relaxed space-y-4">
+                    <p>॥ सत्यमेवेश्वरो लोके सत्ये धर्मः सदाश्रितः। सत्यमूलानि सर्वाणि सत्यान्नास्ति परं पदम् ॥</p>
+                    <p class="text-[10px] uppercase tracking-widest font-bold">सत्यमेव जयते</p>
+                </div>
+                <div class="mt-12 flex flex-col items-center">
+                    <div class="h-0.5 w-24 bg-slate-200 mb-4"></div>
+                    <p class="font-bold text-slate-900">आशिष जगदिश नाईक</p>
+                    <p class="text-[11px] text-slate-400">३० मार्च २०२६ | जगदिश्वरम्, वटार, वसई</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-950 text-slate-500 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm font-semibold tracking-widest uppercase">Jagdishwaram Digital Office © 2026 — v1.0 Archive</p>
+            <p class="text-xs font-mono mt-2">"सर्वे कर्मवशा वयम्" — Everything is subject to the law of action.</p>
+        </div>
+    </footer>
+
+    <script>
+        const failureData = [
+            { code: "MOR", authorityEn: "Tehsildar Vasai", authorityMr: "तहसीलदार, वसई", status: "UNENFORCED", rationale: "394+ days no enforcement of final order dated 01/03/2024.", color: "bg-orange-50 text-orange-700 border-orange-200", icon: "⏳", group: "Revenue" },
+            { code: "RTS", authorityEn: "SDO Vasai", authorityMr: "उपविभागीय अधिकारी, वसई", status: "BAD FAITH", rationale: "RTI appeal illegally transferred to Tehsil. Zero speaking order.", color: "bg-red-50 text-red-700 border-red-200", icon: "🚫", group: "Revenue" },
+            { code: "EAF", authorityEn: "Arnala Police", authorityMr: "अर्नाळा पोलीस ठाणे", status: "MALICIOUS", rationale: "Refused enforcement for 24+ months. Filed malicious FIR 270/2024.", color: "bg-rose-50 text-rose-700 border-rose-200", icon: "⚠️", group: "Police" },
+            { code: "RPD", authorityEn: "ACP Nalasopara", authorityMr: "सहाय्यक पोलीस आयुक्त", status: "DERELICT", rationale: "FAA order 21/01/2026 ignored. 67+ days elapsed without compliance.", color: "bg-amber-50 text-amber-700 border-amber-200", icon: "🔄", group: "Police" },
+            { code: "AGD", authorityEn: "CP MBVV", authorityMr: "पोलीस आयुक्त, MBVV", status: "SILENT", rationale: "Supervisory silence = complicity. Emails forwarded without action.", color: "bg-slate-50 text-slate-700 border-slate-200", icon: "🛡️", group: "Police" },
+            { code: "DMD", authorityEn: "Collector Palghar", authorityMr: "जिल्हाधिकारी, पालघर", status: "SILENT", rationale: "Legal notice 09/02/2026 ignored. Highest authority inactive.", color: "bg-slate-50 text-slate-700 border-slate-200", icon: "🏛️", group: "Revenue" },
+            { code: "RPO", authorityEn: "RPO Mumbai", authorityMr: "प्रादेशिक पारपत्र अधिकारी", status: "NON-COMPLIANT", rationale: "Passport refused citing malicious FIR. Article 21 violation.", color: "bg-red-50 text-red-700 border-red-200", icon: "🇮🇳", group: "Central" }
+        ];
+
+        const timelineData = [
+            { date: "01/03/2024", courtMr: "तहसीलदार न्यायालय, वसई", order: "वहिवाट दावा 01/2017: Final easement order — वहिवाट हक्क कायमस्वरूपी.", status: "UNENFORCED (394+ Days)", color: "text-orange-600" },
+            { date: "10/03/2026", courtMr: "४था दंडाधिकारी, वसई", order: "OMA 254/2026: Passport to be issued. Doorstep verification ordered.", status: "PARTIALLY COMPLIED", color: "text-blue-600" },
+            { date: "18/03/2026", courtMr: "जिल्हा न्यायालय, पालघर", order: "MHTH230026632025: Opponents' injunction dismissed. Tehsil order unconditionally enforceable.", status: "DECISIVE", color: "text-emerald-600" }
+        ];
+
+        const agentsData = [
+            { nameMr: "युधिष्ठिर", nameEn: "Yudhishthira", role: "Legal AI Assistant", status: "DEPLOYED", desc: "Answers legal questions in formal Marathi prose. Cites exhibits with live links.", icon: "⚖️" },
+            { nameMr: "सरस्वती", nameEn: "Saraswati", role: "Chronicle Agent", status: "ACTIVE", desc: "Captures raw thoughts, translates to Marathi, preserves lived experience.", icon: "📖" },
+            { nameMr: "चित्रगुप्त", nameEn: "Chitragupta", role: "Drafting Agent", status: "ACTIVE", desc: "Drafts formal letters, RTI appeals, petitions. HITL review loop.", icon: "🖋️" },
+            { nameMr: "संजय", nameEn: "Sanjaya", role: "Evidence Ingest", status: "COMPLETE", desc: "411 documents ingested. Mapping Drive IDs to exhibit summaries.", icon: "👁️" },
+            { nameMr: "हनुमान", nameEn: "Hanuman", role: "Field Sync", status: "BUILT", desc: "Field capture from mobile via GPS-timestamped web form.", icon: "📱" },
+            { nameMr: "नारद", nameEn: "Narada", role: "Deadline Tracker", status: "PRIORITY 1", desc: "Reads CSV of 16 active threads. Outputs daily breach list.", icon: "⏰" }
+        ];
+
+        const priorities = [
+            { id: "P1", title: "Build Narada", desc: "Deadline tracker script — CSV in, breach JSON out.", status: "This Week" },
+            { id: "P2", title: "Deploy Hanuman", desc: "/field mobile web form on live portal.", status: "This Week" },
+            { id: "P3", title: "Configure ClickUp", desc: "3 spaces, 5 lists, import Narada CSV.", status: "Today" },
+            { id: "P9", title: "Article 226 Petition", desc: "Filing at High Court when infrastructure is solid.", status: "Sprint 8" }
+        ];
+
+        function initNavigation() {
+            const links = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.view-section');
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    links.forEach(l => l.classList.remove('active', 'text-orange-600'));
+                    e.target.classList.add('active');
+                    const target = e.target.getAttribute('data-target');
+                    sections.forEach(s => {
+                        s.classList.add('hidden');
+                        if(s.id === target) s.classList.remove('hidden');
+                    });
+                    if(target === 'section-registry') initChart();
+                });
+            });
+        }
+
+        function renderFailureRegistry() {
+            const grid = document.getElementById('failure-grid');
+            failureData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `bg-white border rounded-2xl p-5 hover:shadow-lg transition-all flex flex-col h-full group border-slate-200`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${item.icon}</span>
+                            <h4 class="font-black text-slate-900 font-mono text-xl tracking-tighter">${item.code}</h4>
+                        </div>
+                        <span class="text-[9px] font-bold px-2 py-1 rounded border uppercase tracking-wider ${item.color}">${item.status}</span>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="font-bold text-slate-800 text-sm leading-tight">${item.authorityMr}</div>
+                        <div class="text-[11px] text-slate-500 mb-3 italic">${item.authorityEn}</div>
+                        <p class="text-[11px] text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 leading-relaxed">${item.rationale}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            timelineData.forEach(item => {
+                const node = document.createElement('div');
+                node.className = "relative pl-10 group";
+                node.innerHTML = `
+                    <div class="absolute left-[-9px] top-1 w-4 h-4 bg-white border-2 border-orange-500 rounded-full"></div>
+                    <div class="text-xs font-mono text-slate-400 mb-1">${item.date}</div>
+                    <h4 class="text-lg font-bold text-slate-900 mb-2">${item.courtMr}</h4>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                        <p class="text-sm font-medium text-slate-700 mb-3">${item.order}</p>
+                        <span class="text-[10px] font-black uppercase tracking-widest ${item.color}">${item.status}</span>
+                    </div>
+                `;
+                container.appendChild(node);
+            });
+        }
+
+        function renderAgents() {
+            const grid = document.getElementById('agents-grid');
+            agentsData.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-5 hover:border-orange-200 transition-all";
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-3xl border border-slate-100">${agent.icon}</div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">${agent.nameMr} <span class="text-[10px] text-slate-400 font-mono">/ ${agent.nameEn}</span></h4>
+                        <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5 mb-2">${agent.role} · <span class="text-orange-600 font-bold">${agent.status}</span></div>
+                        <p class="text-[11px] text-slate-600 leading-snug">${agent.desc}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderPriorities() {
+            const grid = document.getElementById('priority-grid');
+            priorities.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100";
+                div.innerHTML = `
+                    <div>
+                        <span class="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded mr-2">${p.id}</span>
+                        <span class="text-sm font-bold text-slate-800">${p.title}</span>
+                        <p class="text-[10px] text-slate-500 mt-1">${p.desc}</p>
+                    </div>
+                    <span class="text-[10px] font-mono font-bold text-slate-400 uppercase whitespace-nowrap ml-4">${p.status}</span>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        let chartInstance = null;
+        function initChart() {
+            if(chartInstance) return;
+            const ctx = document.getElementById('failureChart').getContext('2d');
+            const counts = {};
+            failureData.forEach(d => counts[d.status] = (counts[d.status] || 0) + 1);
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#F97316', '#EF4444', '#F43F5E', '#94A3B8', '#10B981'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initNavigation();
+            renderFailureRegistry();
+            renderTimeline();
+            renderAgents();
+            renderPriorities();
+        });
+    </script>
+</body>
+</html>
