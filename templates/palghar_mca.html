@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Palghar Easement Pendency — Vishwakarma · JDO</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/jdo-logo.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --ink:      #EDE9E4;
+      --bg:       #0F0D0B;
+      --surface:  #1C1916;
+      --surface-2:#242018;
+      --accent:   #D4521C;
+      --border:   #2D2823;
+      --subtle:   #8A837B;
+      --font-head:'Crimson Pro', Georgia, serif;
+      --font-body:'Inter', system-ui, sans-serif;
+      --font-mono:'JetBrains Mono', monospace;
+
+      --green:     #4ADE80;
+      --green-bg:  rgba(74,222,128,0.12);
+      --amber:     #FCD34D;
+      --amber-bg:  rgba(252,211,77,0.12);
+      --red:       #F87171;
+      --red-bg:    rgba(248,113,113,0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── APP HEADER ── */
+    .app-header {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-logo-mark {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .nav-back {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--subtle);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .nav-back:hover { color: var(--accent); text-decoration: none; }
+    .header-divider {
+      width: 1px;
+      height: 16px;
+      background: var(--border);
+    }
+    .header-title {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .header-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--subtle);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    .rti-ref {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--accent);
+    }
+    .rti-filed-by {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--subtle);
+    }
+
+    /* ── STATUS BANNER ── */
+    .status-banner {
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .status-banner.filing  { background: var(--amber-bg); color: var(--amber); border-bottom: 1px solid rgba(252,211,77,0.2); }
+    .status-banner.pending { background: var(--red-bg);   color: var(--red);   border-bottom: 1px solid rgba(248,113,113,0.2); }
+    .status-banner.live    { background: var(--green-bg); color: var(--green); border-bottom: 1px solid rgba(74,222,128,0.2); }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      animation: blink 2s ease-in-out infinite;
+    }
+    .filing  .status-dot { background: var(--amber); }
+    .pending .status-dot { background: var(--red); }
+    .live    .status-dot { background: var(--green); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── TWO-COLUMN LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 130px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      position: sticky;
+      top: 52px;
+      height: calc(100vh - 52px);
+      overflow-y: auto;
+    }
+    .sidebar-section { margin-bottom: 24px; }
+    .sidebar-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-label::before {
+      content: '';
+      display: block;
+      width: 12px;
+      height: 1px;
+      background: var(--accent);
+    }
+    .filter-select {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 12px;
+      padding: 8px 10px;
+      outline: none;
+      cursor: pointer;
+    }
+    .filter-select:focus { border-color: var(--accent); }
+    .filter-check-list { display: flex; flex-direction: column; gap: 8px; }
+    .filter-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .filter-check input { accent-color: var(--accent); cursor: pointer; }
+    .sidebar-info {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 11px;
+      color: var(--subtle);
+      line-height: 1.7;
+    }
+    .sidebar-info strong { color: var(--ink); display: block; margin-bottom: 2px; }
+    .sidebar-info a { color: var(--accent); text-decoration: none; font-size: 10px; }
+    .sidebar-info a:hover { text-decoration: underline; }
+    .info-block { margin-bottom: 12px; }
+    .info-block:last-child { margin-bottom: 0; }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: var(--surface); }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── MAIN CONTENT ── */
+    .content {
+      padding: 28px 32px 64px;
+      min-width: 0;
+    }
+    .content-section { margin-bottom: 24px; }
+
+    /* ── RTI TIMELINE ── */
+    .rti-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 24px;
+    }
+    .card-heading {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+    .timeline-steps {
+      display: flex;
+      gap: 0;
+      position: relative;
+    }
+    .timeline-steps::before {
+      content: '';
+      position: absolute;
+      top: 13px;
+      left: 14px;
+      right: 14px;
+      height: 1px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .t-step { flex: 1; text-align: center; position: relative; z-index: 1; }
+    .t-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+    .t-dot.done    { background: var(--accent); color: #fff; }
+    .t-dot.overdue { background: var(--red-bg); color: var(--red); border: 2px solid var(--red); }
+    .t-dot.active  { background: var(--surface-2); color: var(--amber); border: 2px solid var(--amber); }
+    .t-dot.wait    { background: var(--surface-2); color: var(--subtle); border: 2px solid var(--border); }
+    .t-label { font-size: 10px; color: var(--ink); line-height: 1.4; }
+    .t-date  { font-family: var(--font-mono); font-size: 9px; color: var(--subtle); margin-top: 3px; }
+    .t-date.overdue-date { color: var(--red); }
+
+    /* ── KPI GRID ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 18px;
+    }
+    .kpi-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--subtle);
+      margin-bottom: 8px;
+    }
+    .kpi-value {
+      font-family: var(--font-head);
+      font-size: 30px;
+      font-weight: 600;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .kpi-value.red    { color: var(--red); }
+    .kpi-value.amber  { color: var(--amber); }
+    .kpi-value.green  { color: var(--green); }
+    .kpi-value.muted  { font-size: 13px; color: var(--subtle); font-family: var(--font-mono); font-weight: 400; padding-top: 6px; }
+    .kpi-sub { font-size: 10px; color: var(--subtle); }
+
+    /* ── MAP ── */
+    .map-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 24px;
+    }
+    .map-sub { font-size: 11px; color: var(--subtle); margin-bottom: 12px; line-height: 1.5; }
+    #map { height: 380px; border-radius: 4px; border: 1px solid var(--border); }
+    .map-legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--subtle);
+    }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── TABLE ── */
+    .table-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 24px;
+    }
+    .table-sub { font-size: 11px; color: var(--subtle); margin-bottom: 14px; }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .data-table th {
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      padding: 9px 12px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .data-table th:not(:first-child):not(:nth-child(2)) { text-align: right; }
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--subtle);
+      vertical-align: middle;
+    }
+    .data-table td:not(:first-child):not(:nth-child(2)) {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--surface-2); }
+    .taluka-name { font-weight: 500; color: var(--ink); }
+    .court-level { color: var(--subtle); font-size: 11px; }
+    .awaiting-cell { font-style: italic; color: var(--border); }
+    .age-high { color: var(--red); font-weight: 500; }
+    .age-mid  { color: var(--amber); font-weight: 500; }
+    .age-low  { color: var(--green); font-weight: 500; }
+    .no-data  { text-align: center; padding: 32px; font-family: var(--font-mono); font-size: 11px; color: var(--subtle); }
+
+    .pill {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .pill-pending   { background: var(--amber-bg); color: var(--amber); }
+    .pill-data-live { background: var(--green-bg); color: var(--green); }
+    .pill-overdue   { background: var(--red-bg);   color: var(--red); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 20px 32px;
+    }
+    .footer-inner {
+      max-width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--subtle);
+      line-height: 1.8;
+    }
+    .footer-text strong { color: var(--ink); }
+    .satyamev {
+      font-family: var(--font-head);
+      font-size: 14px;
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .timeline-steps { flex-direction: column; gap: 14px; }
+      .timeline-steps::before { display: none; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 20px 16px 48px; }
+      .app-header { padding: 0 16px; height: auto; padding-top: 10px; padding-bottom: 10px; }
+      .status-banner { padding: 10px 16px; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .header-right { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-left">
+    <img class="header-logo-mark" src="{{ url_for('static', filename='img/jdo-logo.svg') }}" alt="JDO">
+    <a href="{{ url_for('vishwakarma.transparency') }}" class="nav-back">← Vishwakarma Portal</a>
+    <div class="header-divider"></div>
+    <div>
+      <div class="header-title">Palghar District Easement Case Pendency</div>
+      <div class="header-sub">Mamlatdar Courts Act · Sec 5 &amp; Sec 23 · All 8 Talukas</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="rti-filed-by">Filed by Jagdishwaram Foundation</div>
+    <div class="rti-ref" id="rti-ref-display">PLCLO/R/2026/60126</div>
+  </div>
+</header>
+
+<div class="status-banner pending" id="status-banner">
+  <span class="status-dot"></span>
+  <span id="banner-text">⚠ RTI Response Overdue — First Appeal Filed 14-MAY-2026 · Ref: PLCLO/A/2026/60038</span>
+</div>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Filter by Taluka</div>
+      <select class="filter-select" id="talukaFilter" onchange="applyFilters()">
+        <option value="ALL">All Talukas</option>
+        <option value="PGH">Palghar</option>
+        <option value="VSI">Vasai</option>
+        <option value="DHN">Dahanu</option>
+        <option value="TLS">Talasari</option>
+        <option value="WDA">Wada</option>
+        <option value="VKG">Vikramgad</option>
+        <option value="JWR">Jawhar</option>
+        <option value="MKD">Mokhada</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Court Level</div>
+      <div class="filter-check-list">
+        <label class="filter-check">
+          <input type="checkbox" id="chkSec5" checked onchange="applyFilters()">
+          Mamlatdar — Section 5
+        </label>
+        <label class="filter-check">
+          <input type="checkbox" id="chkSec23" checked onchange="applyFilters()">
+          SDO — Section 23
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-info">
+        <div class="info-block">
+          <strong>Data Source</strong>
+          RTI filed with Office of the District Collector, Palghar under Section 6, Right to Information Act 2005.
+        </div>
+        <div class="info-block">
+          <strong>Current Status</strong>
+          RTI response overdue. First Appeal filed 14 May 2026 — Ref: PLCLO/A/2026/60038. Ground: No response within statutory time limit.
+        </div>
+        <div class="info-block">
+          <strong>Filed by</strong>
+          Jagdishwaram Foundation<br>
+          <a href="mailto:ashish.j.naik@jagdishwaram-office.org">ashish.j.naik@jagdishwaram-office.org</a>
+        </div>
+        <div class="info-block">
+          <strong>Legal Basis</strong>
+          Right to Information Act 2005, Sections 6 &amp; 19(1)
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div class="content">
+
+    <!-- RTI Timeline -->
+    <div class="content-section">
+      <div class="rti-card">
+        <div class="card-heading">RTI Filing Timeline</div>
+        <div class="timeline-steps">
+          <div class="t-step">
+            <div class="t-dot done" id="td-1">1</div>
+            <div class="t-label">RTI Drafted</div>
+            <div class="t-date" id="td-1-date">Apr 2026</div>
+          </div>
+          <div class="t-step">
+            <div class="t-dot done" id="td-2">2</div>
+            <div class="t-label">RTI Filed</div>
+            <div class="t-date" id="td-2-date">08-APR-2026</div>
+          </div>
+          <div class="t-step">
+            <div class="t-dot overdue" id="td-3">!</div>
+            <div class="t-label">Response Due</div>
+            <div class="t-date overdue-date" id="td-3-date">08-MAY-2026</div>
+          </div>
+          <div class="t-step">
+            <div class="t-dot active" id="td-4">4</div>
+            <div class="t-label">1st Appeal Filed</div>
+            <div class="t-date" id="td-4-date">14-MAY-2026</div>
+          </div>
+          <div class="t-step">
+            <div class="t-dot wait" id="td-5">5</div>
+            <div class="t-label">Response Received</div>
+            <div class="t-date" id="td-5-date">Awaited</div>
+          </div>
+          <div class="t-step">
+            <div class="t-dot wait" id="td-6">6</div>
+            <div class="t-label">Data Published</div>
+            <div class="t-date" id="td-6-date">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="content-section">
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Total Cases Filed</div>
+          <div class="kpi-value muted">—</div>
+          <div class="kpi-sub">Awaiting RTI response</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Total Pending</div>
+          <div class="kpi-value muted">—</div>
+          <div class="kpi-sub">Awaiting RTI response</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Avg Pendency</div>
+          <div class="kpi-value muted">—</div>
+          <div class="kpi-sub">Days · Awaiting RTI response</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Cases &gt;1 Year Old</div>
+          <div class="kpi-value muted">—</div>
+          <div class="kpi-sub">Awaiting RTI response</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div class="content-section">
+      <div class="map-section">
+        <div class="card-heading">Palghar District — Taluka &amp; SDO Locations</div>
+        <div class="map-sub">8 talukas shown. Pin colour reflects pendency level once RTI data arrives. All pins currently in placeholder state.</div>
+        <div id="map"></div>
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div> Low Pendency (&lt;400 days avg)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#FCD34D"></div> Medium Pendency (400–600 days)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F87171"></div> High Pendency (&gt;600 days)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4B5563"></div> Awaiting RTI Response</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="content-section">
+      <div class="table-section">
+        <div class="card-heading">Detailed Ageing Report</div>
+        <div class="table-sub">All figures sourced from RTI responses. Null values indicate response pending.</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Taluka</th>
+              <th>Court Level</th>
+              <th>Total Filed</th>
+              <th>Pending</th>
+              <th>Disposed</th>
+              <th>Avg Age (days)</th>
+              <th>% &gt;1 Year</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /layout -->
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-text">
+      <strong>Jagdishwaram Foundation</strong> · dev.jagdishwaram-office.org<br>
+      RTI filed under Right to Information Act 2005, Sections 4 &amp; 6 · Data last updated: <span id="last-updated">Dashboard live — RTI 1st Appeal filed, response awaited</span>
+    </div>
+    <div class="satyamev">सत्यमेव जयते</div>
+  </div>
+</footer>
+
+<script>
+const DATA = {
+  meta: {
+    dashboard_title:        "Palghar District Easement Case Pendency",
+    authority:              "District Collector, Palghar",
+    rti_reference:          "PLCLO/R/2026/60126",
+    rti_filed_date:         "08-APR-2026",
+    rti_response_due:       "08-MAY-2026",
+    rti_response_received:  null,
+    appeal_reference:       "PLCLO/A/2026/60038",
+    appeal_filed_date:      "14-MAY-2026",
+    appeal_ground:          "No Response Within the Time Limit",
+    data_as_of:             null,
+    status:                 "APPEAL_FILED",
+    filed_by:               "Jagdishwaram Foundation",
+    contact:                "ashish.j.naik@jagdishwaram-office.org"
+  },
+  talukas: [
+    { code:"PGH", name:"Palghar",    lat:19.697, lng:72.771, sec5:null, sec23:null },
+    { code:"VSI", name:"Vasai",      lat:19.391, lng:72.832, sec5:null, sec23:null },
+    { code:"DHN", name:"Dahanu",     lat:19.967, lng:72.733, sec5:null, sec23:null },
+    { code:"TLS", name:"Talasari",   lat:20.000, lng:72.950, sec5:null, sec23:null },
+    { code:"WDA", name:"Wada",       lat:19.650, lng:73.150, sec5:null, sec23:null },
+    { code:"VKG", name:"Vikramgad",  lat:19.800, lng:73.000, sec5:null, sec23:null },
+    { code:"JWR", name:"Jawhar",     lat:19.917, lng:73.217, sec5:null, sec23:null },
+    { code:"MKD", name:"Mokhada",    lat:19.750, lng:73.050, sec5:null, sec23:null }
+  ]
+};
+
+// ── Timeline ──────────────────────────────────────────────────────
+function updateTimeline(meta) {
+  const stepMap = {
+    'RTI_BEING_FILED': 1,
+    'RTI_FILED':       2,
+    'RTI_OVERDUE':     3,
+    'APPEAL_FILED':    4,
+    'RESPONSE_RECEIVED': 5,
+    'DATA_PUBLISHED':  6
+  };
+  const active = stepMap[meta.status] || 1;
+
+  for (let i = 1; i <= 6; i++) {
+    const dot = document.getElementById('td-' + i);
+    if (!dot) continue;
+    if (i < active) {
+      dot.className = i === 3 ? 't-dot overdue' : 't-dot done';
+    } else if (i === active) {
+      dot.className = 't-dot active';
+    } else {
+      dot.className = 't-dot wait';
+    }
+  }
+
+  if (meta.rti_reference)   document.getElementById('rti-ref-display').textContent = meta.rti_reference;
+  if (meta.rti_filed_date)  document.getElementById('td-2-date').textContent = meta.rti_filed_date;
+  if (meta.rti_response_due) {
+    document.getElementById('td-3-date').textContent = meta.rti_response_due;
+    if (active > 3) document.getElementById('td-3-date').classList.add('overdue-date');
+  }
+  if (meta.appeal_filed_date) document.getElementById('td-4-date').textContent = meta.appeal_filed_date;
+  if (meta.rti_response_received) document.getElementById('td-5-date').textContent = meta.rti_response_received;
+  if (meta.data_as_of) {
+    document.getElementById('td-6-date').textContent = meta.data_as_of;
+    document.getElementById('last-updated').textContent = 'Data as of ' + meta.data_as_of;
+  }
+
+  // Status banner
+  const banner     = document.getElementById('status-banner');
+  const bannerText = document.getElementById('banner-text');
+  const msgs = {
+    'RTI_BEING_FILED':   ['filing',  'RTI filing in progress — dashboard live with placeholder data'],
+    'RTI_FILED':         ['filing',  `RTI Filed ${meta.rti_filed_date} — Response Due ${meta.rti_response_due} — Awaiting Data`],
+    'RTI_OVERDUE':       ['pending', `⚠ RTI Response OVERDUE — Filed ${meta.rti_filed_date} — Deadline ${meta.rti_response_due} Passed`],
+    'APPEAL_FILED':      ['pending', `⚠ RTI Response Overdue — First Appeal Filed ${meta.appeal_filed_date} · Ref: ${meta.appeal_reference}`],
+    'RESPONSE_RECEIVED': ['filing',  `RTI Response Received ${meta.rti_response_received} — Data Being Processed`],
+    'DATA_PUBLISHED':    ['live',    `Data Current as of ${meta.data_as_of}`]
+  };
+  const [cls, msg] = msgs[meta.status] || msgs['RTI_BEING_FILED'];
+  banner.className = 'status-banner ' + cls;
+  bannerText.textContent = msg;
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────
+function buildKPIs(talukas) {
+  const grid = document.getElementById('kpi-grid');
+  const hasData = talukas.some(t => t.sec5 || t.sec23);
+  if (!hasData) return;
+
+  let totalFiled = 0, totalPending = 0, ages = [], over1yr = 0;
+  talukas.forEach(t => {
+    [t.sec5, t.sec23].forEach(s => {
+      if (!s) return;
+      totalFiled   += s.total_filed  || 0;
+      totalPending += s.pending      || 0;
+      if (s.avg_age_days) ages.push(s.avg_age_days);
+      if (s.pending && s.over_1yr_pct) over1yr += Math.round(s.pending * s.over_1yr_pct / 100);
+    });
+  });
+  const avgAge = ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
+  const ageClass = avgAge > 600 ? 'red' : avgAge > 400 ? 'amber' : 'green';
+
+  grid.innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Cases Filed</div>
+      <div class="kpi-value">${totalFiled.toLocaleString('en-IN')}</div><div class="kpi-sub">Across all talukas</div></div>
+    <div class="kpi"><div class="kpi-label">Total Pending</div>
+      <div class="kpi-value red">${totalPending.toLocaleString('en-IN')}</div><div class="kpi-sub">Require action</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Pendency</div>
+      <div class="kpi-value ${ageClass}">${avgAge}</div><div class="kpi-sub">Days average</div></div>
+    <div class="kpi"><div class="kpi-label">Cases &gt;1 Year Old</div>
+      <div class="kpi-value red">${over1yr.toLocaleString('en-IN')}</div><div class="kpi-sub">Constitutional concern</div></div>`;
+}
+
+// ── Map ───────────────────────────────────────────────────────────
+let map, allTalukas = [];
+
+function pendencyColor(t) {
+  const s = t.sec5 || t.sec23;
+  if (!s || !s.avg_age_days) return '#4B5563';
+  if (s.avg_age_days < 400) return '#4ADE80';
+  if (s.avg_age_days < 600) return '#FCD34D';
+  return '#F87171';
+}
+
+function talukaPopup(t) {
+  const sec5pend = t.sec5 ? t.sec5.pending : null;
+  const sec5avg  = t.sec5 ? t.sec5.avg_age_days : null;
+  const awaited  = '<em style="color:#4B5563">Awaited</em>';
+  return `
+    <div style="font-family:'Inter',sans-serif;min-width:190px;background:#1C1916;color:#EDE9E4;padding:4px">
+      <div style="font-weight:600;font-size:13px;color:#EDE9E4;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #2D2823">${t.name} Taluka</div>
+      <table style="width:100%;font-size:11px;border-collapse:collapse">
+        <tr>
+          <td style="color:#8A837B;padding:3px 0">Sec 5 Pending</td>
+          <td style="text-align:right;font-family:'JetBrains Mono',monospace">${sec5pend !== null ? sec5pend : awaited}</td>
+        </tr>
+        <tr>
+          <td style="color:#8A837B;padding:3px 0">Avg Age (days)</td>
+          <td style="text-align:right;font-family:'JetBrains Mono',monospace">${sec5avg !== null ? sec5avg : awaited}</td>
+        </tr>
+      </table>
+      <div style="margin-top:10px;padding:5px 8px;background:rgba(248,113,113,0.1);border-radius:3px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#F87171;text-transform:uppercase;letter-spacing:.06em">
+        RTI Overdue · 1st Appeal Filed
+      </div>
+    </div>`;
+}
+
+function initMap(talukas) {
+  map = L.map('map', { zoomControl: true }).setView([19.70, 72.95], 9);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    maxZoom: 14
+  }).addTo(map);
+
+  talukas.forEach(t => {
+    const color = pendencyColor(t);
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #0F0D0B;box-shadow:0 2px 8px rgba(0,0,0,.6)"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+    L.marker([t.lat, t.lng], { icon })
+     .bindPopup(talukaPopup(t), { maxWidth: 240, className: 'dark-popup' })
+     .addTo(map);
+  });
+}
+
+// ── Table ─────────────────────────────────────────────────────────
+function buildTable(talukas) {
+  const body       = document.getElementById('table-body');
+  const showSec5   = document.getElementById('chkSec5').checked;
+  const showSec23  = document.getElementById('chkSec23').checked;
+  const talukaCode = document.getElementById('talukaFilter').value;
+  const rows       = [];
+
+  talukas.forEach(t => {
+    if (talukaCode !== 'ALL' && talukaCode !== t.code) return;
+    if (showSec5)  rows.push({ taluka: t.name, level: 'Mamlatdar — Sec 5', data: t.sec5 });
+    if (showSec23) rows.push({ taluka: t.name, level: 'SDO — Sec 23',      data: t.sec23 });
+  });
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="8" class="no-data">No data matches current filters.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(r => {
+    if (!r.data) {
+      return `<tr>
+        <td class="taluka-name">${r.taluka}</td>
+        <td class="court-level">${r.level}</td>
+        <td class="awaiting-cell" colspan="5">Awaiting RTI response</td>
+        <td><span class="pill pill-overdue">Overdue</span></td>
+      </tr>`;
+    }
+    const ageClass = r.data.avg_age_days > 600 ? 'age-high' : r.data.avg_age_days > 400 ? 'age-mid' : 'age-low';
+    return `<tr>
+      <td class="taluka-name">${r.taluka}</td>
+      <td class="court-level">${r.level}</td>
+      <td>${r.data.total_filed ?? '—'}</td>
+      <td>${r.data.pending ?? '—'}</td>
+      <td>${r.data.disposed ?? '—'}</td>
+      <td class="${ageClass}">${r.data.avg_age_days ?? '—'}</td>
+      <td>${r.data.over_1yr_pct !== null ? r.data.over_1yr_pct + '%' : '—'}</td>
+      <td><span class="pill pill-data-live">Data Live</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function applyFilters() { buildTable(allTalukas); }
+
+// ── INIT ──────────────────────────────────────────────────────────
+allTalukas = DATA.talukas;
+updateTimeline(DATA.meta);
+buildKPIs(DATA.talukas);
+buildTable(DATA.talukas);
+initMap(DATA.talukas);
+
+// Leaflet dark popup override
+const style = document.createElement('style');
+style.textContent = `.leaflet-popup-content-wrapper { background:#1C1916; color:#EDE9E4; border:1px solid #2D2823; border-radius:6px; box-shadow:0 8px 24px rgba(0,0,0,.7); padding:0; } .leaflet-popup-content { margin:14px 16px; } .leaflet-popup-tip { background:#1C1916; } .leaflet-popup-close-button { color:#8A837B !important; top:8px !important; right:10px !important; }`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>

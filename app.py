@@ -19,6 +19,7 @@ from flask import Flask
 from blueprints.home import home_bp
 from blueprints.hanuman import hanuman_bp
 from blueprints.admin import admin_bp
+from blueprints.vishwakarma import vishwakarma_bp
 from narada import qr_bp
 
 app = Flask(__name__)
@@ -27,6 +28,7 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_for_local_de
 app.register_blueprint(home_bp)
 app.register_blueprint(hanuman_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(vishwakarma_bp)
 app.register_blueprint(qr_bp)
 
 if __name__ == '__main__':

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>विश्वकर्मा / Vishwakarma — Accountability Dashboards · JDO</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/jdo-logo.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:      #EDE9E4;
+      --bg:       #0F0D0B;
+      --surface:  #1C1916;
+      --surface-2:#242018;
+      --accent:   #D4521C;
+      --border:   #2D2823;
+      --subtle:   #8A837B;
+      --font-head:'Crimson Pro', Georgia, serif;
+      --font-body:'Inter', system-ui, sans-serif;
+      --font-mono:'JetBrains Mono', monospace;
+
+      --green:        #4ADE80;
+      --green-bg:     rgba(74,222,128,0.1);
+      --green-border: rgba(74,222,128,0.25);
+      --amber:        #FCD34D;
+      --amber-bg:     rgba(252,211,77,0.1);
+      --amber-border: rgba(252,211,77,0.25);
+      --muted:        #64748B;
+      --muted-bg:     rgba(100,116,139,0.1);
+      --muted-border: rgba(100,116,139,0.25);
+      --red:          #F87171;
+      --red-bg:       rgba(248,113,113,0.1);
+      --red-border:   rgba(248,113,113,0.25);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── APP HEADER ── */
+    .app-header {
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-logo-mark {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .brand-text { display: flex; flex-direction: column; gap: 1px; }
+    .brand-agent {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .brand-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--subtle);
+      letter-spacing: 0.06em;
+    }
+    .route-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--subtle);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 0 32px 80px; }
+
+    section {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── SECTION LABELS ── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    /* ── HERO ── */
+    .hero-title {
+      font-family: var(--font-head);
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.15;
+      margin-bottom: 16px;
+      max-width: 700px;
+    }
+    .hero-sub {
+      font-size: 15px;
+      color: var(--subtle);
+      line-height: 1.75;
+      max-width: 640px;
+      margin-bottom: 40px;
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 800px;
+    }
+    .stat {
+      background: var(--surface);
+      padding: 20px 24px;
+    }
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: 34px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.live-count { color: var(--red); }
+    .stat-label {
+      font-size: 11px;
+      color: var(--subtle);
+      line-height: 1.4;
+    }
+
+    /* ── SECTION INTRO ── */
+    .section-heading {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .section-intro {
+      font-size: 13px;
+      color: var(--subtle);
+      max-width: 640px;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* ── DASHBOARD CARDS ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .cards-grid.two-col {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.15s;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .dash-card.active:hover {
+      border-color: var(--accent);
+    }
+    .dash-card.live {
+      border-color: var(--green-border);
+    }
+    .dash-card.live:hover {
+      border-color: var(--green);
+    }
+    .dash-card.planned {
+      opacity: 0.55;
+    }
+
+    .card-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tag-label {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--subtle);
+    }
+
+    .status-pill {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .pill-rti-filed  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-border); }
+    .pill-planned    { background: var(--muted-bg);  color: var(--muted);  border: 1px solid var(--muted-border); }
+    .pill-live       { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green-border); }
+    .pill-overdue    { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-border); }
+
+    .card-title {
+      font-family: var(--font-head);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--subtle);
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 11px;
+    }
+    .meta-key {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--subtle);
+      flex-shrink: 0;
+    }
+    .meta-val {
+      color: var(--ink);
+      text-align: right;
+      font-size: 11px;
+    }
+    .meta-val.overdue { color: var(--red); font-family: var(--font-mono); font-size: 10px; }
+
+    .card-cta {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+    }
+    .card-cta.muted {
+      color: var(--subtle);
+      cursor: default;
+    }
+
+    /* Live counter inside card */
+    .live-counter {
+      background: var(--surface-2);
+      border: 1px solid var(--green-border);
+      border-radius: 6px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .counter-value {
+      font-family: var(--font-head);
+      font-size: 42px;
+      font-weight: 600;
+      color: var(--red);
+      line-height: 1;
+    }
+    .counter-label {
+      font-size: 11px;
+      color: var(--subtle);
+      line-height: 1.4;
+    }
+
+    /* ── REPLICABILITY SECTION ── */
+    .fork-heading {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .fork-sub {
+      font-size: 13px;
+      color: var(--subtle);
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
+    }
+    .step {
+      position: relative;
+      padding-left: 0;
+    }
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .step-title {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .step-body {
+      font-size: 12px;
+      color: var(--subtle);
+      line-height: 1.65;
+    }
+    .fork-note {
+      margin-top: 28px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--subtle);
+      line-height: 1.7;
+      max-width: 640px;
+    }
+    .fork-note strong { color: var(--ink); }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 32px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 0;
+    }
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--subtle);
+    }
+    .footer-links a { color: var(--subtle); }
+    .footer-links a:hover { color: var(--ink); text-decoration: none; }
+    .footer-copy {
+      font-size: 11px;
+      color: var(--border);
+      font-family: var(--font-mono);
+    }
+    .satyamev {
+      font-family: var(--font-head);
+      font-size: 14px;
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .cards-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .page { padding: 0 20px 60px; }
+      .app-header { padding: 0 20px; }
+      .cards-grid, .cards-grid.two-col { grid-template-columns: 1fr; }
+      .stats-strip { grid-template-columns: 1fr 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <img class="header-logo-mark" src="{{ url_for('static', filename='img/jdo-logo.svg') }}" alt="JDO">
+    <div class="brand-text">
+      <div class="brand-agent">विश्वकर्मा / Vishwakarma</div>
+      <div class="brand-sub">Transparency Dashboards</div>
+    </div>
+  </div>
+  <span class="route-badge">/transparency</span>
+</header>
+
+<div class="page">
+
+  <!-- ══ HERO ══ -->
+  <section style="padding-top:64px">
+    <div class="section-label">Public Accountability Data</div>
+    <h1 class="hero-title">Where Government Action<br>Becomes Data</h1>
+    <p class="hero-sub">Each dashboard below converts an RTI application, a court-order milestone, or a submission pattern into a visible, quantified, public record. Empty cells are not absence — they are accountability waiting to be filled.</p>
+
+    <div class="stats-strip">
+      <div class="stat">
+        <div class="stat-value accent">1</div>
+        <div class="stat-label">Active Dashboard</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">1</div>
+        <div class="stat-label">RTI Filed · 1st Appeal Active</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value live-count" id="stat-days">—</div>
+        <div class="stat-label">Days Since Order Unenforced</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" style="color:var(--subtle);font-size:22px;padding-top:6px">Awaited</div>
+        <div class="stat-label">Submissions Tracked via Narada</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ RTI DATA DASHBOARDS ══ -->
+  <section>
+    <div class="section-label">RTI Data Dashboards</div>
+    <div class="section-heading">Information Sought. Clock Running.</div>
+    <p class="section-intro">Each dashboard corresponds to one formal RTI application filed under the Right to Information Act, 2005. Data populates on receipt of RTI response. Non-response itself is recorded as a data point.</p>
+
+    <div class="cards-grid two-col">
+
+      <!-- Palghar MCA — First Appeal Active -->
+      <a href="{{ url_for('vishwakarma.palghar_mca') }}" class="dash-card active">
+        <div class="card-tag">
+          <span class="tag-label">RTI Dashboard</span>
+          <span class="status-pill pill-overdue">1st Appeal Filed</span>
+        </div>
+        <div class="card-title">Palghar District Easement Case Pendency</div>
+        <div class="card-desc">Taluka-wise ageing of pending and disposed cases under Mamlatdar Courts Act — Section 5 &amp; Section 23 — across all 8 talukas of Palghar district.</div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Authority</span>
+            <span class="meta-val">District Collector, Palghar</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">RTI Filed</span>
+            <span class="meta-val">08 Apr 2026</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Response Due</span>
+            <span class="meta-val overdue">OVERDUE — 08 May 2026</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">1st Appeal</span>
+            <span class="meta-val" style="font-family:var(--font-mono);font-size:10px">PLCLO/A/2026/60038 · 14 May 2026</span>
+          </div>
+        </div>
+        <div class="card-cta">View Dashboard →</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ══ COURT ANALYTICS ══ -->
+  <section>
+    <div class="section-label">Court Analytics</div>
+    <div class="section-heading">Judicial Efficiency. Made Visible.</div>
+    <p class="section-intro">Case data fetched from the eCourts portal and structured into efficiency dashboards — pending cases by case type, disposal rates, average pendency by act and section, ageing distribution. Any court with an eCourts presence can have one of these.</p>
+
+    <div class="cards-grid">
+
+      <!-- Vasai JMFC — PLANNED -->
+      <div class="dash-card planned">
+        <div class="card-tag">
+          <span class="tag-label">eCourts Analytics</span>
+          <span class="status-pill pill-planned">Planned</span>
+        </div>
+        <div class="card-title">4th JMFC Vasai — Execution Pendency</div>
+        <div class="card-desc">Pending and disposed execution cases before the 4th Judicial Magistrate First Class, Vasai — broken down by case type, relevant act &amp; section (incl. MCA 1906 §21), and ageing bucket.</div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Court</span>
+            <span class="meta-val">4th JMFC, Vasai (JMC)</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Data Source</span>
+            <span class="meta-val">eCourts Portal</span>
+          </div>
+        </div>
+        <div class="card-cta muted">Coming Soon</div>
+      </div>
+
+      <!-- Civil Court Palghar — PLANNED -->
+      <div class="dash-card planned">
+        <div class="card-tag">
+          <span class="tag-label">eCourts Analytics</span>
+          <span class="status-pill pill-planned">Planned</span>
+        </div>
+        <div class="card-title">Civil Court Palghar — Pendency Report</div>
+        <div class="card-desc">Case pendency analytics for the Civil Court, Palghar — disposal rate, average age, act/section breakdown, cases pending beyond 1 and 5 years.</div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Court</span>
+            <span class="meta-val">Civil Court, Palghar</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Data Source</span>
+            <span class="meta-val">eCourts Portal</span>
+          </div>
+        </div>
+        <div class="card-cta muted">Coming Soon</div>
+      </div>
+
+      <!-- District Court Palghar — PLANNED -->
+      <div class="dash-card planned">
+        <div class="card-tag">
+          <span class="tag-label">eCourts Analytics</span>
+          <span class="status-pill pill-planned">Planned</span>
+        </div>
+        <div class="card-title">District Court Palghar — Pendency Report</div>
+        <div class="card-desc">Session and district-level case pendency — case type efficiency, year-wise disposal trends, act-wise breakdown across all matters before the District Court.</div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Court</span>
+            <span class="meta-val">District Court, Palghar (JDC)</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Data Source</span>
+            <span class="meta-val">eCourts Portal</span>
+          </div>
+        </div>
+        <div class="card-cta muted">Coming Soon</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ CASE TIMELINE TRACKERS ══ -->
+  <section>
+    <div class="section-label">Case Timeline Trackers</div>
+    <div class="section-heading">Orders Passed. Days Counted.</div>
+    <p class="section-intro">Live metrics derived from documented case milestones. No RTI required — the data is in the public record. Unenforced orders are counted in days, not described in paragraphs.</p>
+
+    <div class="cards-grid two-col">
+
+      <!-- Tehsildar Order — LIVE -->
+      <div class="dash-card live">
+        <div class="card-tag">
+          <span class="tag-label">Case Timeline</span>
+          <span class="status-pill pill-live">Live</span>
+        </div>
+        <div class="card-title">Tehsildar Order Enforcement Gap</div>
+        <div class="card-desc">The Tehsildar Vasai order of 01 March 2024 permanently affirming easement rights under MCA 1906 §21 — with mandatory enforcement assistance — has remained unenforced. The count below runs in real time.</div>
+        <div class="live-counter">
+          <div class="counter-value" id="enforcement-days">—</div>
+          <div class="counter-label">Days<br>Unenforced</div>
+        </div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Order Date</span>
+            <span class="meta-val">01 Mar 2024</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Authority</span>
+            <span class="meta-val">Tehsildar Vasai (MOR)</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Legal Basis</span>
+            <span class="meta-val">MCA 1906 §21</span>
+          </div>
+        </div>
+        <a href="{{ url_for('home.kurukshetra') }}" class="card-cta">View in Case Library →</a>
+      </div>
+
+      <!-- Court Order Compliance — PLANNED -->
+      <div class="dash-card planned">
+        <div class="card-tag">
+          <span class="tag-label">Case Timeline</span>
+          <span class="status-pill pill-planned">Planned</span>
+        </div>
+        <div class="card-title">Court Order Compliance Monitor</div>
+        <div class="card-desc">Tracks compliance timelines for 4th JMFC Vasai (10 Mar 2026) and District Court Palghar (18 Mar 2026) orders — days elapsed since each order, enforcement status, next action due.</div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Data Source</span>
+            <span class="meta-val">Case Library — Court Orders</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">Authorities</span>
+            <span class="meta-val">JMC · JDC</span>
+          </div>
+        </div>
+        <div class="card-cta muted">Coming Soon</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ SUBMISSION ANALYTICS ══ -->
+  <section>
+    <div class="section-label">Submission Analytics</div>
+    <div class="section-heading">Patterns Across Authorities.</div>
+    <p class="section-intro">Aggregate analysis of QR-tracked Narada submissions. Reveals which authorities respond fast, which stall, and where applications disappear — across all submission types. Powered by Zoho Narada_Submissions, live once submission volume warrants analysis.</p>
+
+    <div class="cards-grid two-col">
+
+      <!-- Authority Performance — PLANNED -->
+      <div class="dash-card planned">
+        <div class="card-tag">
+          <span class="tag-label">Narada Analytics</span>
+          <span class="status-pill pill-planned">Planned</span>
+        </div>
+        <div class="card-title">Authority Response Performance</div>
+        <div class="card-desc">Average days to respond, breach rate, and compliance score per authority code — across all QR-tracked submissions. Which offices respond; which go silent.</div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Data Source</span>
+            <span class="meta-val">Zoho · Narada_Submissions</span>
+          </div>
+        </div>
+        <div class="card-cta muted">Coming Soon</div>
+      </div>
+
+      <!-- Application Timeline — PLANNED -->
+      <div class="dash-card planned">
+        <div class="card-tag">
+          <span class="tag-label">Narada Analytics</span>
+          <span class="status-pill pill-planned">Planned</span>
+        </div>
+        <div class="card-title">Application Timeline Analysis</div>
+        <div class="card-desc">Average days between status changes per application type (APPL, PETI, RTIA, COMP) — tracking where applications stall in the system and how long each stage takes.</div>
+        <div class="card-meta">
+          <div class="meta-row">
+            <span class="meta-key">Data Source</span>
+            <span class="meta-val">Zoho · Narada_Submissions</span>
+          </div>
+        </div>
+        <div class="card-cta muted">Coming Soon</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ REPLICABILITY ══ -->
+  <section>
+    <div class="section-label">Built to be Forked</div>
+    <div class="fork-heading">Every activist should have this.</div>
+    <p class="fork-sub">This portal is replicable by design. Each dashboard is powered by embedded JSON that mirrors a data file in a GitHub repository. Fork the repo, replace the JSON with your own RTI data, and your accountability portal is live — no database, minimal cost. Silence becomes a data point. Delay becomes a number. The system can no longer hide in paperwork.</p>
+
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">File the RTI</div>
+        <div class="step-body">Submit under Section 6, RTI Act 2005. Record the reference number, authority, and statutory deadline.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Update the Data</div>
+        <div class="step-body">Add RTI metadata to the dashboard JSON. The dashboard is immediately live in "Awaiting Response" state — accountability starts at the moment of filing, not receipt.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Data Arrives</div>
+        <div class="step-body">When the RTI response arrives, add the figures to the JSON. Charts and tables populate automatically. Partial responses are noted.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Pattern Emerges</div>
+        <div class="step-body">Across multiple RTI cycles, systemic delays become visible as institutional behaviour — not isolated incidents but a pattern the public can see.</div>
+      </div>
+    </div>
+
+    <div class="fork-note">
+      <strong>Data architecture:</strong> Each RTI dashboard = one embedded JSON object + one HTML template. Case Timeline Trackers and Submission Analytics require the Flask backend for live Zoho queries.
+    </div>
+  </section>
+
+</div><!-- /page -->
+
+<div class="page" style="padding-top:0;padding-bottom:40px">
+  <footer class="footer">
+    <nav class="footer-links">
+      <a href="{{ url_for('home.index') }}">Home</a>
+      <a href="{{ url_for('vishwakarma.transparency') }}">Transparency</a>
+      <a href="{{ url_for('narada_qr.generator') }}">Submit</a>
+      <a href="{{ url_for('home.kurukshetra') }}">Case Library</a>
+      <a href="mailto:info@jagdishwaram-office.org">Contact</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:24px">
+      <div class="satyamev">सत्यमेव जयते</div>
+      <div class="footer-copy">© 2026 Jagdishwaram Foundation</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  function daysElapsed(fromDateStr) {
+    const from = new Date(fromDateStr);
+    const now  = new Date();
+    return Math.floor((now - from) / (1000 * 60 * 60 * 24));
+  }
+
+  const orderDays = daysElapsed('2024-03-01');
+  const fmt = n => n.toLocaleString('en-IN');
+
+  document.getElementById('enforcement-days').textContent = fmt(orderDays);
+  document.getElementById('stat-days').textContent        = fmt(orderDays);
+</script>
+
+</body>
+</html>
