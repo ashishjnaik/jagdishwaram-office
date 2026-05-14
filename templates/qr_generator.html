@@ -47,6 +47,12 @@
     .header-logo-mark { width: 26px; height: 26px; object-fit: contain; flex-shrink: 0; }
     .nav-back { font-size: 12px; color: var(--subtle); text-decoration: none; display: flex; align-items: center; gap: 4px; }
     .nav-back:hover { color: var(--accent); }
+    .brand-link { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; }
+    .site-nav { display: flex; gap: 2px; align-items: center; }
+    .nav-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--subtle); border: 1px solid transparent; border-radius: 4px; padding: 3px 8px; text-decoration: none; white-space: nowrap; transition: color 0.12s; }
+    .nav-pill:hover { color: var(--ink); text-decoration: none; }
+    .nav-pill.active { color: var(--accent); border-color: var(--border); background: var(--surface); }
+    @media (max-width: 560px) { .site-nav { gap: 1px; } .nav-pill { padding: 2px 5px; font-size: 9px; } }
 
     /* ── MAIN ── */
     .page-wrap {
@@ -271,11 +277,16 @@
 <body>
 
 <header class="app-header">
-  <div class="brand">
+  <a href="{{ url_for('home.index') }}" class="brand-link">
     <img class="header-logo-mark" src="{{ url_for('static', filename='img/jdo-logo.svg') }}" alt="JDO">
-    नारद · Narada
-  </div>
-  <a href="{{ url_for('home.index') }}" class="nav-back">← Back to जगदिश्वरम्</a>
+    <span class="brand">नारद · Narada</span>
+  </a>
+  <nav class="site-nav">
+    <a href="{{ url_for('home.index') }}" class="nav-pill">Home</a>
+    <a href="{{ url_for('narada_qr.generator') }}" class="nav-pill active">Submit</a>
+    <a href="{{ url_for('vishwakarma.transparency') }}" class="nav-pill">Transparency</a>
+    <a href="{{ url_for('home.kurukshetra') }}" class="nav-pill">Library</a>
+  </nav>
 </header>
 
 <main class="page-wrap">

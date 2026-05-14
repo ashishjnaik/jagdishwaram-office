@@ -116,6 +116,12 @@
       flex-shrink: 0;
       margin-left: 16px;
     }
+    .brand-link { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-right: 24px; border-right: 1px solid var(--border); }
+    .site-nav { display: flex; gap: 2px; align-items: center; flex-shrink: 0; margin-left: 16px; }
+    .nav-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--subtle); border: 1px solid transparent; border-radius: 4px; padding: 3px 8px; text-decoration: none; white-space: nowrap; transition: color 0.12s; }
+    .nav-pill:hover { color: var(--ink); text-decoration: none; }
+    .nav-pill.active { color: var(--accent); border-color: var(--border); background: var(--surface); }
+    @media (max-width: 560px) { .site-nav { gap: 1px; } .nav-pill { padding: 2px 5px; font-size: 9px; } }
 
     /* ── LAYOUT WRAPPER ── */
     .page { max-width: 860px; margin: 0 auto; padding: 0 32px 80px; }
@@ -1122,13 +1128,13 @@
 <div class="progress-bar" id="progress-bar"></div>
 
 <header class="app-header">
-  <div class="brand">
+  <a href="{{ url_for('home.index') }}" class="brand-link">
     <img class="header-logo-mark" src="{{ url_for('static', filename='img/jdo-logo.svg') }}" alt="JDO">
     <div class="brand-text">
       <div class="brand-name">जगदिश्वरम् डिजिटल कार्यालय</div>
       <div class="brand-sub">Jagdishwaram Digital Office</div>
     </div>
-  </div>
+  </a>
   <div class="header-shloka-block">
     <div class="header-shloka">
       || सत्यमेवेश्वरो लोके सत्ये धर्मः सदाश्रितः |<br>
@@ -1140,7 +1146,12 @@
       सत्याहून उच्च असे कोणतेही ध्येय नाही.
     </div>
   </div>
-  <span class="route-badge">/</span>
+  <nav class="site-nav">
+    <a href="{{ url_for('home.index') }}" class="nav-pill active">Home</a>
+    <a href="{{ url_for('narada_qr.generator') }}" class="nav-pill">Submit</a>
+    <a href="{{ url_for('vishwakarma.transparency') }}" class="nav-pill">Transparency</a>
+    <a href="{{ url_for('home.kurukshetra') }}" class="nav-pill">Library</a>
+  </nav>
 </header>
 
 <div class="page">

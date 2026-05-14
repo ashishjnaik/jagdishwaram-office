@@ -420,6 +420,10 @@
       color: var(--accent);
       font-style: italic;
     }
+    .site-nav { display: flex; gap: 2px; align-items: center; }
+    .nav-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--subtle); border: 1px solid transparent; border-radius: 4px; padding: 3px 8px; text-decoration: none; white-space: nowrap; transition: color 0.12s; }
+    .nav-pill:hover { color: var(--ink); text-decoration: none; }
+    .nav-pill.active { color: var(--accent); border-color: var(--border); background: var(--surface-2); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
@@ -451,7 +455,12 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="rti-filed-by">Filed by Jagdishwaram Foundation</div>
+    <nav class="site-nav">
+      <a href="{{ url_for('home.index') }}" class="nav-pill">Home</a>
+      <a href="{{ url_for('narada_qr.generator') }}" class="nav-pill">Submit</a>
+      <a href="{{ url_for('vishwakarma.transparency') }}" class="nav-pill active">Transparency</a>
+      <a href="{{ url_for('home.kurukshetra') }}" class="nav-pill">Library</a>
+    </nav>
     <div class="rti-ref" id="rti-ref-display">PLCLO/R/2026/60126</div>
   </div>
 </header>

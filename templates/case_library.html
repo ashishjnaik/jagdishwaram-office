@@ -58,6 +58,12 @@
     .search-icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--subtle); font-size: 12px; pointer-events: none; }
     .entity-count { font-size: 11px; color: var(--subtle); white-space: nowrap; }
     .entity-count strong { color: var(--accent); }
+    .brand-link { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; }
+    .site-nav { display: flex; gap: 2px; align-items: center; }
+    .nav-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--subtle); border: 1px solid transparent; border-radius: 4px; padding: 3px 8px; text-decoration: none; white-space: nowrap; transition: color 0.12s; }
+    .nav-pill:hover { color: var(--ink); text-decoration: none; }
+    .nav-pill.active { color: var(--accent); border-color: var(--border); background: var(--surface); }
+    @media (max-width: 560px) { .site-nav { gap: 1px; } .nav-pill { padding: 2px 5px; font-size: 9px; } }
 
     /* ── TWO PANE ── */
     .two-pane { display: grid; grid-template-columns: 288px 1fr; flex: 1; overflow: hidden; }
@@ -366,12 +372,20 @@
 <body>
 
 <header class="app-header">
-  <img class="header-logo-mark" src="{{ url_for('static', filename='img/jdo-logo.svg') }}" alt="JDO">
-  <div>
-    <div class="brand">जगदिश्वरम् डिजिटल कार्यालय</div>
-    <div class="brand-sub">Project Kurukshetra · Case Library</div>
-  </div>
+  <a href="{{ url_for('home.index') }}" class="brand-link">
+    <img class="header-logo-mark" src="{{ url_for('static', filename='img/jdo-logo.svg') }}" alt="JDO">
+    <div>
+      <div class="brand">जगदिश्वरम् डिजिटल कार्यालय</div>
+      <div class="brand-sub">Project Kurukshetra · Case Library</div>
+    </div>
+  </a>
   <div class="header-right">
+    <nav class="site-nav">
+      <a href="{{ url_for('home.index') }}" class="nav-pill">Home</a>
+      <a href="{{ url_for('narada_qr.generator') }}" class="nav-pill">Submit</a>
+      <a href="{{ url_for('vishwakarma.transparency') }}" class="nav-pill">Transparency</a>
+      <a href="{{ url_for('home.kurukshetra') }}" class="nav-pill active">Library</a>
+    </nav>
     <div class="header-search">
       <span class="search-icon">⌕</span>
       <input type="search" id="search-input" placeholder="Search by name, authority or label…" oninput="handleSearch(this.value)">
