@@ -493,6 +493,11 @@ def scan_dashboard(qr_id):
         # but flag it so we know the underlying data is incomplete.
         actual_status = record.get('status') or 'Not Yet Received'
 
+        try:
+            qr_b64 = create_qr_image(request.url)
+        except Exception:
+            qr_b64 = ''
+
         rendered = render_template(
             'qr_dashboard.html',
             qr_id=qr_id,
@@ -507,6 +512,7 @@ def scan_dashboard(qr_id):
             url=raw_url,
             status=actual_status,
             events=events,
+            qr_b64=qr_b64,
         )
         resp = make_response(rendered)
         # Prevent Cloudflare/browser from serving a stale dashboard after a status update.

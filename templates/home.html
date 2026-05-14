@@ -194,10 +194,19 @@
       border-left: 2px solid var(--accent);
       max-width: 680px;
     }
-    /* Diagram outer — enables horizontal scroll on narrow screens */
+    /* Diagram outer — horizontal scroll on narrow screens */
     .diagram-outer {
-      overflow: hidden;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       margin-bottom: 48px;
+    }
+    .diagram-scroll-hint {
+      display: none;
+      font-size: 11px;
+      color: var(--subtle);
+      text-align: center;
+      margin-top: 8px;
+      letter-spacing: 0.04em;
     }
     /* Diagram wrap — fixed canvas, cards and SVG share same coordinate space */
     .diagram-wrap {
@@ -1052,6 +1061,8 @@
       .tools-grid { grid-template-columns: 1fr; }
       .tool-card.solo { max-width: 100%; }
       .tools-dock { display: none; }
+      .diagram-scroll-hint { display: block; }
+      .diagram-outer { margin-bottom: 32px; }
     }
 
     /* ── YUDHISHTHIRA CHIP + MODAL ── */
@@ -1159,7 +1170,7 @@
       and for every citizen who has ever waited past a legal deadline that was never honoured.
     </p>
 
-    <div class="diagram-outer">
+    <div class="diagram-outer" id="diagram-outer">
       <div class="diagram-wrap" id="diagram-wrap">
 
         <!-- SVG layer: connecting lines only, pointer-events: none -->
@@ -1189,7 +1200,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Municipal Corporation</div>
-            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
+            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
           </div>
         </div>
 
@@ -1201,7 +1212,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Judicial System</div>
-            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
+            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
           </div>
         </div>
 
@@ -1214,7 +1225,7 @@
           <div class="d-card-content">
             <div class="d-card-name">Ashish J. Naik &amp; Family</div>
             <div class="d-card-sub">Fighting since 2015 · Article 21 · Easement of Necessity Article 13</div>
-            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ All Case Documents</a>
+            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
           </div>
         </div>
 
@@ -1226,7 +1237,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Police Department</div>
-            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
+            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
           </div>
         </div>
 
@@ -1238,7 +1249,7 @@
           </div>
           <div class="d-card-content">
             <div class="d-card-name">Revenue &amp; Administration</div>
-            <a class="d-card-link" href="https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8" target="_blank" rel="noopener">↗ Case Documents</a>
+            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
           </div>
         </div>
 
@@ -1247,6 +1258,7 @@
 
       </div><!-- /diagram-wrap -->
     </div><!-- /diagram-outer -->
+    <p class="diagram-scroll-hint">← swipe to explore →</p>
 
   </section>
 
