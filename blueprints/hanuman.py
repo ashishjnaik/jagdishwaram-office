@@ -130,7 +130,7 @@ def _upload_binary_to_inbox(data: bytes, filename: str, content_type: str) -> bo
 
 @hanuman_bp.route('/field', methods=['GET'])
 def field():
-    return render_template('field.html')
+    return render_template('hanuman_field.html')
 
 
 @hanuman_bp.route('/field/submit', methods=['POST'])

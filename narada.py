@@ -330,7 +330,7 @@ def fetch_events(qr_id, limit=200):
 
 @qr_bp.route('/generator', methods=['GET'])
 def generator():
-    return render_template('qr_generator.html')
+    return render_template('narada_qr_generator.html')
 
 
 @qr_bp.route('/api/config', methods=['GET'])
@@ -499,7 +499,7 @@ def scan_dashboard(qr_id):
             qr_b64 = ''
 
         rendered = render_template(
-            'qr_dashboard.html',
+            'narada_scan_dashboard.html',
             qr_id=qr_id,
             name=record.get('citizen_name', ''),
             email=record.get('citizen_email_id', ''),
