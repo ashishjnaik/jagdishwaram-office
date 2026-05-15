@@ -284,11 +284,7 @@ def kurukshetra():
     is_auth = bool(session.get('kurukshetra_auth'))
 
     if _KURUKSHETRA_PASSPHRASE and not is_auth:
-        # Still serve — but only public nodes (is_private=false)
-        nodes, _ = _load_cache()
-        public_nodes = [n for n in nodes if not n.get('isPrivate', False)]
-        _audit('page_load_public')
-        return render_template('case_library.html', nodes=public_nodes, is_authenticated=False)
+        return redirect(url_for('home.kurukshetra_auth'))
 
     nodes, _ = _load_cache()
     _audit('page_load_auth')
@@ -297,8 +293,12 @@ def kurukshetra():
     return render_template('case_library.html', nodes=nodes, is_authenticated=is_full_access)
 
 
-@home_bp.route('/kurukshetra/auth', methods=['POST'])
+@home_bp.route('/kurukshetra/auth', methods=['GET', 'POST'])
 def kurukshetra_auth():
+    if request.method == 'GET':
+        if session.get('kurukshetra_auth'):
+            return redirect(url_for('home.kurukshetra'))
+        return render_template('kurukshetra_auth.html', error=None)
     entered = request.form.get('passphrase', '').strip()
     if entered == _KURUKSHETRA_PASSPHRASE:
         session['kurukshetra_auth'] = True

@@ -447,9 +447,10 @@ const ALL_NODES = {};
 NODES.forEach(n => { ALL_NODES[n.id] = n; });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// AUTHORITY MAP — mirrors Config_Authority_Registry in Zoho DB
+// AUTHORITY MAP — fetched from Zoho Config_Authority_Registry via /api/config
+// Static fallback used until async fetch completes (or if fetch fails).
 // ═══════════════════════════════════════════════════════════════════════════
-const AUTHORITY_MAP = {
+let AUTHORITY_MAP = {
   'MOR': 'Tehsildar Vasai Office',
   'NPS': 'SDO Vasai Sub-Division',
   'DMD': 'District Collector Palghar',
@@ -461,6 +462,22 @@ const AUTHORITY_MAP = {
   'JMC': '4th JMFC Vasai',
   'JDC': 'District Court Palghar',
 };
+
+async function loadAuthorityRegistry() {
+  try {
+    const resp = await fetch('/api/config');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const fresh = {};
+    (data.authorities || []).forEach(a => { if (a.code) fresh[a.code] = a.name || a.code; });
+    if (Object.keys(fresh).length) {
+      AUTHORITY_MAP = fresh;
+      updateAuthorityFilter();
+    }
+  } catch (e) {
+    console.warn('Authority registry fetch failed — using fallback:', e);
+  }
+}
 
 const LABEL_SUGGESTIONS = [
   'Order','Evidence','RTI','FIR','Video','Key','Appeal',
@@ -1267,7 +1284,8 @@ function closeSidebar() {
 // ═══════════════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
-updateAuthorityFilter();
+updateAuthorityFilter();   // immediate render with fallback values
+loadAuthorityRegistry();   // async — overwrites AUTHORITY_MAP + rerenders dropdown from Zoho
 renderTree();
 </script>
 </body>
