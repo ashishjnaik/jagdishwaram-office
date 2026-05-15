@@ -8,1125 +8,426 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
+    /* ── TOKENS ── */
     :root {
-      --ink:     #EDE9E4;
-      --bg:      #0F0D0B;
-      --surface: #1C1916;
+      --ink:       #EDE9E4;
+      --bg:        #0F0D0B;
+      --surface:   #1C1916;
       --surface-2: #242018;
-      --accent:  #D4521C;
-      --border:  #2D2823;
-      --subtle:  #8A837B;
+      --accent:    #D4521C;
+      --border:    #2D2823;
+      --subtle:    #8A837B;
+      --header-h:   60px;
+      --nav-h:      52px;
+      --panel-h-pad: 20px;
       --font-head: 'Crimson Pro', Georgia, serif;
       --font-body: 'Inter', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
+    @media (min-width: 768px) { :root { --header-h: 88px; --panel-h-pad: max(32px, calc((100vw - 860px) / 2)); } }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: var(--font-body);
-      background: var(--bg);
-      color: var(--ink);
-      font-size: 15px;
-      line-height: 1.7;
-    }
-
+    body { font-family: var(--font-body); background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.7; overflow: hidden; height: 100dvh; }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    /* ── APP HEADER ── */
+    /* ══ HEADER ══ */
     .app-header {
-      border-bottom: 1px solid var(--border);
-      padding: 12px 32px;
-      min-height: 88px;
-      display: flex;
-      align-items: center;
-      gap: 0;
-      background: var(--bg);
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 20px; z-index: 100;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
-      padding-right: 24px;
-      border-right: 1px solid var(--border);
+    .brand-link {
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+      text-decoration: none; color: inherit;
+      padding-right: 20px; border-right: 1px solid var(--border);
     }
-    .header-logo-mark {
-      width: 32px;
-      height: 40px;
-      object-fit: contain;
-      flex-shrink: 0;
-    }
+    .brand-link:hover { text-decoration: none; }
+    .header-logo-mark { width: 28px; height: 36px; object-fit: contain; flex-shrink: 0; }
     .brand-text { display: flex; flex-direction: column; gap: 2px; }
-    .brand-name {
-      font-family: var(--font-head);
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--ink);
-      line-height: 1.15;
-    }
-    .brand-sub {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      color: var(--subtle);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    /* Shloka + meaning block */
-    .header-shloka-block {
-      display: flex;
-      align-items: center;
-      flex: 1;
-      overflow: hidden;
-      padding: 0 24px;
-      gap: 0;
-    }
-    .header-shloka {
-      flex: 0 0 auto;
-      font-family: var(--font-head);
-      font-size: 13px;
-      font-weight: 600;
-      color: #C9A030;
-      line-height: 1.65;
-      padding-right: 20px;
-      border-right: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    .header-meaning {
-      flex: 1;
-      font-family: var(--font-head);
-      font-size: 12px;
-      color: var(--subtle);
-      line-height: 1.65;
-      font-style: italic;
-      padding-left: 20px;
-      min-width: 0;
-    }
-    .route-badge {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--subtle);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 3px 8px;
-      flex-shrink: 0;
-      margin-left: 16px;
-    }
-    .brand-link { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-right: 24px; border-right: 1px solid var(--border); }
-    .site-nav { display: flex; gap: 2px; align-items: center; flex-shrink: 0; margin-left: 16px; }
-    .nav-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--subtle); border: 1px solid transparent; border-radius: 4px; padding: 3px 8px; text-decoration: none; white-space: nowrap; transition: color 0.12s; }
-    .nav-pill:hover { color: var(--ink); text-decoration: none; }
-    .nav-pill.active { color: var(--accent); border-color: var(--border); background: var(--surface); }
-    @media (max-width: 560px) { .site-nav { gap: 1px; } .nav-pill { padding: 2px 5px; font-size: 9px; } }
+    .brand-name { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.15; }
+    .brand-sub { font-family: var(--font-mono); font-size: 8px; color: var(--subtle); letter-spacing: 0.06em; text-transform: uppercase; }
+    .header-shloka-block { display: none; flex: 1; align-items: center; overflow: hidden; padding: 0 20px; }
+    .header-shloka { flex-shrink: 0; font-family: var(--font-head); font-size: 12px; font-weight: 600; color: #C9A030; line-height: 1.65; padding-right: 18px; border-right: 1px solid var(--border); white-space: nowrap; }
+    .header-meaning { flex: 1; font-family: var(--font-head); font-size: 11px; color: var(--subtle); line-height: 1.65; font-style: italic; padding-left: 18px; min-width: 0; }
 
-    /* ── LAYOUT WRAPPER ── */
-    .page { max-width: 860px; margin: 0 auto; padding: 0 32px 80px; }
-
-    /* ── SECTION SPACING ── */
-    section { padding: 64px 0; border-bottom: 1px solid var(--border); }
-    section:last-of-type { border-bottom: none; }
-
-    /* ══════════════════════════════════════════
-       SECTION 2 — MISSION
-    ══════════════════════════════════════════ */
-    .mission-tagline {
-      font-family: var(--font-head);
-      font-size: clamp(20px, 3vw, 28px);
-      font-style: italic;
-      color: var(--ink);
-      margin-bottom: 10px;
-      line-height: 1.35;
+    /* ══ SWIPE LAYOUT (shared mobile + desktop) ══ */
+    .swipe-wrap {
+      position: fixed; top: var(--header-h); left: 0; right: 0; bottom: var(--nav-h);
+      overflow: hidden; cursor: grab;
     }
-    .mission-subtitle {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--accent);
-      margin-bottom: 20px;
-      line-height: 1.4;
+    .swipe-wrap.dragging { cursor: grabbing; }
+    .swipe-track {
+      position: relative; width: 100%; height: 100%;
     }
-    .mission-body {
-      color: var(--subtle);
-      font-size: 14px;
-      max-width: 640px;
-      line-height: 1.75;
+    .panel {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      padding: 0 var(--panel-h-pad) 32px;
+      /* Idle: blurred, zoomed-out, invisible */
+      opacity: 0;
+      filter: blur(6px);
+      transform: scale(1.03);
+      pointer-events: none;
+      transition: opacity 0.45s ease, filter 0.45s ease, transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .panel.panel-active {
+      opacity: 1;
+      filter: blur(0px);
+      transform: scale(1);
+      pointer-events: auto;
+    }
+    .panel.panel-leaving {
+      opacity: 0;
+      filter: blur(3px);
+      transform: scale(0.97);
+      pointer-events: none;
     }
 
-    /* ══ SECTION 2 — STORY COMPONENTS ══ */
+    /* ══ PANEL NAV BAR ══ */
+    .panel-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: var(--nav-h); background: var(--bg); border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; gap: 0; z-index: 100;
+    }
+    .panel-btn {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; color: var(--subtle);
+      font-size: 16px; cursor: pointer; border-radius: 8px;
+      transition: color 0.15s; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .panel-btn:hover { color: var(--ink); }
+    .nav-icons { display: flex; align-items: center; gap: 2px; padding: 0 4px; }
 
-    /* Component 1: Quotes */
-    .quotes-pair {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 48px;
-    }
-    .quote-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--accent);
-      border-radius: 8px;
-      padding: 22px 24px 18px;
-    }
-    .quote-text {
-      font-family: var(--font-head);
-      font-style: italic;
-      font-size: 15px;
-      color: var(--ink);
-      line-height: 1.7;
-      margin-bottom: 14px;
-    }
-    .quote-attr {
-      font-size: 10px;
-      color: var(--accent);
-      font-style: normal;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      display: block;
-    }
-
-    /* Component 2: Situation */
-    .situation-statement {
-      font-family: var(--font-head);
-      font-size: 17px;
-      line-height: 1.75;
-      color: var(--ink);
-      margin-bottom: 32px;
-      padding-left: 20px;
-      border-left: 2px solid var(--accent);
-      max-width: 680px;
-    }
-    /* Diagram outer — horizontal scroll on narrow screens */
-    .diagram-outer {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin-bottom: 48px;
-    }
-    .diagram-scroll-hint {
-      display: none;
-      font-size: 11px;
-      color: var(--subtle);
-      text-align: center;
-      margin-top: 8px;
-      letter-spacing: 0.04em;
-    }
-    /* Diagram wrap — fixed canvas, cards and SVG share same coordinate space */
-    .diagram-wrap {
+    /* Icon buttons with CSS tooltips */
+    .nav-icon-btn {
       position: relative;
-      width: 720px;
-      height: 400px;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; color: var(--subtle);
+      border-radius: 8px; cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .diagram-lines-svg {
+    .nav-icon-btn:hover { color: var(--ink); background: var(--surface); }
+    .nav-icon-btn.active { color: var(--accent); background: var(--surface); }
+    .nav-icon-btn svg { width: 17px; height: 17px; }
+
+    /* Tooltip above each icon */
+    .nav-icon-btn::after {
+      content: attr(data-label);
       position: absolute;
-      top: 0; left: 0;
-      width: 720px;
-      height: 470px;
-      pointer-events: none;
+      bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 3px 8px;
+      font-family: var(--font-mono); font-size: 9px;
+      color: var(--ink); white-space: nowrap;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.15s; z-index: 200;
     }
-    /* Authority + family cards */
-    .d-card {
-      position: absolute;
-      width: 210px;
-      height: 88px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: row;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .d-card:hover { border-color: var(--accent); }
-    .d-card.d-family {
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
-      border-color: var(--accent);
-      cursor: pointer;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 16px 10px;
-      gap: 0;
-    }
-    .d-img-area {
-      width: 70px;
-      flex-shrink: 0;
-      background: var(--surface-2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      border-right: 1px solid var(--border);
-    }
-    .d-family .d-img-area {
-      width: auto;
-      height: 40px;
-      border-right: none;
-      background: transparent;
-      flex-shrink: 0;
-      margin-bottom: 6px;
-    }
-    .d-img-area img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 10px;
-    }
-    .d-family .d-img-area img {
-      width: 40px;
-      height: 40px;
-      padding: 0;
-    }
-    .d-family .d-card-content {
-      padding: 0;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-    }
-    .d-family .d-card-name { font-size: 12px; }
-    .d-family .d-card-sub {
-      font-size: 9px;
-      color: var(--subtle);
-      line-height: 1.3;
-    }
-    .d-family .d-card-link { font-size: 9px; margin-top: 2px; }
-    .d-card-content {
-      flex: 1;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-width: 0;
-    }
-    .d-card-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink);
-      line-height: 1.3;
-    }
-    .d-card-sub {
-      font-size: 10px;
-      color: var(--subtle);
-      line-height: 1.5;
-    }
-    .d-card-link {
-      font-size: 10px;
-      color: var(--accent);
-      text-decoration: none;
-    }
-    .d-card-link:hover { text-decoration: underline; }
-    .d-tooltip-panel {
-      display: none;
-      position: absolute;
-      z-index: 50;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-      width: 270px;
-      pointer-events: none;
-      font-size: 12px;
-      color: var(--ink);
-      line-height: 1.6;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    }
-    .d-tooltip-panel.visible { display: block; }
-    .d-tooltip-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 8px;
-      padding-bottom: 6px;
+    .nav-icon-btn:hover::after { opacity: 1; }
+
+    /* ══ PANEL LABEL CHIP ══ */
+    .panel-label {
+      display: flex; align-items: center; gap: 7px;
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg);
+      margin: 0 calc(-1 * var(--panel-h-pad)) 16px;
+      padding: 18px var(--panel-h-pad) 12px;
       border-bottom: 1px solid var(--border);
     }
-    .d-tooltip-item {
-      color: var(--subtle);
-      margin-bottom: 5px;
-      padding-left: 10px;
-      position: relative;
-      font-size: 11px;
+    .panel-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); letter-spacing: 0.08em; }
+    .panel-dot { color: var(--border); font-size: 10px; }
+    .panel-title { font-family: var(--font-mono); font-size: 10px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* ══ SHARED: QUOTES + STATEMENT ══ */
+    .quotes-pair { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 28px; }
+    .quote-card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px; padding: 18px 18px 14px; }
+    .quote-text { font-family: var(--font-head); font-style: italic; font-size: 14px; color: var(--ink); line-height: 1.7; margin-bottom: 12px; }
+    .quote-attr { font-size: 9px; color: var(--accent); font-style: normal; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; display: block; }
+    .situation-statement { font-family: var(--font-head); font-size: 16px; line-height: 1.75; color: var(--ink); margin-bottom: 28px; padding-left: 18px; border-left: 2px solid var(--accent); }
+
+    /* Quick-access tool strip (Panel 1 bottom) */
+    .panel-tools-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .strip-tool { font-family: var(--font-mono); font-size: 10px; color: var(--subtle); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; text-decoration: none; transition: color 0.12s, border-color 0.12s; }
+    .strip-tool:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+    /* Swipe hint (panel 1, fades out) */
+    .swipe-hint { display: flex; align-items: center; gap: 6px; margin-top: 20px; font-family: var(--font-mono); font-size: 10px; color: var(--subtle); animation: hintFade 0.4s ease 4s forwards; }
+    .swipe-hint-arrow { display: inline-block; animation: hintBounce 0.7s ease-in-out 0.8s 5 alternate; }
+    @keyframes hintFade { to { opacity: 0; pointer-events: none; } }
+    @keyframes hintBounce { to { transform: translateX(5px); } }
+
+    /* ══ SHARED: MOBILE AUTHORITY GRID ══ */
+    .d-mobile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .d-mini-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 7px; cursor: pointer; transition: border-color 0.15s; -webkit-tap-highlight-color: transparent; }
+    .d-mini-card:active { border-color: var(--accent); }
+    .d-mini-family { grid-column: 1 / -1; border-color: var(--accent); flex-direction: row; text-align: left; padding: 14px 16px; gap: 14px; align-items: center; }
+    .d-mini-family .d-mini-text { display: flex; flex-direction: column; gap: 4px; }
+    .d-mini-img { width: 36px; height: 36px; object-fit: contain; flex-shrink: 0; }
+    .d-mini-name { font-size: 11px; font-weight: 500; color: var(--ink); line-height: 1.35; }
+    .d-mini-sub { font-size: 9px; color: var(--subtle); line-height: 1.4; }
+    .d-mini-connector { grid-column: 1 / -1; text-align: center; font-size: 12px; color: var(--border); padding: 2px 0; line-height: 1; }
+
+    /* Mobile tooltip bottom sheet */
+    .d-mobile-tooltip {
+      display: none; position: fixed; bottom: var(--nav-h); left: 0; right: 0;
+      background: var(--surface); border-top: 2px solid var(--accent);
+      padding: 16px 20px 20px; z-index: 300; max-height: 50vh; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
+    .d-mobile-tooltip.open { display: block; }
+    .d-mobile-tooltip-close { float: right; font-size: 16px; color: var(--subtle); background: none; border: none; cursor: pointer; padding: 0; margin: 0 0 8px 12px; line-height: 1; }
+    .d-mobile-tooltip-close:hover { color: var(--ink); }
+
+    /* ══ SHARED: DESKTOP DIAGRAM ══ */
+    .diagram-outer { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 24px; display: none; }
+    .diagram-wrap { position: relative; width: 720px; height: 400px; }
+    .diagram-lines-svg { position: absolute; top: 0; left: 0; width: 720px; height: 470px; pointer-events: none; }
+    .d-card { position: absolute; width: 210px; height: 88px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: row; cursor: pointer; transition: border-color 0.15s; }
+    .d-card:hover { border-color: var(--accent); }
+    .d-card.d-family { width: 160px; height: 160px; border-radius: 50%; border-color: var(--accent); flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 14px 8px; }
+    .d-img-area { width: 68px; flex-shrink: 0; background: var(--surface-2); display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
+    .d-family .d-img-area { width: auto; height: 38px; border-right: none; background: transparent; flex-shrink: 0; margin-bottom: 4px; }
+    .d-img-area img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+    .d-family .d-img-area img { width: 38px; height: 38px; padding: 0; }
+    .d-family .d-card-content { padding: 0; align-items: center; justify-content: center; gap: 2px; }
+    .d-family .d-card-name { font-size: 11px; }
+    .d-family .d-card-sub { font-size: 8.5px; color: var(--subtle); line-height: 1.3; }
+    .d-family .d-card-link { font-size: 8.5px; margin-top: 2px; }
+    .d-card-content { flex: 1; padding: 10px 11px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+    .d-card-name { font-size: 12px; font-weight: 500; color: var(--ink); line-height: 1.3; }
+    .d-card-sub { font-size: 9px; color: var(--subtle); line-height: 1.5; }
+    .d-card-link { font-size: 9px; color: var(--accent); }
+    .d-card-link:hover { text-decoration: underline; }
+    .d-tooltip-panel { display: none; position: absolute; z-index: 50; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; width: 260px; pointer-events: none; font-size: 11px; color: var(--ink); line-height: 1.6; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+    .d-tooltip-panel.visible { display: block; }
+    .d-tooltip-title { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 7px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+    .d-tooltip-item { color: var(--subtle); margin-bottom: 4px; padding-left: 10px; position: relative; font-size: 10px; }
     .d-tooltip-item::before { content: '·'; position: absolute; left: 0; color: var(--border); }
-    .d-tooltip-counters {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    .d-tooltip-counter {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      padding: 6px 9px;
-      background: rgba(201,160,48,0.08);
-      border: 1px solid rgba(201,160,48,0.25);
-      border-radius: 5px;
-    }
-    .d-tooltip-counter-num {
-      font-family: var(--font-mono);
-      font-size: 20px;
-      font-weight: 700;
-      color: #C9A030;
-      line-height: 1;
-    }
-    .d-tooltip-counters.multi .d-tooltip-counter-num {
-      font-size: 15px;
-    }
-    .d-tooltip-counter-label {
-      font-family: var(--font-mono);
-      font-size: 8.5px;
-      color: var(--subtle);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      line-height: 1.35;
-    }
-    .d-tooltip-link {
-      display: inline-block;
-      margin-top: 10px;
-      color: var(--accent);
-      font-size: 11px;
-    }
-    .d-node-group { cursor: pointer; }
-    .d-node-group:hover rect:first-child { stroke: var(--accent); }
+    .d-tooltip-counters { display: flex; gap: 5px; margin-bottom: 8px; }
+    .d-tooltip-counter { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 5px 8px; background: rgba(201,160,48,0.08); border: 1px solid rgba(201,160,48,0.25); border-radius: 5px; }
+    .d-tooltip-counter-num { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: #C9A030; line-height: 1; }
+    .d-tooltip-counters.multi .d-tooltip-counter-num { font-size: 14px; }
+    .d-tooltip-counter-label { font-family: var(--font-mono); font-size: 8px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.35; }
 
-    /* Component 3: Poem */
-    .poem-block {
-      border-top: 1px solid var(--border);
-      padding-top: 32px;
-    }
-    .poem-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--subtle);
-      margin-bottom: 18px;
-    }
-    .poem-text {
-      font-family: var(--font-head);
-      font-style: italic;
-      font-size: 18px;
-      color: var(--ink);
-      line-height: 2;
-      white-space: pre-line;
-      max-width: 600px;
-    }
-    .poem-attribution {
-      margin-top: 16px;
-      font-size: 12px;
-      color: var(--subtle);
-    }
+    /* ══ SHARED: FOUNDATION ══ */
+    .section-heading { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+    .section-sub { font-family: var(--font-head); font-style: italic; font-size: 13px; color: var(--subtle); margin-bottom: 20px; line-height: 1.6; }
+    .vision-mission-grid { display: grid; grid-template-columns: 1fr; gap: 0; align-items: start; }
+    .foundation-block { padding: 4px 0 22px; }
+    .foundation-block-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--subtle); margin-bottom: 14px; }
+    .foundation-vision { font-family: var(--font-head); font-style: italic; font-size: 15px; color: var(--ink); line-height: 2; white-space: pre-line; }
+    .foundation-vision-attr { margin-top: 10px; font-size: 11px; color: var(--subtle); font-family: var(--font-head); font-style: italic; }
+    .foundation-mission-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+    .foundation-mission-list > li { font-size: 13px; color: var(--ink); padding-left: 0; line-height: 1.65; display: flex; flex-direction: column; gap: 3px; }
+    .mission-verb { font-family: var(--font-mono); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); padding: 2px 7px; border: 1px solid rgba(212,82,28,0.4); border-radius: 3px; align-self: flex-start; margin-bottom: 2px; }
+    .mission-text { font-size: 12px; color: var(--subtle); line-height: 1.65; }
+    /* VISION / MISSION section headings */
+    .fnd-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .fnd-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    /* Foundation Documents horizontal bar */
+    .fnd-docs-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; margin-top: 24px; }
+    .fnd-docs-bar-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--subtle); white-space: nowrap; }
+    .fnd-docs-bar-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .fnd-docs-bar-links a { font-size: 12px; color: var(--accent); display: flex; align-items: baseline; gap: 6px; }
+    .fnd-docs-bar-links a:hover { text-decoration: underline; }
+    .fnd-docs-bar-links a span { font-family: var(--font-mono); font-size: 9px; color: var(--subtle); }
 
-    @media (max-width: 620px) {
-      .quotes-pair { grid-template-columns: 1fr; }
-    }
-
-    /* ══════════════════════════════════════════
-       SECTION 3 — ABOUT FOUNDATION
-    ══════════════════════════════════════════ */
-    .section-heading {
-      font-family: var(--font-head);
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--ink);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .status-badge {
-      font-family: var(--font-body);
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 3px 8px;
-      border-radius: 4px;
-      vertical-align: middle;
-    }
-    .badge-progress { background: rgba(245,158,11,0.15); color: #FCD34D; border: 1px solid rgba(245,158,11,0.3); }
-    .badge-registered { background: rgba(34,197,94,0.15); color: #6EE7B7; border: 1px solid rgba(34,197,94,0.3); }
-
-    .section-body {
-      color: var(--subtle);
-      font-size: 14px;
-      line-height: 1.75;
-      max-width: 660px;
-    }
-    .section-body + .section-body { margin-top: 12px; }
-
-    .reg-id {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--subtle);
-      margin-top: 10px;
-      padding: 6px 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      display: inline-block;
-    }
-
-    /* ══════════════════════════════════════════
-       SECTION 4 — ABOUT JAGDISHWARAM FOUNDATION
-    ══════════════════════════════════════════ */
-    .foundation-tagline {
-      font-family: var(--font-head);
-      font-style: italic;
-      font-size: 14px;
-      color: var(--subtle);
-      margin-top: 6px;
-      line-height: 1.6;
-    }
-    .foundation-block {
-      padding: 28px 0;
-      border-top: 1px solid var(--border);
-    }
-    .foundation-block-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--subtle);
-      margin-bottom: 16px;
-    }
-    /* Vision + Mission side by side */
-    .vision-mission-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      align-items: start;
-    }
-    @media (max-width: 640px) {
-      .vision-mission-grid { grid-template-columns: 1fr; }
-    }
-    /* Vision poem */
-    .foundation-vision {
-      font-family: var(--font-head);
-      font-style: italic;
-      font-size: 17px;
-      color: var(--ink);
-      line-height: 2.1;
-      white-space: pre-line;
-    }
-    .foundation-vision-attr {
-      margin-top: 14px;
-      font-size: 12px;
-      color: var(--subtle);
-      font-family: var(--font-head);
-      font-style: italic;
-    }
-    /* Mission list */
-    .foundation-mission-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .foundation-mission-list > li {
-      font-size: 14px;
-      color: var(--ink);
-      padding-left: 18px;
-      position: relative;
-      line-height: 1.65;
-    }
-    .foundation-mission-list > li::before {
-      content: '·';
-      position: absolute;
-      left: 0;
-      color: var(--accent);
-      font-size: 20px;
-      line-height: 1.2;
-    }
-    .foundation-mission-sub {
-      list-style: none;
-      padding: 0;
-      margin: 8px 0 0;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .foundation-mission-sub li {
-      font-size: 13px;
-      color: var(--subtle);
-      padding-left: 16px;
-      position: relative;
-      line-height: 1.6;
-    }
-    .foundation-mission-sub li::before {
-      content: '–';
-      position: absolute;
-      left: 0;
-      color: var(--border);
-    }
-    /* Collapsible documents */
-    .foundation-docs {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      max-width: 560px;
-    }
-    .foundation-docs-summary {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 13px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink);
-      cursor: pointer;
-      list-style: none;
-      user-select: none;
-      transition: background 0.15s;
-    }
-    .foundation-docs-summary::-webkit-details-marker { display: none; }
-    .foundation-docs-summary::after {
-      content: '›';
-      margin-left: auto;
-      color: var(--subtle);
-      font-size: 18px;
-      display: inline-block;
-      transition: transform 0.2s;
-    }
-    .foundation-docs[open] .foundation-docs-summary::after { transform: rotate(90deg); }
-    .foundation-docs-summary:hover { background: var(--surface-2); }
-    .foundation-docs-count {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--subtle);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 1px 6px;
-    }
-    .foundation-docs-list {
-      border-top: 1px solid var(--border);
-      padding: 12px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .foundation-doc-item {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .foundation-doc-link {
-      font-size: 13px;
-      color: var(--accent);
-    }
-    .foundation-doc-link:hover { text-decoration: underline; }
-    .foundation-doc-date {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--subtle);
-      white-space: nowrap;
-    }
-
-    /* ══════════════════════════════════════════
-       SECTION 5 — TOOLS & SURFACES
-    ══════════════════════════════════════════ */
-    .tools-heading-row {
-      display: flex;
-      align-items: baseline;
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .tools-heading {
-      font-family: var(--font-head);
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--ink);
-    }
-    .tools-tagline {
-      font-family: var(--font-body);
-      font-size: 12px;
-      color: var(--subtle);
-      font-style: italic;
-    }
-    .tools-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    .tool-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      transition: border-color 0.15s;
-    }
-    .tool-card:hover { border-color: var(--accent); }
-    /* Last odd card: same width as siblings, left-aligned */
-    .tool-card.solo { grid-column: 1 / -1; max-width: calc(50% - 8px); }
-
-    /* Icon badge top-right of each card */
-    .tool-card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .tool-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-    .tool-access {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      color: var(--subtle);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 2px 6px;
-      align-self: flex-start;
-      letter-spacing: 0.06em;
-    }
-
-    .tool-agent {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-
-    /* ── STICKY TOOLS DOCK (right edge) ── */
-    .tools-dock {
-      position: fixed;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 200;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .dock-item {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-      padding: 9px 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-right: none;
-      border-radius: 6px 0 0 6px;
-      text-decoration: none;
-      overflow: hidden;
-      max-width: 38px;
-      transition: max-width 0.22s ease, border-color 0.15s, background 0.15s;
-      cursor: pointer;
-    }
-    .dock-item:hover {
-      max-width: 180px;
-      background: var(--surface-2);
-      border-color: var(--accent);
-      text-decoration: none;
-    }
-    .dock-label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--subtle);
-      white-space: nowrap;
-      opacity: 0;
-      transition: opacity 0.18s ease;
-    }
-    .dock-item:hover .dock-label { opacity: 1; color: var(--ink); }
-    .dock-icon {
-      font-size: 15px;
-      color: var(--accent);
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    .dock-item.hitl-only .dock-icon { color: var(--subtle); }
-    .dock-item.hitl-only:hover { border-color: var(--border); }
-    .dock-item.hitl-only:hover .dock-label { color: var(--subtle); }
-    .tool-name {
-      font-family: var(--font-head);
-      font-size: 19px;
-      font-weight: 600;
-      color: var(--ink);
-      line-height: 1.2;
-    }
-    .tool-desc {
-      font-size: 13px;
-      color: var(--subtle);
-      line-height: 1.65;
-      flex: 1;
-    }
-    .tool-cta {
-      display: inline-block;
-      margin-top: 4px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 7px 14px;
-      align-self: flex-start;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .tool-cta:hover { background: var(--accent); border-color: var(--accent); color: #fff; text-decoration: none; }
-    .tool-cta.info {
-      background: transparent;
-      border-color: transparent;
-      color: var(--subtle);
-      padding-left: 0;
-      font-size: 12px;
-      cursor: default;
-    }
-    .tool-route {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--border);
-    }
-
-    /* ══════════════════════════════════════════
-       SECTION 6 — FOOTER
-    ══════════════════════════════════════════ */
-    .footer {
-      padding: 32px 0;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      border-top: 1px solid var(--border);
-    }
-    .footer-links {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--subtle);
-    }
-    .footer-links a { color: var(--subtle); }
-    .footer-links a:hover { color: var(--ink); text-decoration: none; }
-    .footer-copy {
-      font-size: 11px;
-      color: var(--border);
-      font-family: var(--font-mono);
-    }
-    .footer-social {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-left: 6px;
-    }
-    .footer-social-link {
-      display: flex;
-      align-items: center;
-      color: var(--border);
-      transition: color 0.15s;
-      line-height: 1;
-    }
-    .footer-social-link:hover { color: var(--subtle); text-decoration: none; }
-    .footer-divider {
-      width: 1px;
-      height: 12px;
-      background: var(--border);
-      margin: 0 4px;
-    }
-
-
-    /* ── READING PROGRESS BAR ── */
-    .progress-bar {
-      position: fixed;
-      top: 0; left: 0;
-      height: 2px;
-      width: 0%;
-      background: var(--accent);
-      z-index: 1000;
-      transition: width 0.08s linear;
-      pointer-events: none;
-    }
-
-    /* ── SCROLL FADE-IN ── */
-    .fade-in {
-      opacity: 0;
-      transform: translateY(22px);
-      transition: opacity 0.55s ease, transform 0.55s ease;
-    }
-    .fade-in.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-    /* ══════════════════════════════════════════
-       SECTION 3 — FEED & CONNECT
-    ══════════════════════════════════════════ */
-    .col-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--subtle);
-      margin-bottom: 16px;
-    }
-    .feed-connect-grid {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 40px;
-      align-items: start;
-    }
-    .posts-column { display: flex; flex-direction: column; gap: 14px; }
-    .post-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      transition: border-color 0.15s;
-    }
+    /* ══ SHARED: POSTS ══ */
+    .col-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--subtle); margin-bottom: 14px; }
+    .posts-column { display: flex; flex-direction: column; gap: 12px; }
+    .post-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 5px; transition: border-color 0.15s; }
     .post-card:hover { border-color: var(--accent); }
-    .post-card-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
-    .post-type-chip {
-      font-size: 9px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 2px 7px;
-      border-radius: 3px;
-    }
+    .post-card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    .post-type-chip { font-size: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 3px; }
     .chip-thought { background: rgba(99,102,241,0.15); color: #A5B4FC; }
-    .chip-poem    { background: rgba(236,72,153,0.15);  color: #F9A8D4; }
-    .chip-update  { background: rgba(212,82,28,0.15);   color: var(--accent); }
-    .chip-note    { background: rgba(16,185,129,0.15);  color: #6EE7B7; }
+    .chip-poem    { background: rgba(236,72,153,0.15); color: #F9A8D4; }
+    .chip-update  { background: rgba(212,82,28,0.15);  color: var(--accent); }
     .post-date    { font-size: 10px; color: var(--subtle); font-family: var(--font-mono); }
-    .post-title   { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.3; }
-    .post-excerpt { font-size: 12px; color: var(--subtle); line-height: 1.65; }
-    /* Verse/poem content inside a post card — capped at 5 lines; expand on click */
-    .post-verse {
-      font-family: var(--font-head);
-      font-style: italic;
-      font-size: 15px;
-      color: var(--ink);
-      line-height: 2;
-      white-space: pre-line;
-      margin-top: 4px;
-      max-height: 150px;
-      overflow: hidden;
-      -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-      transition: max-height 0.35s ease;
-    }
-    .post-verse.expanded {
-      max-height: 2000px;
-      -webkit-mask-image: none;
-      mask-image: none;
-    }
-    .post-verse-toggle {
-      display: inline-block;
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--accent);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-family: var(--font-body);
-      padding: 0;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
+    .post-title   { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+    .post-excerpt { font-size: 12px; color: var(--subtle); line-height: 1.6; }
+    .post-verse { font-family: var(--font-head); font-style: italic; font-size: 14px; color: var(--ink); line-height: 1.9; white-space: pre-line; margin-top: 4px; max-height: 120px; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); mask-image: linear-gradient(to bottom, black 50%, transparent 100%); transition: max-height 0.35s ease; }
+    .post-verse.expanded { max-height: 2000px; -webkit-mask-image: none; mask-image: none; }
+    .post-verse-toggle { display: inline-block; margin-top: 4px; font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: var(--font-body); padding: 0; text-decoration: underline; text-underline-offset: 2px; }
     .post-verse-toggle:hover { opacity: 0.75; }
 
-    /* Social column */
-    .social-column { display: flex; flex-direction: column; gap: 20px; }
-    .social-widget-box { display: flex; flex-direction: column; gap: 8px; }
-    .social-widget-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--subtle);
-    }
-    /* X / Twitter: the widget iframe renders its own chrome */
-    .twitter-timeline-wrap {
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      max-height: 360px;
-    }
-    .instagram-placeholder {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 24px 16px;
-    }
-    .ig-placeholder-inner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      text-align: center;
-    }
-    .ig-placeholder-icon { font-size: 26px; }
-    .ig-placeholder-text { font-size: 13px; font-weight: 500; color: var(--ink); }
-    .ig-placeholder-link { font-size: 12px; color: var(--accent); }
-    .ig-placeholder-note { font-size: 10px; color: var(--border); margin-top: 2px; }
-    .whatsapp-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(37,211,102,0.1);
-      border: 1px solid rgba(37,211,102,0.25);
-      color: #25D366;
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      transition: background 0.15s;
-      text-decoration: none;
-    }
-    .whatsapp-btn:hover { background: rgba(37,211,102,0.2); text-decoration: none; }
+    /* ══ SHARED: SOCIAL WIDGETS ══ */
+    .social-widget-box { display: flex; flex-direction: column; gap: 7px; }
+    .social-widget-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--subtle); }
+    .twitter-timeline-wrap { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); max-height: 320px; }
+    .instagram-placeholder { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 14px; }
+    .ig-placeholder-inner { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+    .ig-placeholder-icon { font-size: 22px; }
+    .ig-placeholder-text { font-size: 12px; font-weight: 500; color: var(--ink); }
+    .ig-placeholder-link { font-size: 11px; color: var(--accent); }
+    .ig-placeholder-note { font-size: 9px; color: var(--border); }
 
-    /* ══════════════════════════════════════════
-       WRITE TO US
-    ══════════════════════════════════════════ */
-    .write-to-us-section { }
-    .write-form { max-width: 520px; display: flex; flex-direction: column; gap: 18px; }
-    .form-row { display: flex; flex-direction: column; gap: 6px; }
-    .form-label { font-size: 12px; font-weight: 500; color: var(--ink); letter-spacing: 0.02em; }
-    .required-star { color: var(--accent); }
-    .form-input, .form-textarea {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--ink);
-      font-family: var(--font-body);
-      font-size: 14px;
-      padding: 9px 12px;
-      outline: none;
-      transition: border-color 0.15s;
-      resize: vertical;
-      width: 100%;
+    /* ══ SHARED: CONTACT PANEL ══ */
+    .contact-email-display {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;
     }
+    .contact-email-icon { color: var(--subtle); flex-shrink: 0; }
+    .contact-email-link { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 400; }
+    .contact-email-link:hover { text-decoration: underline; }
+
+    .write-form { display: flex; flex-direction: column; gap: 14px; }
+    .form-row { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 11px; font-weight: 500; color: var(--ink); }
+    .required-star { color: var(--accent); }
+    .form-input, .form-textarea { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); font-family: var(--font-body); font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s; resize: vertical; width: 100%; }
     .form-input::placeholder, .form-textarea::placeholder { color: var(--subtle); opacity: 0.6; }
     .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
-    .form-submit {
-      align-self: flex-start;
-      background: var(--accent);
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 9px 20px;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
+    .form-submit { align-self: flex-start; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-family: var(--font-body); font-size: 12px; font-weight: 500; padding: 8px 18px; cursor: pointer; transition: opacity 0.15s; }
     .form-submit:hover { opacity: 0.88; }
-    .form-success-inner {
-      display: inline-block;
-      background: rgba(34,197,94,0.1);
-      border: 1px solid rgba(34,197,94,0.25);
-      color: #6EE7B7;
-      border-radius: 6px;
-      padding: 10px 16px;
-      font-size: 13px;
+    .form-success-inner { display: inline-block; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: #6EE7B7; border-radius: 6px; padding: 8px 14px; font-size: 12px; }
+
+    .community-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .community-link { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; border: 1px solid; text-decoration: none; transition: opacity 0.15s; }
+    .community-link:hover { opacity: 0.8; text-decoration: none; }
+    .community-x  { color: var(--ink);   border-color: var(--border);              background: var(--surface); }
+    .community-ig { color: #E1306C;       border-color: rgba(225,48,108,0.3);       background: rgba(225,48,108,0.08); }
+    .community-wa { color: #25D366;       border-color: rgba(37,211,102,0.3);       background: rgba(37,211,102,0.08); }
+    .community-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    .contact-divider { height: 1px; background: var(--border); margin: 24px 0; }
+    .contact-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--subtle); margin-bottom: 14px; }
+
+    .quick-access { display: flex; flex-wrap: wrap; gap: 8px; }
+    .qa-link { font-family: var(--font-mono); font-size: 10px; color: var(--subtle); border: 1px solid var(--border); border-radius: 4px; padding: 5px 12px; text-decoration: none; transition: color 0.12s, border-color 0.12s; }
+    .qa-link:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+    /* ══ FOOTER (in Contact panel) ══ */
+    .footer { padding: 20px 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--border); margin-top: 24px; }
+    .footer-links { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; }
+    .footer-links a { color: var(--subtle); }
+    .footer-links a:hover { color: var(--ink); text-decoration: none; }
+    .footer-copy { font-size: 10px; color: var(--border); font-family: var(--font-mono); }
+
+    /* ══ SECTION 04: STATUS BADGES (shared) ══ */
+    .arch-status { font-size: 7px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 5px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; }
+    .arch-status.live    { background: rgba(34,197,94,0.12);  color: #6EE7B7; border: 1px solid rgba(34,197,94,0.2); }
+    .arch-status.design  { background: rgba(251,191,36,0.1);  color: #FCD34D; border: 1px solid rgba(251,191,36,0.2); }
+    .arch-status.planned { background: rgba(107,101,96,0.2);  color: var(--subtle); border: 1px solid var(--border); }
+
+    /* ══ SECTION 04: OUTER LAYOUT ══ */
+    .arch04-wrap { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 768px) { .arch04-wrap { grid-template-columns: 1fr 196px; gap: 28px; } }
+
+    /* Framing line */
+    .arch04-frame { font-size: 11px; font-style: italic; color: var(--subtle); margin-bottom: 12px; line-height: 1.5; }
+
+    /* HITL banner */
+    .arch04-hitl-bar { display: flex; align-items: center; gap: 10px; background: rgba(212,82,28,0.07); border: 1px solid rgba(212,82,28,0.22); border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; }
+    .arch04-hitl-name { font-size: 11px; font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 7px; }
+    .arch04-hitl-badge { font-size: 7px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border: 1px solid rgba(212,82,28,0.4); border-radius: 3px; padding: 2px 5px; }
+    .arch04-hitl-sub, .arch04-hitl-role { font-size: 9px; color: var(--subtle); font-family: var(--font-mono); }
+    .arch04-arrow { font-size: 9px; color: var(--border); font-family: var(--font-mono); padding: 3px 0 6px; }
+
+    /* Three-column board */
+    .arch04-board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    @media (max-width: 767px) { .arch04-board { grid-template-columns: 1fr; } }
+    .arch04-col { display: flex; flex-direction: column; gap: 6px; }
+    .arch04-col-hdr { font-family: var(--font-mono); font-size: 8px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; padding: 5px 8px; border-radius: 4px; margin-bottom: 2px; }
+    .arch04-col-hdr.h-input  { color: var(--subtle); background: rgba(107,101,96,0.1); border-left: 2px solid var(--border); }
+    .arch04-col-hdr.h-intel  { color: #FCD34D; background: rgba(251,191,36,0.05); border-left: 2px solid rgba(251,191,36,0.3); }
+    .arch04-col-hdr.h-output { color: var(--accent); background: rgba(212,82,28,0.05); border-left: 2px solid var(--accent); }
+    .arch04-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+    .arch04-card-name, .arch04-card-out { font-size: 11px; font-weight: 500; color: var(--ink); line-height: 1.35; }
+    .arch04-card-desc { font-size: 10px; color: var(--subtle); line-height: 1.55; }
+    .arch04-card-agent, .arch04-card-agent-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 2px; }
+    .arch04-card-agent-name { font-family: var(--font-mono); font-size: 8px; color: var(--subtle); }
+
+    /* Embedded docs row */
+    .arch04-docs { border-top: 1px solid var(--border); padding-top: 12px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .arch04-docs-label { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--border); white-space: nowrap; flex-shrink: 0; padding-top: 1px; }
+    .arch04-docs-links { display: flex; gap: 14px; flex-wrap: wrap; }
+    .arch04-doc-link { display: inline-flex; align-items: baseline; gap: 4px; font-size: 11px; color: var(--accent); }
+    .arch04-doc-link:hover { text-decoration: underline; }
+    .arch04-doc-type { font-family: var(--font-mono); font-size: 8px; color: var(--subtle); border: 1px solid var(--border); border-radius: 2px; padding: 0 3px; }
+
+    /* ══ SECTION 04: TOOL STRIP (right column) ══ */
+    .arch04-right { display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap; padding-top: 4px; }
+    @media (min-width: 768px) {
+      .arch04-right { flex-direction: column; align-items: center; gap: 8px; position: sticky; top: 50px; align-self: start; }
+    }
+    .tool-strip-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+    .tool-strip-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s, color 0.15s; }
+    .tool-strip-icon svg { width: 16px; height: 16px; }
+    .tool-strip-icon.ts-live   { background: rgba(212,82,28,0.1); border: 1.5px solid rgba(212,82,28,0.35); color: var(--accent); }
+    .tool-strip-icon.ts-design { background: var(--surface); border: 1.5px solid var(--border); color: var(--subtle); }
+    .tool-strip-icon.ts-hitl   { background: var(--surface); border: 1.5px dashed var(--border); color: var(--subtle); }
+    .tool-strip-item:hover .tool-strip-icon { border-color: var(--accent); color: var(--accent); background: rgba(212,82,28,0.08); }
+    .tool-strip-link { display: flex; align-items: center; gap: 8px; text-decoration: none; width: 100%; }
+    .tool-strip-link.nolink { cursor: default; }
+    @media (min-width: 768px) { .tool-strip-link { flex-direction: column; gap: 4px; } }
+    .tool-strip-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+    @media (min-width: 768px) { .tool-strip-meta { align-items: center; } }
+    .tool-strip-name { font-size: 10px; color: var(--ink); font-weight: 500; white-space: nowrap; }
+    .tool-strip-route { font-family: var(--font-mono); font-size: 8px; color: var(--border); text-align: center; line-height: 1.2; }
+    /* Desktop tooltip: appears to the LEFT of the strip */
+    @media (min-width: 768px) {
+      .tool-strip-item::after {
+        content: attr(data-tip);
+        position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+        background: var(--surface-2); border: 1px solid var(--border); border-radius: 5px;
+        padding: 5px 10px; font-size: 10px; font-family: var(--font-body); color: var(--ink);
+        white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 200;
+      }
+      .tool-strip-item:hover::after { opacity: 1; }
     }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 680px) {
-      .feed-connect-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 600px) {
-      .page { padding: 0 20px 60px; }
-      .app-header { padding: 10px 20px; min-height: 64px; }
-      .header-shloka-block { display: none; }
-      .tools-grid { grid-template-columns: 1fr; }
-      .tool-card.solo { max-width: 100%; }
-      .tools-dock { display: none; }
-      .diagram-scroll-hint { display: block; }
-      .diagram-outer { margin-bottom: 32px; }
-    }
-
-    /* ── YUDHISHTHIRA CHIP + MODAL ── */
-    .ai-chip {
-      position: fixed;
-      bottom: 28px; right: 28px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 9px 16px;
-      font-size: 12px;
-      font-family: var(--font-body);
-      color: var(--subtle);
-      cursor: pointer;
-      display: flex; align-items: center; gap: 7px;
-      z-index: 100;
-      transition: border-color 0.15s, color 0.15s;
-    }
+    /* ══ AI CHIP + MODAL ══ */
+    .ai-chip { position: fixed; bottom: calc(var(--nav-h) + 12px); right: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 8px 14px; font-size: 11px; font-family: var(--font-body); color: var(--subtle); cursor: pointer; display: flex; align-items: center; gap: 6px; z-index: 150; transition: border-color 0.15s, color 0.15s; }
     .ai-chip:hover { border-color: var(--accent); color: var(--ink); }
     .ai-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.6; }
-    .ai-modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 200; align-items: flex-end; justify-content: flex-end; padding: 28px;
-    }
+    .ai-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 400; align-items: flex-end; justify-content: flex-end; padding: calc(var(--nav-h) + 60px) 16px 16px; }
     .ai-modal-overlay.open { display: flex; }
-    .ai-modal {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 24px; max-width: 340px; width: 100%;
-    }
-    .ai-modal-title { font-family: var(--font-head); font-size: 17px; color: var(--ink); margin-bottom: 8px; }
-    .ai-modal-body  { font-size: 13px; color: var(--subtle); line-height: 1.65; margin-bottom: 16px; }
-    .ai-modal-textarea {
-      width: 100%; box-sizing: border-box;
-      background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
-      color: var(--ink); font-family: var(--font-body); font-size: 13px;
-      padding: 8px 10px; resize: vertical; min-height: 80px; margin-bottom: 10px;
-    }
+    .ai-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-width: 320px; width: 100%; }
+    .ai-modal-title { font-family: var(--font-head); font-size: 16px; color: var(--ink); margin-bottom: 6px; }
+    .ai-modal-body { font-size: 12px; color: var(--subtle); line-height: 1.65; margin-bottom: 14px; }
+    .ai-modal-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--ink); font-family: var(--font-body); font-size: 12px; padding: 7px 9px; resize: vertical; min-height: 70px; margin-bottom: 8px; }
     .ai-modal-textarea:focus { outline: none; border-color: var(--subtle); }
     .ai-modal-textarea::placeholder { color: var(--subtle); opacity: 0.6; }
-    .ai-modal-submit {
-      width: 100%; background: var(--accent); border: none; border-radius: 6px;
-      color: #fff; font-family: var(--font-body); font-size: 12px;
-      padding: 7px 16px; cursor: pointer; margin-bottom: 8px;
-    }
+    .ai-modal-submit { width: 100%; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-family: var(--font-body); font-size: 12px; padding: 7px 14px; cursor: pointer; margin-bottom: 6px; }
     .ai-modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-    .ai-modal-close {
-      font-size: 12px; color: var(--subtle); border: 1px solid var(--border);
-      background: transparent; border-radius: 6px; padding: 5px 12px;
-      cursor: pointer; font-family: var(--font-body);
-    }
+    .ai-modal-close { font-size: 11px; color: var(--subtle); border: 1px solid var(--border); background: transparent; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: var(--font-body); }
     .ai-modal-close:hover { color: var(--ink); border-color: var(--subtle); }
+
+    /* ══ DESKTOP BREAKPOINT OVERRIDES ══ */
+    @media (min-width: 768px) {
+      .app-header { padding: 0 32px; }
+      .brand-link { padding-right: 24px; }
+      .header-shloka-block { display: flex; }
+      .panel { padding: 0 var(--panel-h-pad) 40px; }
+      .quotes-pair { grid-template-columns: 1fr 1fr; gap: 16px; }
+      .vision-mission-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .d-mobile-grid { display: none !important; }
+      .diagram-outer { display: block; }
+      .ai-modal-overlay { padding: calc(var(--nav-h) + 16px) 28px 16px; }
+      .ai-chip { right: 28px; }
+    }
+
+    /* ══ MOBILE BREAKPOINT OVERRIDES ══ */
+    @media (max-width: 767px) {
+      .diagram-outer { display: none !important; }
+      .d-mobile-grid { display: grid; }
+    }
   </style>
 </head>
 <body>
 
-<div class="progress-bar" id="progress-bar"></div>
-
+<!-- ══ HEADER ══ -->
 <header class="app-header">
   <a href="{{ url_for('home.index') }}" class="brand-link">
     <img class="header-logo-mark" src="{{ url_for('static', filename='img/jdo-logo.svg') }}" alt="JDO">
@@ -1146,153 +447,402 @@
       सत्याहून उच्च असे कोणतेही ध्येय नाही.
     </div>
   </div>
-  <nav class="site-nav">
-    <a href="{{ url_for('home.index') }}" class="nav-pill active">Home</a>
-    <a href="{{ url_for('narada_qr.generator') }}" class="nav-pill">Submit</a>
-    <a href="{{ url_for('vishwakarma.transparency') }}" class="nav-pill">Transparency</a>
-    <a href="{{ url_for('home.kurukshetra') }}" class="nav-pill">Library</a>
-  </nav>
 </header>
 
-<div class="page">
+<!-- ══ SWIPE WRAP ══ -->
+<div class="swipe-wrap" id="swipe-wrap">
+  <div class="swipe-track" id="swipe-track">
 
-  <!-- ══ SECTION 2 — STORY ══ -->
-  <section>
+    <!-- ══════════════════════════════════
+         PANEL 1 — THE CASE
+    ══════════════════════════════════ -->
+    <section class="panel panel-active" id="panel-0">
+      <div class="panel-label">
+        <span class="panel-num">01</span><span class="panel-dot">·</span><span class="panel-title">The Case</span>
+      </div>
 
-    <!-- COMPONENT 1: Two quotes -->
-    <div class="quotes-pair">
-      <blockquote class="quote-card">
-        <p class="quote-text">"However good a Constitution may be, if those who are implementing it are not good, it will prove to be bad. However bad a Constitution may be, if those implementing it are good, it will prove to be good."</p>
-        <cite class="quote-attr">— B. R. Ambedkar</cite>
-      </blockquote>
-      <blockquote class="quote-card">
-        <p class="quote-text">"Liberty, in our constitutional scheme, is not a gift of the State but its first obligation."</p>
-        <cite class="quote-attr">— Supreme Court of India</cite>
-      </blockquote>
-    </div>
+      <p class="situation-statement">
+        For over a decade, court-affirmed rights to land access have been recognised in writing
+        and denied in practice — by every institution this family approached for relief.
+        This platform documents that gap precisely: every order, every filing, every day
+        of non-compliance, with the rigour that institutions count on citizens not having.
+      </p>
 
-    <!-- COMPONENT 2: Statement + Situation Diagram -->
-    <p class="situation-statement">
-      For over a decade, court-affirmed rights to land access have been recognised in writing
-      and denied in practice — by every institution this family approached for relief.
-      This platform exists to document that gap precisely: every order, every filing, every day
-      of non-compliance, with the rigour that institutions count on citizens not having.
-      The tools built here turn that rigour into permanent public record — for this case,
-      and for every citizen who has ever waited past a legal deadline that was never honoured.
-    </p>
+      <div class="quotes-pair">
+        <blockquote class="quote-card">
+          <p class="quote-text">"However good a Constitution may be, if those who are implementing it are not good, it will prove to be bad. However bad a Constitution may be, if those implementing it are good, it will prove to be good."</p>
+          <cite class="quote-attr">— B. R. Ambedkar</cite>
+        </blockquote>
+        <blockquote class="quote-card">
+          <p class="quote-text">"Liberty, in our constitutional scheme, is not a gift of the State but its first obligation."</p>
+          <cite class="quote-attr">— Supreme Court of India</cite>
+        </blockquote>
+      </div>
 
-    <div class="diagram-outer" id="diagram-outer">
-      <div class="diagram-wrap" id="diagram-wrap">
+      <div class="panel-tools-strip">
+        <a class="strip-tool" href="/generator">↗ Submit Application</a>
+        <a class="strip-tool" href="/transparency">⊞ Transparency</a>
+        <a class="strip-tool" href="/kurukshetra">≡ Case Library</a>
+      </div>
 
-        <!-- SVG layer: connecting lines only, pointer-events: none -->
-        <!-- Card centers: Municipality(120,54) Courts(600,54) Family(360,205) Police(120,346) Revenue(600,346) -->
-        <svg class="diagram-lines-svg" viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <!-- arrowhead for line-end (points toward authority cards) -->
-            <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-              <path d="M0,0 L7,3.5 L0,7 Z" fill="#6B6560"/>
-            </marker>
-            <!-- arrowhead for line-start (points toward family card) -->
-            <marker id="arr-r" markerWidth="7" markerHeight="7" refX="1" refY="3.5" orient="auto">
-              <path d="M7,0 L0,3.5 L7,7 Z" fill="#6B6560"/>
-            </marker>
-          </defs>
-          <line x1="360" y1="205" x2="210" y2="62"  stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
-          <line x1="360" y1="205" x2="510" y2="62"  stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
-          <line x1="360" y1="205" x2="210" y2="302" stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
-          <line x1="360" y1="205" x2="510" y2="302" stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
-        </svg>
+      <div class="swipe-hint">
+        <span>swipe to explore</span>
+        <span class="swipe-hint-arrow">→</span>
+      </div>
+    </section>
 
-        <!-- MUNICIPAL CORPORATION (top-left) — left:15 top:10 w:210 h:88 → center (120,54) -->
-        <div class="d-card" style="left:15px;top:10px" data-tip="municipality">
-          <div class="d-img-area">
-            <!-- HITL: replace span with <img src="img/municipality-logo.png" alt="Municipal Corporation"> -->
-            <img src="{{ url_for('static', filename='img/municipality-logo.png') }}" alt="Municipal Corporation">
-          </div>
-          <div class="d-card-content">
-            <div class="d-card-name">Municipal Corporation</div>
-            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
+    <!-- ══════════════════════════════════
+         PANEL 2 — AUTHORITY MAP
+    ══════════════════════════════════ -->
+    <section class="panel" id="panel-1">
+      <div class="panel-label">
+        <span class="panel-num">02</span><span class="panel-dot">·</span><span class="panel-title">Authority Map</span>
+      </div>
+
+      <p style="font-size:13px;color:var(--subtle);margin-bottom:18px;line-height:1.6">
+        Four Institutions. One Family. A decade of deprivation and systemic exploitation of constitutionally promised rights — none enforced even after judicial orders. Tap any card to see the details.
+      </p>
+
+      <!-- Mobile grid -->
+      <div class="d-mobile-grid" id="d-mobile-grid">
+        <div class="d-mini-card" data-tip="municipality">
+          <img class="d-mini-img" src="{{ url_for('static', filename='img/municipality-logo.png') }}" alt="">
+          <div class="d-mini-name">Municipal Corporation</div>
+          <div class="d-mini-sub">VVMC · No service, prompt in taxes</div>
+        </div>
+        <div class="d-mini-card" data-tip="courts">
+          <img class="d-mini-img" src="{{ url_for('static', filename='img/courts-logo.png') }}" alt="">
+          <div class="d-mini-name">Judicial System</div>
+          <div class="d-mini-sub">District · JMFC · High Court</div>
+        </div>
+        <div class="d-mini-connector">⋮</div>
+        <div class="d-mini-card d-mini-family" data-tip="family">
+          <img class="d-mini-img" src="{{ url_for('static', filename='img/family-logo.png') }}" alt="">
+          <div class="d-mini-text">
+            <div class="d-mini-name">Ashish J. Naik &amp; Family</div>
+            <div class="d-mini-sub">Fighting since 2015 · Article 21 · Easement of Necessity</div>
           </div>
         </div>
+        <div class="d-mini-connector">⋮</div>
+        <div class="d-mini-card" data-tip="police">
+          <img class="d-mini-img" src="{{ url_for('static', filename='img/police-logo.png') }}" alt="">
+          <div class="d-mini-name">Police Department</div>
+          <div class="d-mini-sub">False FIR 270/2024 · Ruled baseless</div>
+        </div>
+        <div class="d-mini-card" data-tip="revenue">
+          <img class="d-mini-img" src="{{ url_for('static', filename='img/revenue-logo.png') }}" alt="">
+          <div class="d-mini-name">Revenue &amp; Admin</div>
+          <div class="d-mini-sub">Tehsildar · SDO · Collector</div>
+        </div>
+      </div>
 
-        <!-- JUDICIAL SYSTEM (top-right) — left:495 top:10 w:210 h:88 → center (600,54) -->
-        <div class="d-card" style="left:495px;top:10px" data-tip="courts">
-          <div class="d-img-area">
-            <!-- HITL: replace span with <img src="img/courts-logo.png" alt="Judicial System"> -->
-            <img src="{{ url_for('static', filename='img/courts-logo.png') }}" alt="Judicial System">
+      <!-- Desktop diagram -->
+      <div class="diagram-outer" id="diagram-outer">
+        <div class="diagram-wrap" id="diagram-wrap">
+          <svg class="diagram-lines-svg" viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr-r" markerWidth="7" markerHeight="7" refX="1" refY="3.5" orient="auto"><path d="M7,0 L0,3.5 L7,7 Z" fill="#6B6560"/></marker>
+            </defs>
+            <line x1="360" y1="205" x2="210" y2="62"  stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
+            <line x1="360" y1="205" x2="510" y2="62"  stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
+            <line x1="360" y1="205" x2="210" y2="302" stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
+            <line x1="360" y1="205" x2="510" y2="302" stroke="#3D3830" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#arr-r)"/>
+          </svg>
+          <div class="d-card" style="left:15px;top:10px" data-tip="municipality">
+            <div class="d-img-area"><img src="{{ url_for('static', filename='img/municipality-logo.png') }}" alt=""></div>
+            <div class="d-card-content"><div class="d-card-name">Municipal Corporation</div><a class="d-card-link" href="/kurukshetra">↗ Case Library</a></div>
           </div>
-          <div class="d-card-content">
-            <div class="d-card-name">Judicial System</div>
-            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
+          <div class="d-card" style="left:495px;top:10px" data-tip="courts">
+            <div class="d-img-area"><img src="{{ url_for('static', filename='img/courts-logo.png') }}" alt=""></div>
+            <div class="d-card-content"><div class="d-card-name">Judicial System</div><a class="d-card-link" href="/kurukshetra">↗ Case Library</a></div>
           </div>
+          <div class="d-card d-family" style="left:280px;top:125px" data-tip="family">
+            <div class="d-img-area"><img src="{{ url_for('static', filename='img/family-logo.png') }}" alt=""></div>
+            <div class="d-card-content"><div class="d-card-name">Ashish J. Naik &amp; Family</div><div class="d-card-sub">Fighting since 2015 · Article 21</div><a class="d-card-link" href="/kurukshetra">↗ Case Library</a></div>
+          </div>
+          <div class="d-card" style="left:15px;top:302px" data-tip="police">
+            <div class="d-img-area"><img src="{{ url_for('static', filename='img/police-logo.png') }}" alt=""></div>
+            <div class="d-card-content"><div class="d-card-name">Police Department</div><a class="d-card-link" href="/kurukshetra">↗ Case Library</a></div>
+          </div>
+          <div class="d-card" style="left:495px;top:302px" data-tip="revenue">
+            <div class="d-img-area"><img src="{{ url_for('static', filename='img/revenue-logo.png') }}" alt=""></div>
+            <div class="d-card-content"><div class="d-card-name">Revenue &amp; Administration</div><a class="d-card-link" href="/kurukshetra">↗ Case Library</a></div>
+          </div>
+          <div class="d-tooltip-panel" id="d-tooltip"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANEL 3 — FOUNDATION
+    ══════════════════════════════════ -->
+    <section class="panel" id="panel-2">
+      <div class="panel-label">
+        <span class="panel-num">03</span><span class="panel-dot">·</span><span class="panel-title">Jagdishwaram Foundation</span>
+      </div>
+
+      <div class="vision-mission-grid">
+        <div class="foundation-block">
+          <div class="fnd-label">Vision</div>
+          <div class="foundation-vision">शून्यात  जन्मलो, शून्यातून उभरलो
+शून्याकडे प्रवास सर्वांचाच;
+"प्रवाह" माझा मीच बनलो.
+
+"अशाश्वत" सत्तेचे भय दाखविणाऱ्यांनो ऐका,
+"शाश्वत" मृत्यूचे भय मी,
+जिवंतपणी प्यायलो.
+
+"न्याय/अन्याय" आता शब्दमात्र झाले,
+"परिवर्तन" हेची एकमेव ध्येयमात्र बनले.</div>
+          <div class="foundation-vision-attr">— आशिष जगदिश नाईक</div>
         </div>
 
-        <!-- FAMILY CENTER — left:280 top:125 w:160 h:160 → center (360,205) -->
-        <div class="d-card d-family" style="left:280px;top:125px" data-tip="family">
-          <div class="d-img-area">
-            <!-- HITL: replace span with <img src="img/family-logo.png" alt="Jagdishwaram Foundation"> -->
-            <img src="{{ url_for('static', filename='img/family-logo.png') }}" alt="Jagdishwaram Foundation">
-          </div>
-          <div class="d-card-content">
-            <div class="d-card-name">Ashish J. Naik &amp; Family</div>
-            <div class="d-card-sub">Fighting since 2015 · Article 21 · Easement of Necessity Article 13</div>
-            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
-          </div>
+        <div class="foundation-block">
+          <div class="fnd-label">Mission</div>
+          <ul class="foundation-mission-list">
+            <li>
+              <span class="mission-verb">Equip</span>
+              <span class="mission-text">Replicable tools that help citizens navigate, document, and demand accountability from government authorities</span>
+            </li>
+            <li>
+              <span class="mission-verb">Expose</span>
+              <span class="mission-text">Court-order non-compliance, RTI suppression, and systemic delays converted into measurable, permanent public data</span>
+            </li>
+            <li>
+              <span class="mission-verb">Educate</span>
+              <span class="mission-text">AI literacy for underprivileged children; self-capability for citizens navigating bureaucratic systems</span>
+            </li>
+          </ul>
         </div>
+      </div>
 
-        <!-- POLICE DEPARTMENT (bottom-left) — left:15 top:302 w:210 h:88 → center (120,346) -->
-        <div class="d-card" style="left:15px;top:302px" data-tip="police">
-          <div class="d-img-area">
-            <!-- HITL: replace span with <img src="img/police-logo.png" alt="Police Department"> -->
-            <img src="{{ url_for('static', filename='img/police-logo.png') }}" alt="Police Department">
-          </div>
-          <div class="d-card-content">
-            <div class="d-card-name">Police Department</div>
-            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
-          </div>
+      <div class="fnd-docs-bar">
+        <span class="fnd-docs-bar-label">Foundation Documents</span>
+        <div class="fnd-docs-bar-links">
+          <a href="/docs/Foundation_Document_v1.0%2030%20Mar%202026.html" target="_blank" rel="noopener">↗ v1.0 <span>30 Mar 2026</span></a>
+          <a href="/docs/Foundation_Document_v2.0%2016%20Apr%202026.html" target="_blank" rel="noopener">↗ v2.0 <span>16 Apr 2026</span></a>
         </div>
+      </div>
+    </section>
 
-        <!-- REVENUE & ADMINISTRATION (bottom-right) — left:495 top:302 w:210 h:88 → center (600,346) -->
-        <div class="d-card" style="left:495px;top:302px" data-tip="revenue">
-          <div class="d-img-area">
-            <!-- HITL: replace span with <img src="img/revenue-logo.png" alt="Revenue & Administration"> -->
-            <img src="{{ url_for('static', filename='img/revenue-logo.png') }}" alt="Revenue &amp; Administration">
+    <!-- ══════════════════════════════════
+         PANEL 4 — JDO SYSTEM ARCHITECTURE & TOOLS
+    ══════════════════════════════════ -->
+    <section class="panel" id="panel-3">
+      <div class="panel-label">
+        <span class="panel-num">04</span><span class="panel-dot">·</span><span class="panel-title">JDO System Architecture &amp; Tools</span>
+      </div>
+
+      <div class="arch04-wrap">
+
+        <!-- ── LEFT: Output board ── -->
+        <div class="arch04-left">
+          <p class="arch04-frame">When fully live, one citizen interaction produces:</p>
+
+          <div class="arch04-hitl-bar">
+            <span class="arch04-hitl-name">व्यास · Vyasa</span>
+            <span class="arch04-hitl-role">HITL — Ashish J. Naik · Final authority on Truth, Vision &amp; Strategy</span>
           </div>
-          <div class="d-card-content">
-            <div class="d-card-name">Revenue &amp; Administration</div>
-            <a class="d-card-link" href="/kurukshetra">↗ Case Library</a>
+          <div class="arch04-arrow">↓ directive &amp; oversight at every stage</div>
+
+          <div class="arch04-board">
+
+            <!-- INPUT column -->
+            <div class="arch04-col">
+              <div class="arch04-col-hdr h-input">Input</div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">Field captures</div>
+                <div class="arch04-card-desc">Images, audio &amp; text captured live at the site and synced to Google Drive Chronicle Inbox</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">हनुमान · Hanuman</span>
+                  <span class="arch-status design">Design</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- INTELLIGENCE column -->
+            <div class="arch04-col">
+              <div class="arch04-col-hdr h-intel">Intelligence</div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">Structured knowledge</div>
+                <div class="arch04-card-desc">EoD batch — transcribes, translates &amp; structures raw captures into verified VAULT entries via Gemini Pro</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">सरस्वती · Saraswati</span>
+                  <span class="arch-status design">Design</span>
+                </div>
+              </div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">Evidence chain</div>
+                <div class="arch04-card-desc">OCR, cross-validation &amp; provenance links for every structured output before downstream agents consume it</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">संजय · Sanjaya</span>
+                  <span class="arch-status design">Design</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- OUTPUT column -->
+            <div class="arch04-col">
+              <div class="arch04-col-hdr h-output">Output</div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">QR-tracked submission receipts</div>
+                <div class="arch04-card-desc">Every application/RTI/complaint stamped with a scannable QR receipt and live status dashboard</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">नारद · Narada</span>
+                  <span class="arch-status live">Live</span>
+                </div>
+              </div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">Public accountability data</div>
+                <div class="arch04-card-desc">RTI data and court-order non-compliance converted into permanent, timestamped public records</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">विश्वकर्मा · Vishwakarma</span>
+                  <span class="arch-status design">Design</span>
+                </div>
+              </div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">Formal legal drafts</div>
+                <div class="arch04-card-desc">RTI appeals, petitions &amp; applications grounded in verified evidence, not hallucination</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">चित्रगुप्त · Chitragupta</span>
+                  <span class="arch-status design">Design</span>
+                </div>
+              </div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">Verified Marathi legal prose</div>
+                <div class="arch04-card-desc">Court-ready language constrained strictly to facts surfaced by Sanjaya — no hallucination</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">युधिष्ठिर · Yudhishthira</span>
+                  <span class="arch-status design">Design</span>
+                </div>
+              </div>
+
+              <div class="arch04-card">
+                <div class="arch04-card-out">Trust compliance layer</div>
+                <div class="arch04-card-desc">Foundation OS — trustee records, compliance artifacts, and trust governance</div>
+                <div class="arch04-card-agent-row">
+                  <span class="arch04-card-agent-name">ब्रम्हा · Brahma</span>
+                  <span class="arch-status planned">Planned</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /.arch04-board -->
+
+          <!-- Architecture documents — embedded inline below the board -->
+          <div class="arch04-docs">
+            <span class="arch04-docs-label">System Architecture Documents</span>
+            <div class="arch04-docs-links">
+              <a class="arch04-doc-link" href="https://drive.google.com/file/d/1DLKuAkHY_k8XkOAG0dcSqCZ89yPwKXay/view?usp=drive_link" target="_blank" rel="noopener">
+                <span class="arch04-doc-type">m4a</span>
+                <span>JDO Initial Concept — मराठी</span>
+              </a>
+              <a class="arch04-doc-link" href="https://drive.google.com/file/d/1mPLdRyRhPDCEirWP84EZUIsTajsJx1h-/view?usp=drive_link" target="_blank" rel="noopener">
+                <span class="arch04-doc-type">m4a</span>
+                <span>JDO Initial Concept — English</span>
+              </a>
+              <a class="arch04-doc-link" href="https://drive.google.com/file/d/1E_eEKLLbxtyBcYAkvdSojxoQLQkQckhg/view?usp=drive_link" target="_blank" rel="noopener">
+                <span class="arch04-doc-type">pdf</span>
+                <span>JDO Initial Concept — Transcribed</span>
+              </a>
+            </div>
           </div>
-        </div>
 
-        <!-- Tooltip panel -->
-        <div class="d-tooltip-panel" id="d-tooltip"></div>
+        </div><!-- /.arch04-left -->
 
-      </div><!-- /diagram-wrap -->
-    </div><!-- /diagram-outer -->
-    <p class="diagram-scroll-hint">← swipe to explore →</p>
+        <!-- ── RIGHT: Citizen tool strip ── -->
+        <div class="arch04-right">
 
-  </section>
+          <div class="tool-strip-item ts-live" data-tip="नारद · Narada — Create a QR-tracked record for any application, RTI, or complaint you submit.">
+            <a href="/generator" class="tool-strip-link">
+              <div class="tool-strip-icon ts-live">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              </div>
+              <div class="tool-strip-meta">
+                <span class="tool-strip-name">Submit</span>
+                <span class="tool-strip-route">/submit</span>
+              </div>
+            </a>
+          </div>
 
-  <!-- ══ SECTION 3 — FEED & CONNECT ══ -->
-  <section>
-    <div class="section-heading" style="margin-bottom:28px">Jagdishwaram Digital Office Feed &amp; Updates</div>
-    <div class="feed-connect-grid">
+          <div class="tool-strip-item ts-live" data-tip="नारद · Narada — Scan your QR receipt to check real-time application status.">
+            <span class="tool-strip-link nolink">
+              <div class="tool-strip-icon ts-live">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h.01M14 17h3M17 14v3M20 17v3M20 14h.01"/></svg>
+              </div>
+              <div class="tool-strip-meta">
+                <span class="tool-strip-name">Track</span>
+                <span class="tool-strip-route">/track/&lt;id&gt;</span>
+              </div>
+            </span>
+          </div>
 
-      <!-- LEFT: HITL Posts -->
+          <div class="tool-strip-item ts-design" data-tip="विश्वकर्मा · Vishwakarma — RTI data and court-order enforcement gaps as public records.">
+            <a href="/transparency" class="tool-strip-link">
+              <div class="tool-strip-icon ts-design">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <div class="tool-strip-meta">
+                <span class="tool-strip-name">Dashboards</span>
+                <span class="tool-strip-route">/transparency</span>
+              </div>
+            </a>
+          </div>
+
+          <div class="tool-strip-item ts-hitl" data-tip="विश्वकर्मा · Vishwakarma — Structured archive of every document and court record in Project Kurukshetra. HITL + Invited only.">
+            <a href="/kurukshetra" class="tool-strip-link">
+              <div class="tool-strip-icon ts-hitl">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              </div>
+              <div class="tool-strip-meta">
+                <span class="tool-strip-name">Case Library</span>
+                <span class="tool-strip-route">/kurukshetra</span>
+              </div>
+            </a>
+          </div>
+
+          <div class="tool-strip-item ts-hitl" data-tip="हनुमान · Hanuman — Capture field observations (images, audio, text) and sync to Chronicle Inbox. HITL only.">
+            <a href="/field" class="tool-strip-link">
+              <div class="tool-strip-icon ts-hitl">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="tool-strip-meta">
+                <span class="tool-strip-name">Field Sync</span>
+                <span class="tool-strip-route">/field</span>
+              </div>
+            </a>
+          </div>
+
+        </div><!-- /.arch04-right -->
+
+      </div><!-- /.arch04-wrap -->
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANEL 5 — FOUNDER'S CORNER
+    ══════════════════════════════════ -->
+    <section class="panel" id="panel-4">
+      <div class="panel-label">
+        <span class="panel-num">05</span><span class="panel-dot">·</span><span class="panel-title">Founder's Corner</span>
+      </div>
+
       <div class="posts-column">
-        <div class="col-label">Ashish J Naik (Founders) Personal Feed</div>
-
-        <!-- Post card 1 — placeholder -->
         <div class="post-card">
           <div class="post-card-meta">
             <span class="post-type-chip chip-thought">Thought</span>
             <span class="post-date">07 May 2026</span>
           </div>
           <div class="post-title">[HITL to supply — post title]</div>
-          <div class="post-excerpt">[HITL to supply — opening lines or excerpt. These cards pull from the Zoho Posts form once live.]</div>
+          <div class="post-excerpt">[HITL to supply — opening lines or excerpt. Cards pull from the Zoho Posts form once live.]</div>
         </div>
 
-        <!-- Post card 2 — seeded poem (Ramdhari Singh Dinkar / Rashmirathi) to test verse card sizing -->
         <div class="post-card">
           <div class="post-card-meta">
             <span class="post-type-chip chip-poem">Poem</span>
@@ -1315,7 +865,6 @@
           <button class="post-verse-toggle" onclick="toggleVerse(this)">Continue reading →</button>
         </div>
 
-        <!-- Post card 3 — seeded with real event -->
         <div class="post-card">
           <div class="post-card-meta">
             <span class="post-type-chip chip-update">Case Update</span>
@@ -1324,311 +873,336 @@
           <div class="post-title">District Court Palghar — Decisive Ruling</div>
           <div class="post-excerpt">Opposition injunction dismissed. FIR 270/2024 ruled baseless. The District Court's order marks a decisive victory for Article 21 rights.</div>
         </div>
+      </div>
+    </section>
 
+    <!-- ══════════════════════════════════
+         PANEL 5 — SOCIAL CORNER
+    ══════════════════════════════════ -->
+    <section class="panel" id="panel-5">
+      <div class="panel-label">
+        <span class="panel-num">06</span><span class="panel-dot">·</span><span class="panel-title">Social Corner</span>
       </div>
 
-      <!-- RIGHT: Social handles -->
-      <div class="social-column">
-        <div class="col-label">JDO Social Updates</div>
+      <div class="section-heading" style="font-size:20px;margin-bottom:4px">JDO on Social</div>
+      <p style="font-size:12px;color:var(--subtle);margin-bottom:24px">Follow for real-time case updates and foundation news</p>
 
-        <!-- X / Twitter timeline -->
+      <div style="display:flex;flex-direction:column;gap:20px">
         <div class="social-widget-box">
           <div class="social-widget-label">@JagdishwaramIN on X</div>
           <div class="twitter-timeline-wrap">
-            <a class="twitter-timeline"
-               data-theme="dark"
-               data-height="340"
+            <a class="twitter-timeline" data-theme="dark" data-height="320"
                data-chrome="noheader nofooter noborders"
                href="https://x.com/JagdishwaramIN">Tweets by JagdishwaramIN</a>
           </div>
         </div>
 
-        <!-- Instagram via Behold.so -->
         <div class="social-widget-box">
           <div class="social-widget-label">jagdishwaram.foundation on Instagram</div>
           <div class="instagram-placeholder">
-            <!-- HITL: replace this block with Behold.so embed script once account configured at behold.so -->
+            <!-- HITL: replace with Behold.so embed once account configured -->
             <div class="ig-placeholder-inner">
               <div class="ig-placeholder-icon">📸</div>
               <div class="ig-placeholder-text">@jagdishwaram.foundation</div>
               <a class="ig-placeholder-link" href="https://www.instagram.com/jagdishwaram.foundation/" target="_blank" rel="noopener">View on Instagram ↗</a>
-              <div class="ig-placeholder-note">Feed embed via Behold.so — coming soon</div>
+              <div class="ig-placeholder-note">Behold.so embed — coming soon</div>
             </div>
           </div>
         </div>
-
-        <!-- WhatsApp -->
-        <div class="social-widget-box">
-          <div class="social-widget-label">Community</div>
-          <!-- HITL: replace # with WhatsApp group/community invite link -->
-          <a class="whatsapp-btn" href="https://chat.whatsapp.com/Kh70F10hm5K9XP28aeeQCT" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Join on WhatsApp
-          </a>
-        </div>
-
-        <!-- Write to Us — inline in right column -->
-        <div class="social-widget-box">
-          <div class="social-widget-label">Write to Us</div>
-          <form class="write-form" id="write-form" onsubmit="submitWriteForm(event)">
-            <div class="form-row">
-              <label class="form-label" for="visitor-name">Name <span class="required-star">*</span></label>
-              <input class="form-input" type="text" id="visitor-name" name="visitor_name" placeholder="Your full name" required>
-            </div>
-            <div class="form-row">
-              <label class="form-label" for="visitor-email">Email <span class="required-star">*</span></label>
-              <input class="form-input" type="email" id="visitor-email" name="visitor_email" placeholder="your@email.com" required>
-            </div>
-            <div class="form-row">
-              <label class="form-label" for="visitor-comments">Comments <span class="required-star">*</span></label>
-              <textarea class="form-textarea" id="visitor-comments" name="comments" rows="3" placeholder="Your message, question, or feedback…" required></textarea>
-            </div>
-            <button class="form-submit" type="submit">Submit →</button>
-          </form>
-          <div id="form-success" style="display:none;margin-top:12px">
-            <div class="form-success-inner">✓ Message received. We'll be in touch.</div>
-          </div>
-        </div>
-
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ══ SECTION 4 — ABOUT JAGDISHWARAM FOUNDATION ══ -->
-  <section>
-    <div class="section-heading">About Jagdishwaram Foundation</div>
-    <p class="foundation-tagline">Born out of a decade-old struggle against the systemic exploitation of fundamental rights</p>
-
-    <!-- Vision + Mission: side by side 50:50 -->
-    <div class="vision-mission-grid">
-
-      <!-- 1. Vision -->
-      <div class="foundation-block">
-        <div class="foundation-block-label">Vision</div>
-        <div class="foundation-vision">शून्यात  जन्मलो, शून्यातून उभरलो
-शून्याकडे प्रवास सर्वांचाच;
-"प्रवाह" माझा मीच बनलो.
-
-"अशाश्वत" सत्तेचे भय दाखविणाऱ्यांनो ऐका,
-"शाश्वत" मृत्यूचे भय मी,
-जिवंतपणी प्यायलो.
-
-"न्याय/अन्याय" आता शब्दमात्र झाले,
-"परिवर्तन" हेची एकमेव ध्येयमात्र बनले.</div>
-        <div class="foundation-vision-attr">— आशिष जगदिश नाईक</div>
+    <!-- ══════════════════════════════════
+         PANEL 6 — CONTACT & SUPPORT
+    ══════════════════════════════════ -->
+    <section class="panel" id="panel-6">
+      <div class="panel-label">
+        <span class="panel-num">07</span><span class="panel-dot">·</span><span class="panel-title">Contact &amp; Support</span>
       </div>
 
-      <!-- 2. Mission -->
-      <div class="foundation-block">
-        <div class="foundation-block-label">Mission</div>
-        <ul class="foundation-mission-list">
-          <li>Build replicable citizen tools and methods that empower individuals to navigate, document, and demand accountability from government authorities</li>
-          <li>Make administrative and judicial accountability visible — turning systemic inaction, court-order non-compliance, and RTI suppression into measurable public data</li>
-          <li>AI Literacy &amp; Outreach
-            <ul class="foundation-mission-sub">
-              <li>Coaching underprivileged school children in AI fundamentals and digital tools</li>
-              <li>Enabling those navigating bureaucratic systems to become self-capable and self-reliant</li>
-              <li>Contributing knowledge and lived experience toward broader Social Cause</li>
-            </ul>
-          </li>
-        </ul>
-
-        <!-- Documents — collapsible, no label, sits flush below Mission -->
-        <details class="foundation-docs" style="margin-top:20px">
-          <summary class="foundation-docs-summary">
-            Foundation Documents
-            <span class="foundation-docs-count">2</span>
-          </summary>
-          <div class="foundation-docs-list">
-            <div class="foundation-doc-item">
-              <!-- HITL: replace # with Google Drive PDF link for v1.0 -->
-              <a class="foundation-doc-link" href="/docs/Foundation_Document_v1.0%2030%20Mar%202026.html" target="_blank" rel="noopener">↗ Jagdishwaram Foundation Document v1.0</a>
-              <span class="foundation-doc-date">30 Mar 2026</span>
-            </div>
-            <div class="foundation-doc-item">
-              <!-- HITL: replace # with Google Drive PDF link for v2.0 -->
-              <a class="foundation-doc-link" href="/docs/Foundation_Document_v2.0%2016%20Apr%202026.html" target="_blank" rel="noopener">↗ Jagdishwaram Foundation Document v2.0</a>
-              <span class="foundation-doc-date">16 Apr 2026</span>
-            </div>
-          </div>
-        </details>
+      <!-- Email -->
+      <div class="contact-email-display">
+        <div class="contact-email-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
+          </svg>
+        </div>
+        <a class="contact-email-link" href="mailto:info@jagdishwaram-office.org">info@jagdishwaram-office.org</a>
       </div>
 
-    </div>
-
-  </section>
-
-  <!-- ══ SECTION 5 — TOOLS & SURFACES ══ -->
-  <section>
-    <div class="tools-heading-row">
-      <span class="tools-heading">Tools</span>
-      <span class="tools-tagline">built for citizens by Jagdishwaram Foundation</span>
-    </div>
-    <div class="tools-grid">
-
-      <!-- Card 1: Submit -->
-      <div class="tool-card">
-        <div class="tool-card-header">
-          <div class="tool-agent">नारद · Narada</div>
-          <div class="tool-icon">↗</div>
+      <!-- Write to Us -->
+      <div class="contact-section-label">Write to Us</div>
+      <form class="write-form" id="write-form" onsubmit="submitWriteForm(event)">
+        <div class="form-row">
+          <label class="form-label" for="visitor-name">Name <span class="required-star">*</span></label>
+          <input class="form-input" type="text" id="visitor-name" name="visitor_name" placeholder="Your full name" required>
         </div>
-        <div class="tool-name">Submit an Application</div>
-        <div class="tool-route">/submit</div>
-        <div class="tool-desc">
-          Create a QR-tracked record for any application, petition, RTI, or complaint
-          you submit to a government authority. Attach the QR code to your paper submission
-          as a permanent, scannable receipt.
+        <div class="form-row">
+          <label class="form-label" for="visitor-email">Email <span class="required-star">*</span></label>
+          <input class="form-input" type="email" id="visitor-email" name="visitor_email" placeholder="your@email.com" required>
         </div>
-        <a class="tool-cta" href="/generator">Create Submission →</a>
+        <div class="form-row">
+          <label class="form-label" for="visitor-comments">Comments <span class="required-star">*</span></label>
+          <textarea class="form-textarea" id="visitor-comments" name="comments" rows="3" placeholder="Your message or feedback…" required></textarea>
+        </div>
+        <button class="form-submit" type="submit">Submit →</button>
+      </form>
+      <div id="form-success" style="display:none;margin-top:10px">
+        <div class="form-success-inner">✓ Message received. We'll be in touch.</div>
       </div>
 
-      <!-- Card 2: Track -->
-      <div class="tool-card">
-        <div class="tool-card-header">
-          <div class="tool-agent">नारद · Narada</div>
-          <div class="tool-icon">⊙</div>
-        </div>
-        <div class="tool-name">Track Your Application</div>
-        <div class="tool-route">/track/&lt;id&gt;</div>
-        <div class="tool-desc">
-          Scan the QR code on your submission receipt to see its real-time status —
-          whether it has been received, acknowledged, is in progress, or has gone
-          unanswered past its statutory deadline.
-        </div>
-        <a class="tool-cta info">Scan the QR on your receipt</a>
-      </div>
+      <div class="contact-divider"></div>
 
-      <!-- Card 3: Transparency -->
-      <div class="tool-card">
-        <div class="tool-card-header">
-          <div class="tool-agent">विश्वकर्मा · Vishwakarma</div>
-          <div class="tool-icon">⊞</div>
-        </div>
-        <div class="tool-name">Transparency Dashboards</div>
-        <div class="tool-route">/transparency</div>
-        <div class="tool-desc">
-          RTI data, court-order enforcement gaps, and submission patterns — converted into
-          public accountability records. One dashboard per RTI filing. Every day without
-          enforcement counted in public.
-        </div>
-        <a class="tool-cta" href="/transparency">View Dashboards →</a>
-      </div>
-
-      <!-- Card 4: Case Library -->
-      <div class="tool-card">
-        <div class="tool-card-header">
-          <div class="tool-agent">विश्वकर्मा · Vishwakarma</div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <span class="tool-access">HITL + Invited</span>
-            <div class="tool-icon">≡</div>
-          </div>
-        </div>
-        <div class="tool-name">Case Library</div>
-        <div class="tool-route">/kurukshetra</div>
-        <div class="tool-desc">
-          Structured archive of every document, exhibit, and court record in Project
-          Kurukshetra. Browsable by Drive folder hierarchy with context annotations
-          and authority-code labels.
-        </div>
-        <a class="tool-cta" href="/kurukshetra">Open Case Library →</a>
-      </div>
-
-      <!-- Card 5: Hanuman Field Sync (solo — same width as siblings) -->
-      <div class="tool-card solo">
-        <div class="tool-card-header">
-          <div class="tool-agent">हनुमान · Hanuman</div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <span class="tool-access">HITL Only</span>
-            <div class="tool-icon">⊕</div>
-          </div>
-        </div>
-        <div class="tool-name">Field Sync</div>
-        <div class="tool-route">/field</div>
-        <div class="tool-desc">
-          Capture and log field observations — images, audio, text — directly from
-          the site. Each capture syncs to Google Drive and creates a timestamped
-          Zoho metadata record.
-        </div>
-        <a class="tool-cta" href="/field">Open Field Sync →</a>
-      </div>
-
-    </div>
-  </section>
-
-</div><!-- /page -->
-
-<!-- ══ STICKY TOOLS DOCK ══ -->
-<nav class="tools-dock" aria-label="Quick navigation">
-  <a class="dock-item" href="/generator" title="Submit an Application">
-    <span class="dock-label">Submit</span>
-    <span class="dock-icon">↗</span>
-  </a>
-  <a class="dock-item" href="/transparency" title="Transparency Dashboards">
-    <span class="dock-label">Transparency</span>
-    <span class="dock-icon">⊞</span>
-  </a>
-  <a class="dock-item hitl-only" href="/kurukshetra" title="Case Library — HITL + Invited">
-    <span class="dock-label">Case Library</span>
-    <span class="dock-icon">≡</span>
-  </a>
-  <a class="dock-item hitl-only" href="/field" title="Field Sync — HITL Only">
-    <span class="dock-label">Field Sync</span>
-    <span class="dock-icon">⊕</span>
-  </a>
-</nav>
-
-<!-- ══ FOOTER ══ -->
-<div class="page" style="padding-top:0;padding-bottom:40px">
-  <footer class="footer">
-    <nav class="footer-links">
-      <a href="/">Home</a>
-      <a href="/generator">Submit</a>
-      <a href="/transparency">Transparency</a>
-      <a href="/foundation">Foundation</a>
-      <a href="/privacy">Privacy Policy</a>
-      <a href="mailto:info@jagdishwaram-office.org">Contact</a>
-      <div class="footer-divider"></div>
-      <div class="footer-social">
-        <!-- X / Twitter -->
-        <a class="footer-social-link" href="https://x.com/JagdishwaramIN" target="_blank" rel="noopener" title="@JagdishwaramIN on X">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      <!-- Community -->
+      <div class="contact-section-label">Join the Community</div>
+      <div class="community-row">
+        <a class="community-link community-x" href="https://x.com/JagdishwaramIN" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @JagdishwaramIN
         </a>
-        <!-- LinkedIn -->
-        <!-- HITL: replace # with your LinkedIn profile URL -->
-        <a class="footer-social-link" href="#" target="_blank" rel="noopener" title="LinkedIn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        <a class="community-link community-ig" href="https://www.instagram.com/jagdishwaram.foundation/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+          jagdishwaram.foundation
         </a>
-        <!-- WhatsApp -->
-        <!-- HITL: replace # with WhatsApp community invite link -->
-        <a class="footer-social-link" href="https://chat.whatsapp.com/Kh70F10hm5K9XP28aeeQCT" target="_blank" rel="noopener" title="WhatsApp Community">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <a class="community-link community-wa" href="https://chat.whatsapp.com/Kh70F10hm5K9XP28aeeQCT" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Join Community
         </a>
       </div>
-    </nav>
-    <div class="footer-copy">© 2026 Jagdishwaram Foundation</div>
-  </footer>
+
+      <div class="contact-divider"></div>
+
+      <!-- Quick access -->
+      <div class="contact-section-label">Quick Access</div>
+      <div class="quick-access">
+        <a class="qa-link" href="/generator">↗ Submit Application</a>
+        <a class="qa-link" href="/transparency">⊞ Transparency Dashboards</a>
+        <a class="qa-link" href="/kurukshetra">≡ Case Library</a>
+        <a class="qa-link" href="/field">⊕ Field Sync</a>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/generator">Submit</a>
+          <a href="/transparency">Transparency</a>
+          <a href="mailto:info@jagdishwaram-office.org">Contact</a>
+        </nav>
+        <div class="footer-copy">© 2026 Jagdishwaram Foundation</div>
+      </footer>
+    </section>
+
+  </div><!-- /swipe-track -->
+</div><!-- /swipe-wrap -->
+
+<!-- ══ PANEL NAV ══ -->
+<div class="panel-nav" id="panel-nav">
+  <button class="panel-btn" id="panel-prev" aria-label="Previous">←</button>
+
+  <div class="nav-icons" id="nav-icons">
+
+    <!-- 01 The Case — document icon -->
+    <button class="nav-icon-btn active" data-panel="0" data-label="The Case" aria-label="The Case">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6z"/>
+        <path d="M14 3v6h6M9 13h6M9 17h4"/>
+      </svg>
+    </button>
+
+    <!-- 02 Authority Map — network icon -->
+    <button class="nav-icon-btn" data-panel="1" data-label="Authority Map" aria-label="Authority Map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="12" cy="12" r="2.5"/>
+        <circle cx="4.5" cy="5.5" r="1.5"/><circle cx="19.5" cy="5.5" r="1.5"/>
+        <circle cx="4.5" cy="18.5" r="1.5"/><circle cx="19.5" cy="18.5" r="1.5"/>
+        <line x1="5.9" y1="6.9" x2="10.6" y2="10.6"/>
+        <line x1="18.1" y1="6.9" x2="13.4" y2="10.6"/>
+        <line x1="5.9" y1="17.1" x2="10.6" y2="13.4"/>
+        <line x1="18.1" y1="17.1" x2="13.4" y2="13.4"/>
+      </svg>
+    </button>
+
+    <!-- 03 Foundation — building icon -->
+    <button class="nav-icon-btn" data-panel="2" data-label="Foundation" aria-label="Foundation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21h18M5 21V10l7-7 7 7v11M9 21v-5h6v5"/>
+      </svg>
+    </button>
+
+    <!-- 04 JDO System Architecture & Tools — layers icon -->
+    <button class="nav-icon-btn" data-panel="3" data-label="Architecture & Tools" aria-label="Architecture & Tools">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+        <polyline points="2 17 12 22 22 17"/>
+        <polyline points="2 12 12 17 22 12"/>
+      </svg>
+    </button>
+
+    <!-- 05 Founder's Corner — person icon -->
+    <button class="nav-icon-btn" data-panel="4" data-label="Founder's Corner" aria-label="Founder's Corner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </button>
+
+    <!-- 06 Social Corner — broadcast icon -->
+    <button class="nav-icon-btn" data-panel="5" data-label="Social Corner" aria-label="Social Corner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/>
+        <path d="M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>
+      </svg>
+    </button>
+
+    <!-- 07 Contact — envelope icon -->
+    <button class="nav-icon-btn" data-panel="6" data-label="Contact & Support" aria-label="Contact & Support">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="M2 7l10 7 10-7"/>
+      </svg>
+    </button>
+
+  </div>
+
+  <button class="panel-btn" id="panel-next" aria-label="Next">→</button>
 </div>
 
+<!-- ══ MOBILE TOOLTIP SHEET ══ -->
+<div class="d-mobile-tooltip" id="d-mobile-tooltip">
+  <button class="d-mobile-tooltip-close" id="d-mobile-tooltip-close" aria-label="Close">✕</button>
+  <div id="d-mobile-tooltip-content"></div>
+</div>
+
+<!-- ══ AI CHIP ══ -->
+<div class="ai-chip" onclick="document.getElementById('ai-modal').classList.add('open')">
+  <div class="ai-chip-dot"></div>युधिष्ठिर · Ask
+</div>
+<div class="ai-modal-overlay" id="ai-modal">
+  <div class="ai-modal">
+    <div class="ai-modal-title">युधिष्ठिर · Yudhishthira</div>
+    <div id="yudh-form-state">
+      <p class="ai-modal-body">Type your question about rights, Foundation work, or how to use these tools.</p>
+      <textarea class="ai-modal-textarea" id="yudh-question" rows="4" placeholder="Your question…"></textarea>
+      <button class="ai-modal-submit" id="yudh-submit" onclick="submitYaksha()">Send Question →</button>
+      <button class="ai-modal-close" onclick="closeYudh()">Close</button>
+    </div>
+    <div id="yudh-success-state" style="display:none">
+      <p class="ai-modal-body" style="color:var(--ink)">
+        Yudhishthira had received the Yaksha Prashna; However, unable to respond now.<br><br>
+        Please use <strong>Write to Us</strong> or email
+        <a href="mailto:info@jagdishwaram-office.org" style="color:var(--accent)">info@jagdishwaram-office.org</a>.
+      </p>
+      <button class="ai-modal-close" onclick="closeYudh()">Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
+/* ══════════════════════════════════════════
+   PANEL NAVIGATION
+══════════════════════════════════════════ */
+const PANEL_COUNT = 7;
+let currentPanel = 0;
+
+const swipeWrap = document.getElementById('swipe-wrap');
+const prevBtn   = document.getElementById('panel-prev');
+const nextBtn   = document.getElementById('panel-next');
+const iconBtns  = document.querySelectorAll('.nav-icon-btn');
+const mobileTooltip = document.getElementById('d-mobile-tooltip');
+const panels    = document.querySelectorAll('.panel');
+
+function goToPanel(idx) {
+  idx = ((idx % PANEL_COUNT) + PANEL_COUNT) % PANEL_COUNT;
+  if (idx === currentPanel) return;
+
+  const outgoing = panels[currentPanel];
+  const incoming = panels[idx];
+
+  outgoing.classList.remove('panel-active');
+  outgoing.classList.add('panel-leaving');
+  outgoing.addEventListener('transitionend', () => {
+    outgoing.classList.remove('panel-leaving');
+  }, { once: true });
+
+  incoming.classList.add('panel-active');
+
+  currentPanel = idx;
+  iconBtns.forEach((btn, i) => btn.classList.toggle('active', i === idx));
+  mobileTooltip.classList.remove('open');
+}
+
+prevBtn.addEventListener('click', () => goToPanel(currentPanel - 1));
+nextBtn.addEventListener('click', () => goToPanel(currentPanel + 1));
+
+iconBtns.forEach(btn => {
+  btn.addEventListener('click', () => goToPanel(parseInt(btn.dataset.panel, 10)));
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') goToPanel(currentPanel + 1);
+  if (e.key === 'ArrowLeft')  goToPanel(currentPanel - 1);
+});
+
+/* ══════════════════════════════════════════
+   TOUCH GESTURE
+══════════════════════════════════════════ */
+let touchStartX = 0, touchStartY = 0, touchDir = null;
+
+swipeWrap.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchDir = null;
+}, { passive: true });
+
+swipeWrap.addEventListener('touchmove', e => {
+  if (touchDir === 'vertical') return;
+  const dx = e.touches[0].clientX - touchStartX;
+  const dy = e.touches[0].clientY - touchStartY;
+  if (!touchDir && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+    touchDir = Math.abs(dx) >= Math.abs(dy) ? 'horizontal' : 'vertical';
+  }
+  if (touchDir === 'horizontal') e.preventDefault();
+}, { passive: false });
+
+swipeWrap.addEventListener('touchend', e => {
+  if (touchDir !== 'horizontal') return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 48) goToPanel(currentPanel + (dx < 0 ? 1 : -1));
+}, { passive: true });
+
+/* ══════════════════════════════════════════
+   MOUSE DRAG (desktop)
+══════════════════════════════════════════ */
+let isDragging = false, dragStartX = 0;
+
+swipeWrap.addEventListener('mousedown', e => {
+  isDragging = true;
+  dragStartX = e.clientX;
+  swipeWrap.classList.add('dragging');
+});
+window.addEventListener('mousemove', e => { if (!isDragging) return; });
+window.addEventListener('mouseup', e => {
+  if (!isDragging) return;
+  isDragging = false;
+  swipeWrap.classList.remove('dragging');
+  const dx = e.clientX - dragStartX;
+  if (Math.abs(dx) > 60) goToPanel(currentPanel + (dx < 0 ? 1 : -1));
+});
+
+/* ══════════════════════════════════════════
+   TOOLTIP DATA
+══════════════════════════════════════════ */
 const TOOLTIP_DATA = {
   family: {
     title: 'Ashish J. Naik & Family',
-    items: [
-      'Suffering irreparable Socio-Economic Loss',
-      'Agricultural activity stalled',
-      'Disconnected from Society & Community',
-      'Family members displaced',
-    ],
+    items: ['Suffering irreparable Socio-Economic Loss','Agricultural activity stalled','Disconnected from Society & Community','Family members displaced'],
   },
   municipality: {
     title: 'VVMC — Vasai-Virar City Municipal Corporation',
-    items: [
-      'No Service but prompt in Tax Collection',
-      'Demand for Service Records, Tax Waiver and Spot Inspection remains unanswered',
-      'Threatens seizure of residential property ignoring pleas for acknowledging landlocked status',
-      'Citizen paid Income Tax from Salary for decades; got this in return — British Tax Regime!',
-    ],
+    items: ['No Service but prompt in Tax Collection','Demand for Records, Tax Waiver and Spot Inspection unanswered','Threatens seizure of residential property ignoring landlocked status','Citizen paid Income Tax for decades; got this in return — British Tax Regime!'],
   },
   courts: {
     title: 'Judicial System',
@@ -1636,125 +1210,92 @@ const TOOLTIP_DATA = {
       { from: '2026-03-18', label: 'days since District Judge\nVasai order · not on eCourts · unenforced' },
       { from: '2026-03-10', label: 'days since JMFC\nPassport Order · unenforced' },
     ],
-    items: [
-      'District Court Palghar · 18 Mar 2026 — opposition injunction dismissed; FIR 270/2024 ruled baseless; order not yet uploaded on eCourts',
-      '4th JMFC Vasai · 10 Mar 2026 — Article 21 reaffirmed; 10-year passport directed; unenforced',
-      'High Court Mumbai — Article 226 petition in preparation',
-    ],
+    items: ['District Court Palghar · 18 Mar 2026 — opposition injunction dismissed; FIR 270/2024 ruled baseless','4th JMFC Vasai · 10 Mar 2026 — Article 21 reaffirmed; passport directed; unenforced','High Court Mumbai — Article 226 petition in preparation'],
   },
   police: {
     title: 'Police Department',
-    items: [
-      'False FIR 270/2024 registered for exercising legal easement rights',
-      'Filed under duress — no legitimate basis established',
-      'FIR ruled baseless by District Court Palghar · 18 Mar 2026',
-      'No compliance with judicial orders directing enforcement',
-    ],
+    items: ['False FIR 270/2024 for exercising legal easement rights','Filed under duress — no legitimate basis established','FIR ruled baseless by District Court Palghar · 18 Mar 2026','No compliance with judicial orders'],
   },
   revenue: {
     title: 'Revenue & Administration',
-    counters: [
-      { from: '2024-03-01', label: 'days since\n01 Mar 2024 · unenforced' },
-    ],
-    items: [
-      'Allowed contempt of its own orders dated 12 Oct 2022 (Tehsil) and 8 Aug 2023 (SDO)',
-      'No Enforcement Action in spite of reaffirming the rights post SDO remand on 01 March 2024',
-      'Illegal transfers of RTI Appeal',
-      'District Collector SILENT',
-    ],
+    counters: [{ from: '2024-03-01', label: 'days since\n01 Mar 2024 · unenforced' }],
+    items: ['Allowed contempt of own orders dated 12 Oct 2022 (Tehsil) and 8 Aug 2023 (SDO)','No Enforcement Action after reaffirming rights on 01 March 2024','Illegal transfers of RTI Appeal','District Collector SILENT'],
   },
 };
 
-const wrap = document.getElementById('diagram-wrap');
-const tip  = document.getElementById('d-tooltip');
-
-document.querySelectorAll('.d-card[data-tip]').forEach(card => {
-  const data = TOOLTIP_DATA[card.dataset.tip];
-  if (!data) return;
-
-  card.addEventListener('mouseenter', e => {
-    let countersHtml = '';
-    if (data.counters && data.counters.length) {
-      const multi = data.counters.length > 1 ? ' multi' : '';
-      countersHtml = `<div class="d-tooltip-counters${multi}">` +
-        data.counters.map(c => {
-          const days = Math.floor((Date.now() - new Date(c.from).getTime()) / 86400000);
-          return `<div class="d-tooltip-counter">` +
-            `<span class="d-tooltip-counter-num">${days}</span>` +
-            `<span class="d-tooltip-counter-label">${c.label.replace(/\n/g, '<br>')}</span>` +
-            `</div>`;
-        }).join('') +
-        `</div>`;
-    }
-    tip.innerHTML =
-      `<div class="d-tooltip-title">${data.title}</div>` +
-      countersHtml +
-      data.items.map(i => `<div class="d-tooltip-item">${i}</div>`).join('');
-    tip.classList.add('visible');
-    positionTip(e);
-  });
-  card.addEventListener('mousemove', positionTip);
-  card.addEventListener('mouseleave', () => tip.classList.remove('visible'));
-});
-
-function positionTip(e) {
-  const r = wrap.getBoundingClientRect();
-  const CW = 720, CH = 400;   // canvas dimensions
-  const TW = 278, TH = 320;   // tooltip reserved space (width + generous height estimate)
-  const cx = e.clientX - r.left;
-  const cy = e.clientY - r.top;
-  let x = cx + 16;
-  let y = cy + 16;
-  // flip left if tooltip would overflow right edge
-  if (x + TW > CW) x = cx - TW - 8;
-  // flip up if tooltip would overflow bottom edge
-  if (y + TH > CH) y = cy - TH - 8;
-  // hard clamp so tooltip never exits canvas bounds
-  x = Math.max(0, Math.min(x, CW - TW));
-  y = Math.max(0, Math.min(y, CH - TH));
-  tip.style.left = x + 'px';
-  tip.style.top  = y + 'px';
+function buildTooltipHTML(data) {
+  let countersHtml = '';
+  if (data.counters && data.counters.length) {
+    const multi = data.counters.length > 1 ? ' multi' : '';
+    countersHtml = `<div class="d-tooltip-counters${multi}">` +
+      data.counters.map(c => {
+        const days = Math.floor((Date.now() - new Date(c.from).getTime()) / 86400000);
+        return `<div class="d-tooltip-counter"><span class="d-tooltip-counter-num">${days}</span><span class="d-tooltip-counter-label">${c.label.replace(/\n/g,'<br>')}</span></div>`;
+      }).join('') + `</div>`;
+  }
+  return `<div class="d-tooltip-title">${data.title}</div>` + countersHtml +
+    data.items.map(i => `<div class="d-tooltip-item">${i}</div>`).join('');
 }
 
-// Poem verse expand/collapse
+/* Desktop diagram hover tooltips */
+const wrap = document.getElementById('diagram-wrap');
+const tip  = document.getElementById('d-tooltip');
+if (wrap && tip) {
+  document.querySelectorAll('#diagram-wrap .d-card[data-tip]').forEach(card => {
+    const data = TOOLTIP_DATA[card.dataset.tip];
+    if (!data) return;
+    card.addEventListener('mouseenter', e => { tip.innerHTML = buildTooltipHTML(data); tip.classList.add('visible'); positionTip(e); });
+    card.addEventListener('mousemove', positionTip);
+    card.addEventListener('mouseleave', () => tip.classList.remove('visible'));
+  });
+  function positionTip(e) {
+    const r = wrap.getBoundingClientRect();
+    const CW = 720, CH = 400, TW = 268, TH = 300;
+    const cx = e.clientX - r.left, cy = e.clientY - r.top;
+    let x = cx + 16, y = cy + 16;
+    if (x + TW > CW) x = cx - TW - 8;
+    if (y + TH > CH) y = cy - TH - 8;
+    x = Math.max(0, Math.min(x, CW - TW));
+    y = Math.max(0, Math.min(y, CH - TH));
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+}
+
+/* Mobile tap tooltips */
+const mobileTooltipContent = document.getElementById('d-mobile-tooltip-content');
+document.querySelectorAll('#d-mobile-grid .d-mini-card[data-tip]').forEach(card => {
+  card.addEventListener('click', () => {
+    const data = TOOLTIP_DATA[card.dataset.tip];
+    if (!data) return;
+    mobileTooltipContent.innerHTML = buildTooltipHTML(data);
+    mobileTooltip.classList.add('open');
+  });
+});
+document.getElementById('d-mobile-tooltip-close').addEventListener('click', () => mobileTooltip.classList.remove('open'));
+document.addEventListener('click', e => {
+  if (mobileTooltip.classList.contains('open') && !mobileTooltip.contains(e.target) && !e.target.closest('#d-mobile-grid'))
+    mobileTooltip.classList.remove('open');
+});
+
+/* ══════════════════════════════════════════
+   VERSE TOGGLE
+══════════════════════════════════════════ */
 function toggleVerse(btn) {
   const verse = btn.previousElementSibling;
   const expanded = verse.classList.toggle('expanded');
   btn.textContent = expanded ? 'Show less ↑' : 'Continue reading →';
 }
 
-// Reading progress bar
-const progressBar = document.getElementById('progress-bar');
-window.addEventListener('scroll', () => {
-  const total = document.body.scrollHeight - window.innerHeight;
-  progressBar.style.width = (window.scrollY / total * 100) + '%';
-}, { passive: true });
-
-// Scroll fade-in — select all sections + brand header, observe once
-const fadeTargets = document.querySelectorAll('section');
-const fadeObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      fadeObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-fadeTargets.forEach(el => {
-  el.classList.add('fade-in');
-  fadeObserver.observe(el);
-});
-
+/* ══════════════════════════════════════════
+   WRITE TO US FORM
+══════════════════════════════════════════ */
 async function submitWriteForm(e) {
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
+  btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    const res  = await fetch('/api/write-to-us', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch('/api/write-to-us', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name:     document.getElementById('visitor-name').value.trim(),
         email:    document.getElementById('visitor-email').value.trim(),
@@ -1765,80 +1306,34 @@ async function submitWriteForm(e) {
     if (data.ok) {
       document.getElementById('write-form').style.display = 'none';
       document.getElementById('form-success').style.display = 'block';
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Submit →';
-      alert('Could not send message: ' + (data.error || 'server error'));
-    }
-  } catch (err) {
-    btn.disabled = false;
-    btn.textContent = 'Submit →';
-    alert('Network error — please try again.');
-  }
+    } else { btn.disabled = false; btn.textContent = 'Submit →'; alert('Could not send: ' + (data.error || 'server error')); }
+  } catch (err) { btn.disabled = false; btn.textContent = 'Submit →'; alert('Network error — please try again.'); }
 }
-</script>
 
-<!-- X / Twitter timeline widget -->
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-<!-- ══ YUDHISHTHIRA CHIP ══ -->
-<div class="ai-chip" onclick="document.getElementById('ai-modal').classList.add('open')">
-  <div class="ai-chip-dot"></div>
-  युधिष्ठिर · Ask
-</div>
-
-<div class="ai-modal-overlay" id="ai-modal">
-  <div class="ai-modal">
-    <div class="ai-modal-title">युधिष्ठिर · Yudhishthira</div>
-    <div id="yudh-form-state">
-      <p class="ai-modal-body">Type your question about rights, Foundation work, or how to use these tools.</p>
-      <textarea class="ai-modal-textarea" id="yudh-question" rows="4"
-        placeholder="Your question…"></textarea>
-      <button class="ai-modal-submit" id="yudh-submit" onclick="submitYaksha()">Send Question →</button>
-      <button class="ai-modal-close" onclick="closeYudh()">Close</button>
-    </div>
-    <div id="yudh-success-state" style="display:none">
-      <p class="ai-modal-body" style="color:var(--ink)">
-        Yudhishthira had received the Yaksha Prashna; However, unable to respond now.<br><br>
-        Please use the <strong>Write To Us</strong> section above to get a response from Jagdishwaram Digital Office, or send an email at
-        <a href="mailto:info@jagdishwaram-office.org" style="color:var(--accent)">info@jagdishwaram-office.org</a>
-        with your questions.
-      </p>
-      <button class="ai-modal-close" onclick="closeYudh()">Close</button>
-    </div>
-  </div>
-</div>
-
-<script>
+/* ══════════════════════════════════════════
+   YUDHISHTHIRA MODAL
+══════════════════════════════════════════ */
 async function submitYaksha() {
   const question = document.getElementById('yudh-question').value.trim();
   if (!question) return;
   const btn = document.getElementById('yudh-submit');
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-  try {
-    await fetch('/api/yaksha-prashna', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question }),
-    });
-  } catch (_) {}
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try { await fetch('/api/yaksha-prashna', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }) }); } catch (_) {}
   document.getElementById('yudh-form-state').style.display = 'none';
   document.getElementById('yudh-success-state').style.display = 'block';
 }
-
 function closeYudh() {
   document.getElementById('ai-modal').classList.remove('open');
-  // Reset to form state for next open
   setTimeout(() => {
     document.getElementById('yudh-form-state').style.display = 'block';
     document.getElementById('yudh-success-state').style.display = 'none';
     document.getElementById('yudh-question').value = '';
     const btn = document.getElementById('yudh-submit');
-    btn.disabled = false;
-    btn.textContent = 'Send Question →';
+    btn.disabled = false; btn.textContent = 'Send Question →';
   }, 300);
 }
 </script>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
