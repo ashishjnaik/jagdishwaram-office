@@ -63,6 +63,13 @@
     .nav-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--subtle); border: 1px solid transparent; border-radius: 4px; padding: 3px 8px; text-decoration: none; white-space: nowrap; transition: color 0.12s; }
     .nav-pill:hover { color: var(--ink); text-decoration: none; }
     .nav-pill.active { color: var(--accent); border-color: var(--border); background: var(--surface); }
+    .btn-rebuild {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em;
+      color: var(--subtle); border: 1px solid var(--border); border-radius: 4px;
+      padding: 3px 8px; background: none; cursor: pointer; white-space: nowrap;
+    }
+    .btn-rebuild:hover { color: var(--ink); border-color: var(--subtle); }
+    .btn-rebuild.loading { opacity: 0.5; cursor: not-allowed; }
     @media (max-width: 560px) { .site-nav { gap: 1px; } .nav-pill { padding: 2px 5px; font-size: 9px; } }
 
     /* ── TWO PANE ── */
@@ -82,46 +89,36 @@
     .filter-select:focus { outline: 1px solid var(--accent); }
     .tree-scroll { overflow-y: auto; flex: 1; padding: 6px 0; }
 
-    /* ── TREE ── */
-    .tree, .tree ul { list-style: none; }
-    .section-header {
-      font-size: 9px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.1em; color: var(--subtle);
-      padding: 12px 12px 4px; margin-top: 4px;
-    }
-    .section-header:first-child { margin-top: 0; }
-    .tree-row {
-      display: flex; align-items: center; padding: 5px 8px 5px 0;
-      cursor: pointer; border-left: 3px solid transparent; gap: 4px;
+    /* ── FLAT LIST (replaces nested tree) ── */
+    .flat-list { list-style: none; }
+    .list-item {
+      display: flex; align-items: flex-start; padding: 7px 8px 7px 10px;
+      cursor: pointer; border-left: 3px solid transparent; gap: 6px;
       user-select: none;
     }
-    .tree-row:hover { background: rgba(212,82,28,0.06); }
-    .tree-row.selected { background: rgba(212,82,28,0.12); border-left-color: var(--accent); }
-    .tree-row.hidden { display: none; }
-    .tree-caret {
-      width: 14px; flex-shrink: 0; font-size: 9px; color: var(--subtle);
-      text-align: center; transition: transform 0.15s;
-    }
-    .tree-caret.open { transform: rotate(90deg); }
-    .tree-caret.leaf { opacity: 0; }
-    .tree-icon { flex-shrink: 0; font-size: 13px; }
-    .tree-text { flex: 1; min-width: 0; }
-    .tree-name {
+    .list-item:hover { background: rgba(212,82,28,0.06); }
+    .list-item.selected { background: rgba(212,82,28,0.12); border-left-color: var(--accent); }
+    .list-item.hidden { display: none; }
+    .list-icon { flex-shrink: 0; font-size: 13px; padding-top: 1px; }
+    .list-text { flex: 1; min-width: 0; }
+    .list-name {
       font-family: var(--font-head); font-size: 13px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
     }
-    .tree-label-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 1px; }
-    .tree-badge {
+    .list-date { font-size: 10px; color: var(--subtle); margin-top: 1px; }
+    .list-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
+    .list-badge {
       font-size: 9px; font-weight: 600; padding: 0 4px;
       border-radius: 3px; white-space: nowrap;
     }
-    .tree-badge-auth { background: rgba(212,82,28,0.18); color: var(--accent); }
-    .tree-badge-custom { background: rgba(138,131,123,0.18); color: var(--subtle); }
-    .tree-children { display: none; padding-left: 16px; }
-    .tree-children.open { display: block; }
-    .depth-0 { padding-left: 10px; }
-    .depth-1 .tree-row { padding-left: 10px; }
-    .depth-2 .tree-row { padding-left: 10px; }
+    .list-badge-auth { background: rgba(212,82,28,0.18); color: var(--accent); }
+    .list-badge-custom { background: rgba(138,131,123,0.18); color: var(--subtle); }
+    .list-badge-private { background: rgba(239,68,68,0.15); color: #EF4444; }
+    .list-section-header {
+      font-size: 9px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--subtle);
+      padding: 10px 12px 4px;
+    }
 
     /* ── FOCUS PANE ── */
     .focus-pane { overflow-y: auto; padding: 32px 40px; background: var(--surface); }
@@ -145,6 +142,7 @@
     .chip-video  { background: #250A16; color: #F9A8D4; }
     .chip-image  { background: #071A0F; color: #6EE7B7; }
     .chip-doc    { background: #0F0D2A; color: #A5B4FC; }
+    .chip-private { background: rgba(239,68,68,0.15); color: #EF4444; }
     .doc-title { font-family: var(--font-head); font-size: 22px; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
     .doc-path { font-size: 11px; color: var(--subtle); font-family: var(--font-mono); margin-bottom: 14px; }
     .btn-open-file {
@@ -165,15 +163,11 @@
       margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
       display: flex; align-items: baseline; gap: 6px;
     }
-    .meta-title-note {
-      font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 9px; color: var(--subtle);
-    }
+    .meta-title-note { font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 9px; color: var(--subtle); }
     .meta-grid { display: grid; grid-template-columns: 106px 1fr; gap: 7px 10px; font-size: 12px; }
     .meta-key { color: var(--subtle); align-self: start; padding-top: 1px; }
     .meta-val { color: var(--ink); word-break: break-all; }
     .meta-val.mono { font-family: var(--font-mono); font-size: 11px; }
-
-    /* Description from spreadsheet */
     .description-text { font-size: 13px; color: var(--ink); line-height: 1.6; }
     .description-empty { font-size: 12px; color: var(--subtle); font-style: italic; }
 
@@ -199,10 +193,7 @@
       background: rgba(138,131,123,0.15); color: var(--ink);
       padding: 3px 8px; border-radius: 4px; font-size: 11px;
     }
-    .label-remove {
-      background: none; border: none; cursor: pointer;
-      color: var(--subtle); font-size: 13px; padding: 0; opacity: 0.6; line-height: 1;
-    }
+    .label-remove { background: none; border: none; cursor: pointer; color: var(--subtle); font-size: 13px; padding: 0; opacity: 0.6; line-height: 1; }
     .label-remove:hover { opacity: 1; color: var(--accent); }
     .label-add-wrap { position: relative; }
     .btn-add-label {
@@ -223,11 +214,40 @@
       border-radius: 0 0 5px 5px; background: var(--surface-2);
       max-height: 160px; overflow-y: auto; width: 220px;
     }
-    .label-suggestion {
-      padding: 5px 8px; font-size: 11px; cursor: pointer; color: var(--ink);
-    }
+    .label-suggestion { padding: 5px 8px; font-size: 11px; cursor: pointer; color: var(--ink); }
     .label-suggestion:hover, .label-suggestion.active { background: rgba(212,82,28,0.1); }
-    .label-suggestion-code { font-weight: 600; color: var(--accent); }
+
+    /* Document date (auth only) */
+    .doc-date-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .doc-date-input {
+      border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px;
+      font-size: 12px; font-family: var(--font-mono); background: var(--surface-2);
+      color: var(--ink); outline: none; width: 140px;
+    }
+    .doc-date-input:focus { border-color: var(--accent); }
+    .btn-save-date {
+      background: var(--ink); border: none; color: var(--bg);
+      padding: 4px 12px; border-radius: 5px; font-size: 11px; cursor: pointer;
+      font-family: var(--font-body);
+    }
+    .btn-save-date:hover { background: #D4CEC8; }
+
+    /* Is Private toggle (auth only) */
+    .private-toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .private-toggle-label { font-size: 12px; color: var(--ink); }
+    .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--border); transition: .2s; border-radius: 18px;
+    }
+    .toggle-slider:before {
+      position: absolute; content: ''; height: 12px; width: 12px;
+      left: 3px; bottom: 3px; background-color: var(--subtle);
+      transition: .2s; border-radius: 50%;
+    }
+    input:checked + .toggle-slider { background-color: #EF4444; }
+    input:checked + .toggle-slider:before { transform: translateX(16px); background-color: white; }
 
     /* Context & Findings */
     .annotation-text { font-family: var(--font-head); font-size: 15px; line-height: 1.7; white-space: pre-wrap; }
@@ -240,107 +260,63 @@
       color: var(--ink); background: var(--surface-2); resize: vertical; outline: none;
     }
     .annotation-actions { display: flex; gap: 8px; margin-top: 10px; }
-    .btn-edit-ann {
-      border: 1px solid var(--border); background: none; color: var(--subtle);
-      padding: 4px 12px; border-radius: 5px; font-size: 11px; cursor: pointer;
-      font-family: var(--font-body);
-    }
+    .btn-edit-ann { border: 1px solid var(--border); background: none; color: var(--subtle); padding: 4px 12px; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
     .btn-edit-ann:hover { border-color: var(--ink); color: var(--ink); }
-    .btn-save-ann {
-      background: var(--ink); border: none; color: var(--bg);
-      padding: 4px 14px; border-radius: 5px; font-size: 11px; cursor: pointer;
-      font-family: var(--font-body); display: none;
-    }
-    .btn-cancel-ann {
-      border: 1px solid var(--border); background: none; color: var(--subtle);
-      padding: 4px 10px; border-radius: 5px; font-size: 11px; cursor: pointer;
-      font-family: var(--font-body); display: none;
-    }
+    .btn-save-ann { background: var(--ink); border: none; color: var(--bg); padding: 4px 14px; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); display: none; }
+    .btn-cancel-ann { border: 1px solid var(--border); background: none; color: var(--subtle); padding: 4px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); display: none; }
 
-    /* ── LINKED TO ── */
+    /* Linked To */
     .links-empty { font-size: 12px; color: var(--subtle); font-style: italic; margin-bottom: 10px; }
-    .link-item {
-      border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px;
-      margin-bottom: 8px; background: var(--surface-2);
-    }
-    .link-item-name a {
-      color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500;
-      font-family: var(--font-head); display: block;
-    }
+    .link-item { border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; margin-bottom: 8px; background: var(--surface-2); }
+    .link-item-name a { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500; font-family: var(--font-head); display: block; }
     .link-item-name a:hover { text-decoration: underline; }
-    .link-item-name span {
-      font-size: 13px; font-family: var(--font-head); display: block;
-    }
-    .link-item-driveid {
-      font-family: var(--font-mono); font-size: 10px; color: var(--subtle);
-      display: block; margin-top: 2px;
-    }
-    .link-item-type {
-      font-size: 12px; color: var(--subtle); margin-top: 5px;
-      border-top: 1px solid var(--border); padding-top: 5px; line-height: 1.5;
-    }
-    .link-item-footer {
-      display: flex; justify-content: space-between; align-items: center; margin-top: 6px;
-    }
+    .link-item-name span { font-size: 13px; font-family: var(--font-head); display: block; }
+    .link-item-driveid { font-family: var(--font-mono); font-size: 10px; color: var(--subtle); display: block; margin-top: 2px; }
+    .link-item-type { font-size: 12px; color: var(--subtle); margin-top: 5px; }
+    .link-item-details { font-size: 12px; color: var(--ink); margin-top: 5px; line-height: 1.5; border-top: 1px solid var(--border); padding-top: 5px; }
+    .link-item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
     .link-item-ts { font-family: var(--font-mono); font-size: 10px; color: var(--subtle); }
-    .btn-link-remove {
-      background: none; border: none; font-size: 11px; color: var(--subtle);
-      cursor: pointer; padding: 0;
-    }
+    .btn-link-remove { background: none; border: none; font-size: 11px; color: var(--subtle); cursor: pointer; padding: 0; }
     .btn-link-remove:hover { color: #EF4444; }
-    .btn-create-link {
-      border: 1px dashed rgba(212,82,28,0.35); background: none;
-      color: var(--accent); padding: 5px 12px; border-radius: 5px;
-      font-size: 11px; cursor: pointer; font-family: var(--font-body);
-      margin-top: 6px; display: inline-block;
-    }
+    .btn-create-link { border: 1px dashed rgba(212,82,28,0.35); background: none; color: var(--accent); padding: 5px 12px; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); margin-top: 6px; display: inline-block; }
     .btn-create-link:hover { background: rgba(212,82,28,0.08); border-color: var(--accent); }
-    .create-link-form {
-      border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
-      margin-top: 10px; background: var(--surface-2);
-    }
+    .create-link-form { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-top: 10px; background: var(--surface-2); }
     .link-field { margin-bottom: 12px; }
     .link-field:last-of-type { margin-bottom: 4px; }
-    .link-field-label {
-      display: block; font-size: 10px; font-weight: 600; color: var(--subtle);
-      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;
-    }
-    .link-input {
-      width: 100%; border: 1px solid var(--border); border-radius: 5px;
-      padding: 7px 10px; font-size: 12px; font-family: var(--font-body);
-      background: var(--surface); color: var(--ink); outline: none;
-    }
+    .link-field-label { display: block; font-size: 10px; font-weight: 600; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+    .link-input { width: 100%; border: 1px solid var(--border); border-radius: 5px; padding: 7px 10px; font-size: 12px; font-family: var(--font-body); background: var(--surface); color: var(--ink); outline: none; }
     .link-input:focus { border-color: var(--accent); }
     .link-input.error { border-color: #EF4444; }
+    .link-textarea { width: 100%; border: 1px solid var(--border); border-radius: 5px; padding: 7px 10px; font-size: 12px; font-family: var(--font-body); background: var(--surface); color: var(--ink); outline: none; resize: vertical; min-height: 70px; }
+    .link-textarea:focus { border-color: var(--accent); }
     .link-field-hint { font-size: 10px; color: var(--subtle); margin-top: 3px; line-height: 1.4; }
     .link-form-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .btn-save-link {
-      background: var(--ink); color: var(--bg); border: none;
-      padding: 6px 18px; border-radius: 5px; font-size: 12px;
-      font-family: var(--font-body); cursor: pointer;
-    }
+    .btn-save-link { background: var(--ink); color: var(--bg); border: none; padding: 6px 18px; border-radius: 5px; font-size: 12px; font-family: var(--font-body); cursor: pointer; }
     .btn-save-link:hover { background: #D4CEC8; }
-    .btn-cancel-link {
-      background: none; border: 1px solid var(--border); color: var(--subtle);
-      padding: 6px 12px; border-radius: 5px; font-size: 12px;
-      font-family: var(--font-body); cursor: pointer;
-    }
+    .btn-cancel-link { background: none; border: 1px solid var(--border); color: var(--subtle); padding: 6px 12px; border-radius: 5px; font-size: 12px; font-family: var(--font-body); cursor: pointer; }
     .btn-cancel-link:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* API status toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 16px; font-size: 12px;
+      opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    }
+    .toast.visible { opacity: 1; }
+    .toast.ok { border-color: #22C55E; color: #22C55E; }
+    .toast.err { border-color: #EF4444; color: #EF4444; }
 
     /* ── MOBILE DRAWER ── */
     .cl-menu-btn {
-      display: none;
-      align-items: center; justify-content: center;
+      display: none; align-items: center; justify-content: center;
       width: 36px; height: 36px; border-radius: 6px;
       border: 1px solid var(--border); background: var(--surface);
       color: var(--ink); font-size: 16px; cursor: pointer;
       flex-shrink: 0; margin-left: auto;
     }
     .cl-menu-btn:hover { border-color: var(--accent); }
-    .sidebar-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.55); z-index: 49;
-    }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 49; }
     .sidebar-overlay.visible { display: block; }
 
     @media (max-width: 768px) {
@@ -362,7 +338,6 @@
       .entity-count { display: none; }
     }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -386,6 +361,9 @@
       <a href="{{ url_for('vishwakarma.transparency') }}" class="nav-pill">Transparency</a>
       <a href="{{ url_for('home.kurukshetra') }}" class="nav-pill active">Library</a>
     </nav>
+    {% if is_authenticated %}
+    <button class="btn-rebuild" id="btn-rebuild" onclick="rebuildCache()" title="Rebuild cache from Zoho + Drive">⟳ Rebuild</button>
+    {% endif %}
     <div class="header-search">
       <span class="search-icon">⌕</span>
       <input type="search" id="search-input" placeholder="Search by name, authority or label…" oninput="handleSearch(this.value)">
@@ -396,6 +374,7 @@
 </header>
 
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"></div>
 
 <div class="two-pane">
 
@@ -418,8 +397,13 @@
       <select class="filter-select" id="label-filter" onchange="handleLabelFilter(this.value)">
         <option value="">All Labels</option>
       </select>
+      <select class="filter-select" id="sort-select" onchange="renderList()">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="name-asc">Name A–Z</option>
+      </select>
     </div>
-    <div class="tree-scroll" id="tree-root-wrap">
+    <div class="tree-scroll" id="list-wrap">
       <!-- Built by JS -->
     </div>
   </aside>
@@ -428,13 +412,22 @@
   <section class="focus-pane" id="focus-pane">
     <div class="focus-empty">
       <div class="icon">🗂</div>
-      <p>Select a document or folder to view its details</p>
+      <p>Select a document to view its details</p>
     </div>
   </section>
 
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA — injected by Flask from Zoho + Drive cache
+// ═══════════════════════════════════════════════════════════════════════════
+const NODES = {{ nodes | tojson }};
+const IS_AUTH = {{ is_authenticated | tojson }};
+
+const ALL_NODES = {};
+NODES.forEach(n => { ALL_NODES[n.id] = n; });
+
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTHORITY MAP — mirrors Config_Authority_Registry in Zoho DB
 // ═══════════════════════════════════════════════════════════════════════════
@@ -451,291 +444,48 @@ const AUTHORITY_MAP = {
   'JDC': 'District Court Palghar',
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TREE DATA — names verbatim from Case File Index spreadsheet
-// Drive IDs and URLs from the index. Description from spreadsheet Description column.
-// ═══════════════════════════════════════════════════════════════════════════
-const EXHIBIT_NODES = [
-  {
-    id: 'EX-0',
-    name: 'Exhibit-0 वादमिळकतीची भौगोलिक स्थिती — Google Earth.jpg',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1TyYJPzRcvm1Xw6pkzcePL7TYEwhYWrmY_ex0',
-    url: '',
-    mime: 'image/jpeg', ext: '.jpg', type: 'image',
-    size: '2.1 MB', created: '15 Sep 2022', modified: '15 Sep 2022',
-    description: '',
-  },
-  {
-    id: 'EX-1',
-    name: 'Exhibit-1 वाद मिळकतीचे भू-अभिलेख दस्तावेज',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1TyYJPzRcvm1Xw6pkzcePL7TYEwhYWrmY_ex1',
-    url: 'https://drive.google.com/drive/folders/1TyYJPzRcvm1Xw6pkzcePL7TYEwhYWrmY_ex1',
-    mime: 'application/vnd.google-apps.folder', ext: '', type: 'folder',
-    size: '—', created: '2022', modified: '2024',
-    description: 'All these are digitally signed records downloaded from Bhu Abhilekh Portal. These records evidence that the disputed land and the place where blockade is created remains unpartitioned and neither party holds undisputed full ownership.',
-    children: [
-      {
-        id: 'EX-1-F1',
-        name: 'सर्व्हे नं. ३९ हिस्सा १९ — ७-१२ उतारा (Bhu-Abhilekh digitally signed)',
-        path: 'My Drive › Jagdishwaram Easement Dispute - Case File › Exhibit-1 वाद मिळकतीचे भू-अभिलेख दस्तावेज',
-        driveId: '1Ab2CdEfGh3IjKlMnOpQ_ex1_f1',
-        url: '',
-        mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-        size: '0.3 MB', created: '01 Sep 2022', modified: '01 Sep 2022',
-        description: '',
-      },
-      {
-        id: 'EX-1-F2',
-        name: 'सर्व्हे नं. ३९ हिस्सा ३ — ७-१२ उतारा (Bhu-Abhilekh digitally signed)',
-        path: 'My Drive › Jagdishwaram Easement Dispute - Case File › Exhibit-1 वाद मिळकतीचे भू-अभिलेख दस्तावेज',
-        driveId: '1Ab2CdEfGh3IjKlMnOpQ_ex1_f2',
-        url: '',
-        mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-        size: '0.3 MB', created: '01 Sep 2022', modified: '01 Sep 2022',
-        description: '',
-      },
-    ]
-  },
-  {
-    id: 'EX-1-2',
-    name: 'Exhibit-1-2 इतर सहवारसदारांचा लिखित जबाब — 30 Nov 2021',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Cd3EfGhIj4KlMnOpQrS_ex1_2',
-    url: '',
-    mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-    size: '0.8 MB', created: '30 Nov 2021', modified: '30 Nov 2021',
-    description: '',
-  },
-  {
-    id: 'EX-2',
-    name: 'Exhibit-2 मंडळ अधिकारी स्थळपाहणी चित्रीकरण — 15 Sept 2022',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Ef5GhIjKl6MnOpQrSt_ex2',
-    url: '',
-    mime: 'video/mp4', ext: '.mp4', type: 'video',
-    size: '1.0 GB', created: '15 Sep 2022', modified: '15 Sep 2022',
-    description: '',
-  },
-  {
-    id: 'EX-3',
-    name: 'Exhibit-3 अवरोध व्हिडिओ — Live Recording',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Gh7IjKlMn8OpQrStUv_ex3',
-    url: '',
-    mime: 'video/mp4', ext: '.mp4', type: 'video',
-    size: '0.8 GB', created: '2022', modified: '2022',
-    description: '',
-  },
-  {
-    id: 'EX-5',
-    name: 'Exhibit-5 सतत उल्लंघनाची दिनांक अंकित छायाचित्रे',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Ij9KlMnOp0QrStUvWx_ex5',
-    url: '',
-    mime: 'application/vnd.google-apps.folder', ext: '', type: 'folder',
-    size: '—', created: '2022', modified: '2024',
-    description: '',
-    children: []
-  },
-  {
-    id: 'EX-10',
-    name: 'Exhibit-10 सतत चालू ठेवलेला अवैध अवरोध — न्यायालयाचे आदेश अमान्य',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Kl1MnOpQr2StUvWxYz_ex10',
-    url: '',
-    mime: 'application/vnd.google-apps.folder', ext: '', type: 'folder',
-    size: '—', created: 'May 2023', modified: 'Nov 2023',
-    description: '',
-    children: [
-      {
-        id: 'EX-10-1',
-        name: 'Exhibit-10-1 मे 2023 — पोलिस तक्रार अर्ज',
-        path: 'My Drive › Jagdishwaram Easement Dispute - Case File › Exhibit-10 ...',
-        driveId: '1Mn3OpQrSt4UvWxYzAb_ex10_1',
-        url: '',
-        mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-        size: '0.4 MB', created: 'May 2023', modified: 'May 2023',
-        description: '',
-      },
-      {
-        id: 'EX-10-3',
-        name: 'Exhibit-10-3 ऑगस्ट 2023 — RTI अर्ज MOR',
-        path: 'My Drive › Jagdishwaram Easement Dispute - Case File › Exhibit-10 ...',
-        driveId: '1Op5QrStUv6WxYzAbCd_ex10_3',
-        url: '',
-        mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-        size: '0.3 MB', created: 'Aug 2023', modified: 'Aug 2023',
-        description: '',
-      },
-    ]
-  },
-  {
-    id: 'EX-11-2',
-    name: 'Exhibit-11-2 SDO पुनर्तपासणी #15/2024 दस्तऐवज',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Qr7StUvWx8YzAbCdEf_ex11_2',
-    url: '',
-    mime: 'application/vnd.google-apps.folder', ext: '', type: 'folder',
-    size: '—', created: '2024', modified: '2024',
-    description: '',
-    children: []
-  },
-  {
-    id: 'EX-17',
-    name: 'Exhibit-17 नोव्हेंबर 2025 — सतत अवरोध व्हिडिओ',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1St9UvWxYz0AbCdEfGh_ex17',
-    url: '',
-    mime: 'video/quicktime', ext: '.MOV', type: 'video',
-    size: '3.5 GB', created: 'Nov 2025', modified: 'Nov 2025',
-    description: '',
-  },
-  {
-    id: 'EX-19',
-    name: 'Exhibit-19 तहसीलदार अंमलबजावणी अर्ज — 23 Dec 2025',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Uv1WxYzAb2CdEfGhIj_ex19',
-    url: '',
-    mime: 'application/vnd.google-apps.folder', ext: '', type: 'folder',
-    size: '—', created: 'Dec 2025', modified: 'Dec 2025',
-    description: '',
-    children: [
-      {
-        id: 'EX-19-1',
-        name: 'Exhibit-19-1 तलाठी अहवाल',
-        path: 'My Drive › Jagdishwaram Easement Dispute - Case File › Exhibit-19 ...',
-        driveId: '1Wx3YzAbCd4EfGhIjKl_ex19_1',
-        url: '',
-        mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-        size: '0.2 MB', created: 'Dec 2025', modified: 'Dec 2025',
-        description: '',
-      },
-      {
-        id: 'EX-19-3',
-        name: 'Exhibit-19-3 दि. १२-१०-२०२२ तहसीलदार आदेश (v23)',
-        path: 'My Drive › Jagdishwaram Easement Dispute - Case File › Exhibit-19 ...',
-        driveId: '1Yz5AbCdEf6GhIjKlMn_ex19_3',
-        url: '',
-        mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-        size: '0.4 MB', created: 'Oct 2022', modified: 'Dec 2025',
-        description: '',
-      },
-      {
-        id: 'EX-19-5',
-        name: 'Exhibit-19-5 दि. ०१-०३-२०२४ तहसीलदार आदेश (v32)',
-        path: 'My Drive › Jagdishwaram Easement Dispute - Case File › Exhibit-19 ...',
-        driveId: '1Ab7CdEfGh8IjKlMnOp_ex19_5',
-        url: '',
-        mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-        size: '0.8 MB', created: 'Mar 2024', modified: 'Dec 2025',
-        description: '',
-      },
-    ]
-  },
-  {
-    id: 'EX-20',
-    name: 'Exhibit-20 सद्यस्थिती — मूलभूत वहिवाट अधिकार आणि मानवाधिकारांचे संस्थात्मक शोषण',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8',
-    url: 'https://drive.google.com/drive/folders/1A7yRMCPKYQ-sYinBUviIu0p3HR0ky-p8',
-    mime: 'application/vnd.google-apps.folder', ext: '', type: 'folder',
-    size: '—', created: '2024', modified: '2026',
-    description: 'Current state — institutional exploitation of fundamental easement rights and human rights. Largest sub-tree in the case file. Organised by authority office (8 authorities) and a Judiciary branch (4 courts). ~800+ entities total.',
-    children: [] // ~800+ entities; open in Drive to browse
-  },
+const LABEL_SUGGESTIONS = [
+  'Order','Evidence','RTI','FIR','Video','Key','Appeal',
+  'Hearing','Notice','Affidavit','Petition','Reply',
 ];
 
-const LOOSE_NODES = [
-  {
-    id: 'LF-1',
-    name: '१९८८-०३-१८ प्रतिवादी यांनी केलेला रस्त्याचा करार',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Cd9EfGhIj0KlMnOpQr_lf1',
-    url: '',
-    mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-    size: '0.6 MB', created: '18 Mar 1988', modified: '2024',
-    description: '',
-  },
-  {
-    id: 'LF-2',
-    name: '२०१४ सामाजिक न्याय-निवाडा (हस्तलिखित)',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Ef1GhIjKl2MnOpQrSt_lf2',
-    url: '',
-    mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-    size: '0.4 MB', created: '2014', modified: '2024',
-    description: '',
-  },
-  {
-    id: 'LF-3',
-    name: '२०१५-०६-१९ कायदेशीर नोटिस',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Gh3IjKlMn4OpQrStUv_lf3',
-    url: '',
-    mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-    size: '0.3 MB', created: '19 Jun 2015', modified: '2024',
-    description: '',
-  },
-  {
-    id: 'LF-4',
-    name: '२०२१-०६-०८ तलाठी सजा वटार याचिका (हस्तलिखित)',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Ij5KlMnOp6QrStUvWx_lf4',
-    url: '',
-    mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-    size: '0.5 MB', created: '08 Jun 2021', modified: '2024',
-    description: '',
-  },
-  {
-    id: 'LF-5',
-    name: '२०२५-०८-१८ दिवाणी न्यायालय interim order — खोट्या तथ्या RCS 394/2024',
-    path: 'My Drive › Jagdishwaram Easement Dispute - Case File',
-    driveId: '1Kl7MnOpQr8StUvWxYz_lf5',
-    url: '',
-    mime: 'application/pdf', ext: '.pdf', type: 'pdf',
-    size: '0.4 MB', created: '18 Aug 2025', modified: '18 Aug 2025',
-    description: '',
-  },
-];
-
-// Flat lookup
-const ALL_NODES = {};
-function indexNodes(nodes) {
-  nodes.forEach(n => { ALL_NODES[n.id] = n; if (n.children) indexNodes(n.children); });
-}
-indexNodes([...EXHIBIT_NODES, ...LOOSE_NODES]);
-
 // ═══════════════════════════════════════════════════════════════════════════
-// STORAGE — two label columns: authorityCodes (multi-value) + customLabels
-// authorityCodes: string[] from AUTHORITY_MAP keys (multi-select)
-// customLabels: string[] of free-text tags (comma-separated in Zoho multi-line)
+// UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
-const STORE_KEY = 'jdo_case_v4';
-function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } }
-function saveStore(d) { localStorage.setItem(STORE_KEY, JSON.stringify(d)); }
-function getNode(id) {
-  const s = loadStore();
-  return s[id] || { authorityCodes: [], customLabels: [], annotation: '' };
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function patchNode(id, data) {
-  const s = loadStore();
-  s[id] = { ...(s[id] || { authorityCodes: [], customLabels: [], annotation: '' }), ...data };
-  saveStore(s);
-}
+function escSQ(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
-// ── NATURAL SORT ── (numeric: true makes Exhibit-2 sort before Exhibit-10)
-function sortNodes(arr) {
-  return [...arr].sort((a, b) =>
-    a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
-  );
+function typeIcon(mime) {
+  if (!mime) return '📄';
+  if (mime.includes('folder')) return '📁';
+  if (mime.includes('video') || mime.includes('quicktime')) return '🎬';
+  if (mime.includes('image')) return '🖼';
+  if (mime.includes('pdf')) return '📄';
+  return '📝';
+}
+function typeChipClass(mime) {
+  if (!mime) return 'chip-pdf';
+  if (mime.includes('folder')) return 'chip-folder';
+  if (mime.includes('video') || mime.includes('quicktime')) return 'chip-video';
+  if (mime.includes('image')) return 'chip-image';
+  if (mime.includes('pdf')) return 'chip-pdf';
+  return 'chip-doc';
+}
+function typeLabel(mime) {
+  if (!mime) return 'FILE';
+  if (mime.includes('folder')) return 'FOLDER';
+  if (mime.includes('quicktime')) return 'MOV';
+  if (mime.includes('video')) return 'MP4';
+  if (mime.includes('image')) return 'IMAGE';
+  if (mime.includes('pdf')) return 'PDF';
+  return 'FILE';
 }
 
 function getAllCustomLabels() {
-  const s = loadStore();
   const set = new Set();
-  Object.values(s).forEach(v => (v.customLabels || []).forEach(l => set.add(l)));
+  NODES.forEach(n => (n.customLabels || []).forEach(l => set.add(l)));
   return [...set].sort();
 }
 
@@ -751,89 +501,100 @@ function updateCustomLabelFilter() {
   });
 }
 
+function sortDate(a, b, asc) {
+  const da = a.documentDate || a.modified || '';
+  const db = b.documentDate || b.modified || '';
+  return asc ? da.localeCompare(db) : db.localeCompare(da);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
-// TREE RENDERING
+// LIST RENDERING (flat, date-sorted)
 // ═══════════════════════════════════════════════════════════════════════════
 let selectedId = null;
+let _activeAuth = '';
+let _activeLabel = '';
+let _activeSearch = '';
 
-function typeIcon(type) {
-  return { pdf:'📄', folder:'📁', video:'🎬', image:'🖼', doc:'📝' }[type] || '📄';
-}
-function typeChipClass(type) {
-  return { pdf:'chip-pdf', folder:'chip-folder', video:'chip-video', image:'chip-image', doc:'chip-doc' }[type] || 'chip-pdf';
-}
-function typeLabel(type, mime) {
-  if (type === 'folder') return 'FOLDER';
-  if (type === 'video') return mime.includes('quicktime') ? 'MOV' : 'MP4';
-  if (type === 'image') return 'IMAGE';
-  if (type === 'pdf') return 'PDF';
-  return type.toUpperCase();
-}
-
-function buildBadges(stored) {
-  const acs = stored.authorityCodes || [];
-  const cl = stored.customLabels || [];
+function buildBadges(node) {
+  const acs = node.authorityCodes || [];
+  const cl = node.customLabels || [];
   let html = '';
-  acs.forEach(ac => { html += `<span class="tree-badge tree-badge-auth">${ac}</span>`; });
-  cl.slice(0, 2).forEach(l => { html += `<span class="tree-badge tree-badge-custom">${escHtml(l)}</span>`; });
+  acs.forEach(ac => { html += `<span class="list-badge list-badge-auth">${ac}</span>`; });
+  cl.slice(0, 2).forEach(l => { html += `<span class="list-badge list-badge-custom">${escHtml(l)}</span>`; });
+  if (IS_AUTH && node.isPrivate) html += `<span class="list-badge list-badge-private">PRIVATE</span>`;
   return html;
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function escSQ(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
-
-function buildTreeItem(node, depth) {
-  const hasChildren = node.children !== undefined;
-  const stored = getNode(node.id);
-  const badges = buildBadges(stored);
-
+function buildListItem(node) {
+  const badges = buildBadges(node);
+  const dateStr = node.documentDate ? node.documentDate.slice(0, 10) : '';
   return `
-    <li id="li-${node.id}" data-depth="${depth}">
-      <div class="tree-row depth-${depth}" id="row-${node.id}"
-           onclick="onNodeClick('${node.id}', ${hasChildren})">
-        <span class="tree-caret ${hasChildren ? '' : 'leaf'}" id="caret-${node.id}">▶</span>
-        <span class="tree-icon">${typeIcon(node.type)}</span>
-        <span class="tree-text">
-          <span class="tree-name" title="${escHtml(node.name)}">${escHtml(node.name)}</span>
-          ${badges ? `<span class="tree-label-badges">${badges}</span>` : ''}
+    <li id="li-${node.id}">
+      <div class="list-item" id="row-${node.id}" onclick="onNodeClick('${escSQ(node.id)}')">
+        <span class="list-icon">${typeIcon(node.mime)}</span>
+        <span class="list-text">
+          <span class="list-name" title="${escHtml(node.name)}">${escHtml(node.name)}</span>
+          ${dateStr ? `<span class="list-date">${dateStr}</span>` : ''}
+          ${badges ? `<span class="list-badges">${badges}</span>` : ''}
         </span>
       </div>
-      ${hasChildren ? `
-        <ul class="tree-children" id="children-${node.id}">
-          ${node.children.length
-            ? sortNodes(node.children).map(c => buildTreeItem(c, depth + 1)).join('')
-            : `<li style="padding:6px 10px 6px 36px;font-size:11px;color:var(--subtle)">
-                 Open in Google Drive to browse sub-contents →
-               </li>`}
-        </ul>` : ''}
     </li>`;
 }
 
-function renderTree() {
-  const wrap = document.getElementById('tree-root-wrap');
-  const allRoot = sortNodes([...EXHIBIT_NODES, ...LOOSE_NODES]);
-  wrap.innerHTML = `<ul class="tree">${allRoot.map(n => buildTreeItem(n, 0)).join('')}</ul>`;
-  updateCustomLabelFilter();
+function getSortedNodes() {
+  const sort = document.getElementById('sort-select')?.value || 'date-desc';
+  const sorted = [...NODES];
+  if (sort === 'date-desc') sorted.sort((a, b) => sortDate(a, b, false));
+  else if (sort === 'date-asc') sorted.sort((a, b) => sortDate(a, b, true));
+  else sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+  return sorted;
 }
 
-function onNodeClick(id, hasChildren) {
-  if (hasChildren) {
-    const ch = document.getElementById('children-' + id);
-    const cr = document.getElementById('caret-' + id);
-    if (ch && cr) {
-      const open = ch.classList.toggle('open');
-      cr.classList.toggle('open', open);
-    }
+function renderList() {
+  const wrap = document.getElementById('list-wrap');
+  const sorted = getSortedNodes();
+  wrap.innerHTML = `<ul class="flat-list">${sorted.map(n => buildListItem(n)).join('')}</ul>`;
+  applyFilters(_activeAuth, _activeLabel);
+  if (_activeSearch) handleSearch(_activeSearch);
+  updateCustomLabelFilter();
+  // Restore selection highlight
+  if (selectedId && document.getElementById('row-' + selectedId)) {
+    document.getElementById('row-' + selectedId).classList.add('selected');
   }
+  // Update entity count
+  const el = document.getElementById('entity-count');
+  if (el) el.innerHTML = '<strong>' + NODES.length + '</strong> entities';
+}
+
+function onNodeClick(id) {
   if (selectedId) {
     const prev = document.getElementById('row-' + selectedId);
     if (prev) prev.classList.remove('selected');
   }
   selectedId = id;
-  document.getElementById('row-' + id).classList.add('selected');
+  const row = document.getElementById('row-' + id);
+  if (row) row.classList.add('selected');
   renderFocus(id);
+  // Close mobile drawer
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+function refreshListBadges(id) {
+  const li = document.getElementById('li-' + id);
+  if (!li) return;
+  const node = ALL_NODES[id];
+  if (!node) return;
+  let badgeEl = li.querySelector('.list-badges');
+  const badgesHtml = buildBadges(node);
+  if (!badgeEl) {
+    if (!badgesHtml) return;
+    badgeEl = document.createElement('span');
+    badgeEl.className = 'list-badges';
+    const textEl = li.querySelector('.list-text');
+    if (textEl) textEl.appendChild(badgeEl);
+  }
+  badgeEl.innerHTML = badgesHtml;
+  if (!badgesHtml && badgeEl) badgeEl.remove();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -842,13 +603,11 @@ function onNodeClick(id, hasChildren) {
 function renderFocus(id) {
   const node = ALL_NODES[id];
   if (!node) return;
-  const stored = getNode(id);
-  const authorityCodes = stored.authorityCodes || [];
-  const customLabels = stored.customLabels || [];
-  const annotation = stored.annotation || '';
-  const isFolder = node.type === 'folder';
+  const authorityCodes = node.authorityCodes || [];
+  const customLabels = node.customLabels || [];
+  const annotation = node.contextFindings || '';
+  const links = node.links || [];
 
-  // Authority dropdown — only shows codes not already selected
   const authOptions = Object.entries(AUTHORITY_MAP)
     .filter(([code]) => !authorityCodes.includes(code))
     .map(([code, name]) => `<option value="${code}">${code} — ${name}</option>`)
@@ -858,36 +617,65 @@ function renderFocus(id) {
   fp.innerHTML = `
     <div class="doc-header">
       <div class="doc-chips">
-        <span class="chip ${typeChipClass(node.type)}">${typeLabel(node.type, node.mime || '')}</span>
+        <span class="chip ${typeChipClass(node.mime)}">${typeLabel(node.mime)}</span>
+        ${node.documentType ? `<span class="chip chip-doc">${escHtml(node.documentType)}</span>` : ''}
+        ${IS_AUTH && node.isPrivate ? `<span class="chip chip-private">PRIVATE</span>` : ''}
       </div>
       <div class="doc-title">${escHtml(node.name)}</div>
       <div class="doc-path">${escHtml(node.path || '')}</div>
       ${node.url
-        ? `<a class="btn-open-file" href="${node.url}" target="_blank" rel="noopener">↗ Open in Google Drive</a>`
-        : `<button class="btn-open-file disabled" title="URL not in spreadsheet — will link automatically once populated">↗ Open in Google Drive</button>`}
+        ? `<a class="btn-open-file" href="${escHtml(node.url)}" target="_blank" rel="noopener">↗ Open in Google Drive</a>`
+        : `<button class="btn-open-file disabled" title="URL not available">↗ Open in Google Drive</button>`}
     </div>
 
-    <!-- DESCRIPTION (read-only from spreadsheet Description column) -->
+    <!-- DESCRIPTION (read-only from Drive/Sheets) -->
     <div class="meta-block">
-      <div class="meta-title">Description <span class="meta-title-note">from spreadsheet · read-only</span></div>
+      <div class="meta-title">Description <span class="meta-title-note">from Drive · read-only</span></div>
       ${node.description
         ? `<p class="description-text">${escHtml(node.description)}</p>`
-        : `<p class="description-empty">No description in the spreadsheet for this item.</p>`}
+        : `<p class="description-empty">No description for this item.</p>`}
     </div>
 
-    <!-- AUDIT TRAIL (from spreadsheet) -->
+    <!-- AUDIT TRAIL -->
     <div class="meta-block">
       <div class="meta-title">Audit Trail</div>
       <div class="meta-grid">
-        <span class="meta-key">Created</span><span class="meta-val">${node.created || '—'}</span>
-        <span class="meta-key">Modified</span><span class="meta-val">${node.modified || '—'}</span>
+        <span class="meta-key">Drive Created</span><span class="meta-val">${node.created || '—'}</span>
+        <span class="meta-key">Drive Modified</span><span class="meta-val">${node.modified || '—'}</span>
         <span class="meta-key">Size</span><span class="meta-val">${node.size || '—'}</span>
         <span class="meta-key">MD5 Checksum</span>
-        <span class="meta-val mono">${node.driveId ? node.driveId.slice(0,20) + '…' : '—'}</span>
+        <span class="meta-val mono">${node.md5 ? node.md5.slice(0,20) + '…' : '—'}</span>
       </div>
     </div>
 
-    <!-- AUTHORITY CODE (constrained to Config_Authority_Registry · multi-select) -->
+    <!-- DOCUMENT DATE (Zoho Table B — editable if auth) -->
+    <div class="meta-block">
+      <div class="meta-title">Document Date <span class="meta-title-note">actual date of document · Zoho Table B</span></div>
+      ${IS_AUTH
+        ? `<div class="doc-date-wrap">
+             <input class="doc-date-input" type="date" id="doc-date-${id}"
+               value="${escHtml(node.documentDate || '')}"
+               placeholder="YYYY-MM-DD">
+             <button class="btn-save-date" onclick="saveDate('${escSQ(id)}')">Save</button>
+           </div>`
+        : `<span class="meta-val">${node.documentDate || '—'}</span>`}
+    </div>
+
+    <!-- IS PRIVATE toggle (auth only) -->
+    ${IS_AUTH ? `
+    <div class="meta-block">
+      <div class="meta-title">Visibility <span class="meta-title-note">is_private flag · hides from public</span></div>
+      <div class="private-toggle-wrap">
+        <label class="toggle-switch">
+          <input type="checkbox" id="private-toggle-${id}" ${node.isPrivate ? 'checked' : ''}
+                 onchange="togglePrivate('${escSQ(id)}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="private-toggle-label">${node.isPrivate ? 'Private — hidden from public view' : 'Public — visible to all'}</span>
+      </div>
+    </div>` : ''}
+
+    <!-- AUTHORITY CODE (multi-select) -->
     <div class="meta-block">
       <div class="meta-title">Authority Code <span class="meta-title-note">from Config_Authority_Registry · multiple allowed</span></div>
       <div class="authority-code-area" id="auth-area-${id}">
@@ -895,169 +683,195 @@ function renderFocus(id) {
           <span class="auth-chip" id="auth-chip-${id}-${code}">
             <span class="auth-code">${code}</span>
             <span class="auth-name"> — ${escHtml(AUTHORITY_MAP[code] || '')}</span>
-            <button class="label-remove" onclick="removeAuthorityCode('${id}','${code}')" title="Remove">×</button>
+            ${IS_AUTH ? `<button class="label-remove" onclick="removeAuthorityCode('${escSQ(id)}','${code}')" title="Remove">×</button>` : ''}
           </span>`).join('')}
-        ${authOptions
+        ${IS_AUTH && authOptions
           ? `<div class="auth-select-wrap">
-               <select onchange="addAuthorityCode('${id}', this.value); this.value=''">
+               <select onchange="addAuthorityCode('${escSQ(id)}', this.value); this.value=''">
                  <option value="">— Add authority —</option>
                  ${authOptions}
                </select>
              </div>`
-          : `<span style="font-size:11px;color:var(--subtle);font-style:italic">All authority codes assigned</span>`}
+          : (!authorityCodes.length ? `<span style="font-size:11px;color:var(--subtle);font-style:italic">No authority codes assigned</span>` : '')}
       </div>
     </div>
 
-    <!-- CUSTOM LABELS (free-text · comma-separated multi-line field in Zoho) -->
+    <!-- CUSTOM LABELS (free-text) -->
     <div class="meta-block">
-      <div class="meta-title">Custom Labels <span class="meta-title-note">free-text · comma-separated in Zoho</span></div>
+      <div class="meta-title">Custom Labels <span class="meta-title-note">free-text tags · Zoho Table B</span></div>
       <div class="labels-area" id="labels-area-${id}">
         ${customLabels.map(l => `
-          <span class="label-chip" id="chip-${id}-${encodeLabel(l)}">
+          <span class="label-chip" id="chip-${id}-${l.replace(/[^a-z0-9]/gi,'_')}">
             ${escHtml(l)}
-            <button class="label-remove" onclick="removeCustomLabel('${id}','${escSQ(l)}')">×</button>
+            ${IS_AUTH ? `<button class="label-remove" onclick="removeCustomLabel('${escSQ(id)}','${escSQ(l)}')">×</button>` : ''}
           </span>`).join('')}
+        ${IS_AUTH ? `
         <div class="label-add-wrap" id="add-wrap-${id}">
-          <button class="btn-add-label" onclick="showLabelInput('${id}')">+ Add Label</button>
+          <button class="btn-add-label" onclick="showLabelInput('${escSQ(id)}')">+ Add Label</button>
           <div class="label-input-wrap" id="inp-wrap-${id}">
             <input class="label-input" id="label-inp-${id}"
               placeholder="Order, Evidence, RTI, FIR…"
-              oninput="onLabelInput('${id}', this.value)"
-              onkeydown="onLabelKey(event, '${id}')"
+              oninput="onLabelInput('${escSQ(id)}', this.value)"
+              onkeydown="onLabelKey(event, '${escSQ(id)}')"
               autocomplete="off">
             <div class="label-suggestions" id="label-sugg-${id}"></div>
           </div>
-        </div>
+        </div>` : ''}
       </div>
     </div>
 
-    <!-- IDENTIFIERS (from spreadsheet) -->
+    <!-- IDENTIFIERS -->
     <div class="meta-block">
       <div class="meta-title">Identifiers</div>
       <div class="meta-grid">
         <span class="meta-key">Drive ID</span>
-        <span class="meta-val mono" title="${node.driveId || ''}">${node.driveId ? node.driveId.slice(0,24) + '…' : '—'}</span>
+        <span class="meta-val mono" title="${escHtml(node.id)}">${node.id ? node.id.slice(0,24) + '…' : '—'}</span>
         <span class="meta-key">MIME Type</span>
-        <span class="meta-val mono">${node.mime || '—'}</span>
-        <span class="meta-key">Extension</span>
-        <span class="meta-val mono">${node.ext || (isFolder ? '(folder)' : '—')}</span>
+        <span class="meta-val mono">${escHtml(node.mime || '—')}</span>
+        <span class="meta-key">Drive Path</span>
+        <span class="meta-val mono" style="font-size:10px">${escHtml(node.path || '—')}</span>
       </div>
     </div>
 
-    <!-- CONTEXT & FINDINGS (Zoho field — HITL-maintained, starts empty) -->
+    <!-- CONTEXT & FINDINGS (Zoho Table B — HITL annotation) -->
     <div class="meta-block">
-      <div class="meta-title">Context &amp; Findings <span class="meta-title-note">HITL annotation · Zoho-maintained</span></div>
+      <div class="meta-title">Context &amp; Findings <span class="meta-title-note">HITL annotation · Zoho Table B</span></div>
       <div id="ann-static-${id}">
         ${annotation
           ? `<p class="annotation-text">${escHtml(annotation).replace(/\n/g,'<br>')}</p>`
-          : `<p class="annotation-placeholder">No annotation yet. Populate as a one-time exercise — add the legal significance and context for this document.</p>`}
+          : `<p class="annotation-placeholder">No annotation yet. Add the legal significance and context for this document.</p>`}
       </div>
+      ${IS_AUTH ? `
       <div class="annotation-edit" id="ann-edit-${id}">
         <textarea class="annotation-textarea" id="ann-ta-${id}" rows="6">${escHtml(annotation)}</textarea>
       </div>
       <div class="annotation-actions">
-        <button class="btn-edit-ann" id="btn-edit-${id}" onclick="editAnn('${id}')">✎ Edit</button>
-        <button class="btn-save-ann" id="btn-save-${id}" onclick="saveAnn('${id}')">Save</button>
-        <button class="btn-cancel-ann" id="btn-cancel-${id}" onclick="cancelAnn('${id}')">Cancel</button>
-      </div>
+        <button class="btn-edit-ann" id="btn-edit-${id}" onclick="editAnn('${escSQ(id)}')">✎ Edit</button>
+        <button class="btn-save-ann" id="btn-save-${id}" onclick="saveAnn('${escSQ(id)}')">Save</button>
+        <button class="btn-cancel-ann" id="btn-cancel-${id}" onclick="cancelAnn('${escSQ(id)}')">Cancel</button>
+      </div>` : ''}
     </div>
 
-    <!-- LINKED TO (separate Zoho Document_Links report) -->
+    <!-- LINKED TO (Zoho Table C) -->
     <div class="meta-block">
-      <div class="meta-title">Linked To <span class="meta-title-note">Document_Links · Zoho report</span></div>
+      <div class="meta-title">Linked To <span class="meta-title-note">Case_Library_Links · Zoho Table C</span></div>
       <div id="links-list-${id}">
         ${(() => {
-          const links = getLinks(id);
           if (!links.length) return `<p class="links-empty">No links created yet.</p>`;
-          return links.map(lk => `
-            <div class="link-item">
-              <div class="link-item-name">
-                ${lk.url
-                  ? `<a href="${escHtml(lk.url)}" target="_blank" rel="noopener">${escHtml(lk.name || lk.linkedDriveId)}</a>`
-                  : `<span>${escHtml(lk.name || lk.linkedDriveId)}</span>`}
-                <span class="link-item-driveid">${escHtml(lk.linkedDriveId)}</span>
-              </div>
-              <div class="link-item-type">${escHtml(lk.linkType)}</div>
-              <div class="link-item-footer">
-                <span class="link-item-ts">${lk.timestamp}</span>
-                <button class="btn-link-remove" onclick="deleteLinkEntry('${id}','${escSQ(lk.linkedDriveId)}')">Remove</button>
-              </div>
-            </div>`).join('');
+          return links.map(lk => {
+            const targetNode = ALL_NODES[lk.linkedId];
+            return `
+              <div class="link-item">
+                <div class="link-item-name">
+                  ${targetNode && targetNode.url
+                    ? `<a href="${escHtml(targetNode.url)}" target="_blank" rel="noopener">${escHtml(targetNode.name || lk.linkedId)}</a>`
+                    : `<span>${escHtml(targetNode ? targetNode.name : lk.linkedId)}</span>`}
+                  <span class="link-item-driveid">${escHtml(lk.linkedId)}</span>
+                </div>
+                ${lk.linkType ? `<div class="link-item-type">${escHtml(lk.linkType)}</div>` : ''}
+                ${lk.linkDetails ? `<div class="link-item-details">${escHtml(lk.linkDetails)}</div>` : ''}
+                <div class="link-item-footer">
+                  <span class="link-item-ts">${lk.timestamp || ''}</span>
+                  ${IS_AUTH ? `<button class="btn-link-remove" onclick="deleteLink('${escSQ(id)}','${escSQ(lk.linkedId)}','${escSQ(lk._zohoLinkId || '')}')">Remove</button>` : ''}
+                </div>
+              </div>`;
+          }).join('');
         })()}
       </div>
+      ${IS_AUTH ? `
       <div id="create-link-toggle-${id}">
-        <button class="btn-create-link" onclick="showCreateLink('${id}')">+ Create Link</button>
+        <button class="btn-create-link" onclick="showCreateLink('${escSQ(id)}')">+ Create Link</button>
       </div>
       <div class="create-link-form" id="create-link-form-${id}" style="display:none">
         <div class="link-field">
           <label class="link-field-label">Drive ID <span style="color:var(--accent);font-weight:700">*</span></label>
           <input class="link-input" id="link-driveid-${id}" placeholder="Paste Google Drive file or folder ID…" autocomplete="off"
                  oninput="this.classList.remove('error')">
-          <div class="link-field-hint">The Drive ID of the document you are linking to. If the document exists in this Case Library, its name and URL will resolve automatically.</div>
+          <div class="link-field-hint">If the document exists in this Case Library, its name will resolve automatically.</div>
         </div>
         <div class="link-field">
           <label class="link-field-label">Link Type <span style="color:var(--accent);font-weight:700">*</span></label>
-          <input class="link-input" id="link-type-${id}" placeholder="e.g. This document was presented as attachment of linked file"
+          <input class="link-input" id="link-type-${id}" placeholder="e.g. Referenced in, Evidence for, Cited by…"
                  autocomplete="off" oninput="this.classList.remove('error')">
         </div>
-        <div class="link-form-actions">
-          <button class="btn-save-link" onclick="submitLink('${id}')">Add Link</button>
-          <button class="btn-cancel-link" onclick="hideCreateLink('${id}')">Cancel</button>
+        <div class="link-field">
+          <label class="link-field-label">Link Details</label>
+          <textarea class="link-textarea" id="link-details-${id}"
+            placeholder="Legal/situational context — what does this link reveal in the broader case?"></textarea>
+          <div class="link-field-hint">Optional but valuable. Explain the legal significance of this relationship.</div>
         </div>
-      </div>
+        <div class="link-form-actions">
+          <button class="btn-save-link" onclick="submitLink('${escSQ(id)}')">Add Link</button>
+          <button class="btn-cancel-link" onclick="hideCreateLink('${escSQ(id)}')">Cancel</button>
+        </div>
+      </div>` : ''}
     </div>
   `;
 }
 
-function encodeLabel(l) { return l.replace(/[^a-z0-9]/gi, '_'); }
-
 // ═══════════════════════════════════════════════════════════════════════════
-// LINKS STORAGE — separate from node store; mirrors Zoho Document_Links report
-// Schema per entry: { sourceNodeId, linkedDriveId, linkType, name, url, timestamp }
+// API CALLS — all write operations go to Flask → Zoho
 // ═══════════════════════════════════════════════════════════════════════════
-const LINKS_KEY = 'jdo_links_v1';
-function loadLinks() { try { return JSON.parse(localStorage.getItem(LINKS_KEY)) || {}; } catch { return {}; } }
-function saveLinks(d) { localStorage.setItem(LINKS_KEY, JSON.stringify(d)); }
-function getLinks(nodeId) { const l = loadLinks(); return l[nodeId] || []; }
-function addLinkEntry(nodeId, entry) {
-  const l = loadLinks();
-  l[nodeId] = [...(l[nodeId] || []), entry];
-  saveLinks(l);
-}
-function deleteLinkEntry(nodeId, linkedDriveId) {
-  const l = loadLinks();
-  l[nodeId] = (l[nodeId] || []).filter(lk => lk.linkedDriveId !== linkedDriveId);
-  saveLinks(l);
-  renderFocus(nodeId);
+function showToast(msg, ok) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast visible ' + (ok ? 'ok' : 'err');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = 'toast'; }, 2800);
 }
 
-// ── AUTHORITY CODE ACTIONS ─────────────────────────────────────────────────
-function addAuthorityCode(id, code) {
+async function apiPatch(path, body) {
+  const r = await fetch(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return r.json();
+}
+
+async function apiPost(path, body) {
+  const r = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return r.json();
+}
+
+async function apiDelete(path) {
+  const r = await fetch(path, { method: 'DELETE' });
+  return r.json();
+}
+
+// ── Authority code actions ─────────────────────────────────────────────────
+async function addAuthorityCode(id, code) {
   if (!code) return;
-  const stored = getNode(id);
-  const acs = stored.authorityCodes || [];
-  if (!acs.includes(code)) {
-    patchNode(id, { authorityCodes: [...acs, code] });
-  }
+  const node = ALL_NODES[id];
+  if (!node) return;
+  const old = [...(node.authorityCodes || [])];
+  if (old.includes(code)) return;
+  node.authorityCodes = [...old, code];
   renderFocus(id);
-  refreshTreeBadges(id);
-}
-function removeAuthorityCode(id, code) {
-  const stored = getNode(id);
-  const acs = (stored.authorityCodes || []).filter(c => c !== code);
-  patchNode(id, { authorityCodes: acs });
-  renderFocus(id);
-  refreshTreeBadges(id);
+  refreshListBadges(id);
+  const r = await apiPatch(`/api/kurukshetra/${encodeURIComponent(id)}/labels`, { action: 'add_authority', value: code });
+  if (!r.ok) { node.authorityCodes = old; renderFocus(id); refreshListBadges(id); showToast('Failed to save', false); }
+  else showToast('Authority code added', true);
 }
 
-// ── CUSTOM LABEL ACTIONS ───────────────────────────────────────────────────
+async function removeAuthorityCode(id, code) {
+  const node = ALL_NODES[id];
+  if (!node) return;
+  const old = [...(node.authorityCodes || [])];
+  node.authorityCodes = old.filter(c => c !== code);
+  renderFocus(id);
+  refreshListBadges(id);
+  const r = await apiPatch(`/api/kurukshetra/${encodeURIComponent(id)}/labels`, { action: 'remove_authority', value: code });
+  if (!r.ok) { node.authorityCodes = old; renderFocus(id); refreshListBadges(id); showToast('Failed to save', false); }
+  else showToast('Authority code removed', true);
+}
+
+// ── Custom label actions ───────────────────────────────────────────────────
 let activeSugg = -1;
-
-const LABEL_SUGGESTIONS = [
-  { code: 'Order' }, { code: 'Evidence' }, { code: 'RTI' }, { code: 'FIR' },
-  { code: 'Video' }, { code: 'Key' }, { code: 'Appeal' }, { code: 'Hearing' },
-  { code: 'Notice' }, { code: 'Affidavit' }, { code: 'Petition' }, { code: 'Reply' },
-];
 
 function showLabelInput(id) {
   document.getElementById(`inp-wrap-${id}`).classList.add('visible');
@@ -1069,11 +883,11 @@ function onLabelInput(id, val) {
   activeSugg = -1;
   if (!val.trim()) { suggBox.innerHTML = ''; return; }
   const existing = getAllCustomLabels();
-  const pool = [...LABEL_SUGGESTIONS.map(s => s.code), ...existing.filter(l => !LABEL_SUGGESTIONS.some(s => s.code === l))];
+  const pool = [...LABEL_SUGGESTIONS, ...existing.filter(l => !LABEL_SUGGESTIONS.includes(l))];
   const matches = pool.filter(s => s.toLowerCase().includes(val.toLowerCase())).slice(0, 6);
   suggBox.innerHTML = matches.map(s =>
-    `<div class="label-suggestion" data-val="${escHtml(s)}" onclick="commitCustomLabel('${id}','${escSQ(s)}')">
-       <span class="label-suggestion-code">${escHtml(s)}</span>
+    `<div class="label-suggestion" data-val="${escHtml(s)}" onclick="commitCustomLabel('${escSQ(id)}','${escSQ(s)}')">
+       ${escHtml(s)}
      </div>`
   ).join('');
 }
@@ -1081,40 +895,13 @@ function onLabelInput(id, val) {
 function onLabelKey(e, id) {
   const suggBox = document.getElementById(`label-sugg-${id}`);
   const items = suggBox.querySelectorAll('.label-suggestion');
-  if (e.key === 'ArrowDown') {
-    activeSugg = Math.min(activeSugg + 1, items.length - 1);
-    items.forEach((el, i) => el.classList.toggle('active', i === activeSugg));
+  if (e.key === 'ArrowDown') { activeSugg = Math.min(activeSugg + 1, items.length - 1); items.forEach((el, i) => el.classList.toggle('active', i === activeSugg)); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { activeSugg = Math.max(activeSugg - 1, 0); items.forEach((el, i) => el.classList.toggle('active', i === activeSugg)); e.preventDefault(); }
+  else if (e.key === 'Enter') {
+    if (activeSugg >= 0 && items[activeSugg]) commitCustomLabel(id, items[activeSugg].dataset.val);
+    else { const inp = document.getElementById(`label-inp-${id}`); if (inp.value.trim()) commitCustomLabel(id, inp.value.trim()); }
     e.preventDefault();
-  } else if (e.key === 'ArrowUp') {
-    activeSugg = Math.max(activeSugg - 1, 0);
-    items.forEach((el, i) => el.classList.toggle('active', i === activeSugg));
-    e.preventDefault();
-  } else if (e.key === 'Enter') {
-    if (activeSugg >= 0 && items[activeSugg]) {
-      commitCustomLabel(id, items[activeSugg].dataset.val);
-    } else {
-      const inp = document.getElementById(`label-inp-${id}`);
-      if (inp.value.trim()) commitCustomLabel(id, inp.value.trim());
-    }
-    e.preventDefault();
-  } else if (e.key === 'Escape') {
-    closeLabelInput(id);
-  }
-}
-
-function commitCustomLabel(id, rawVal) {
-  if (!rawVal || !rawVal.trim()) return;
-  const val = rawVal.trim();
-  const stored = getNode(id);
-  const customLabels = stored.customLabels || [];
-  if (!customLabels.map(l => l.toLowerCase()).includes(val.toLowerCase())) {
-    customLabels.push(val);
-    patchNode(id, { customLabels });
-  }
-  closeLabelInput(id);
-  renderFocus(id);
-  refreshTreeBadges(id);
-  updateCustomLabelFilter();
+  } else if (e.key === 'Escape') { closeLabelInput(id); }
 }
 
 function closeLabelInput(id) {
@@ -1127,34 +914,87 @@ function closeLabelInput(id) {
   activeSugg = -1;
 }
 
-function removeCustomLabel(id, label) {
-  const stored = getNode(id);
-  const customLabels = (stored.customLabels || []).filter(l => l !== label);
-  patchNode(id, { customLabels });
+async function commitCustomLabel(id, rawVal) {
+  if (!rawVal || !rawVal.trim()) return;
+  const val = rawVal.trim();
+  const node = ALL_NODES[id];
+  if (!node) return;
+  const old = [...(node.customLabels || [])];
+  if (old.map(l => l.toLowerCase()).includes(val.toLowerCase())) { closeLabelInput(id); return; }
+  node.customLabels = [...old, val];
+  closeLabelInput(id);
   renderFocus(id);
-  refreshTreeBadges(id);
+  refreshListBadges(id);
   updateCustomLabelFilter();
+  const r = await apiPatch(`/api/kurukshetra/${encodeURIComponent(id)}/labels`, { action: 'add_label', value: val });
+  if (!r.ok) { node.customLabels = old; renderFocus(id); refreshListBadges(id); updateCustomLabelFilter(); showToast('Failed to save', false); }
+  else showToast('Label added', true);
 }
 
-function refreshTreeBadges(id) {
-  const li = document.getElementById('li-' + id);
-  if (!li) return;
-  const nameEl = li.querySelector('.tree-text');
-  if (!nameEl) return;
-  const stored = getNode(id);
-  const badgesHtml = buildBadges(stored);
-  let badgeEl = nameEl.querySelector('.tree-label-badges');
-  if (!badgeEl) {
-    if (!badgesHtml) return;
-    badgeEl = document.createElement('span');
-    badgeEl.className = 'tree-label-badges';
-    nameEl.appendChild(badgeEl);
-  }
-  badgeEl.innerHTML = badgesHtml;
-  if (!badgesHtml) badgeEl.remove();
+async function removeCustomLabel(id, label) {
+  const node = ALL_NODES[id];
+  if (!node) return;
+  const old = [...(node.customLabels || [])];
+  node.customLabels = old.filter(l => l !== label);
+  renderFocus(id);
+  refreshListBadges(id);
+  updateCustomLabelFilter();
+  const r = await apiPatch(`/api/kurukshetra/${encodeURIComponent(id)}/labels`, { action: 'remove_label', value: label });
+  if (!r.ok) { node.customLabels = old; renderFocus(id); refreshListBadges(id); updateCustomLabelFilter(); showToast('Failed to save', false); }
+  else showToast('Label removed', true);
 }
 
-// ── LINKED TO ACTIONS ──────────────────────────────────────────────────────
+// ── Annotation ─────────────────────────────────────────────────────────────
+function editAnn(id) {
+  document.getElementById('ann-static-' + id).style.display = 'none';
+  document.getElementById('ann-edit-' + id).classList.add('visible');
+  document.getElementById('btn-edit-' + id).style.display = 'none';
+  document.getElementById('btn-save-' + id).style.display = 'inline-block';
+  document.getElementById('btn-cancel-' + id).style.display = 'inline-block';
+  document.getElementById('ann-ta-' + id).focus();
+}
+
+async function saveAnn(id) {
+  const node = ALL_NODES[id];
+  if (!node) return;
+  const val = document.getElementById('ann-ta-' + id).value;
+  const old = node.contextFindings;
+  node.contextFindings = val;
+  renderFocus(id);
+  const r = await apiPatch(`/api/kurukshetra/${encodeURIComponent(id)}/context`, { context_findings: val });
+  if (!r.ok) { node.contextFindings = old; renderFocus(id); showToast('Failed to save', false); }
+  else showToast('Context saved', true);
+}
+
+function cancelAnn(id) { renderFocus(id); }
+
+// ── Document date ──────────────────────────────────────────────────────────
+async function saveDate(id) {
+  const node = ALL_NODES[id];
+  if (!node) return;
+  const val = document.getElementById('doc-date-' + id)?.value || '';
+  const old = node.documentDate;
+  node.documentDate = val;
+  const r = await apiPatch(`/api/kurukshetra/${encodeURIComponent(id)}/date`, { document_date: val });
+  if (!r.ok) { node.documentDate = old; showToast('Failed to save date', false); }
+  else { refreshListBadges(id); showToast('Date saved', true); }
+}
+
+// ── Is Private toggle ──────────────────────────────────────────────────────
+async function togglePrivate(id, checked) {
+  const node = ALL_NODES[id];
+  if (!node) return;
+  const old = node.isPrivate;
+  node.isPrivate = checked;
+  refreshListBadges(id);
+  const label = document.querySelector(`#focus-pane .private-toggle-label`);
+  if (label) label.textContent = checked ? 'Private — hidden from public view' : 'Public — visible to all';
+  const r = await apiPatch(`/api/kurukshetra/${encodeURIComponent(id)}/private`, { is_private: checked });
+  if (!r.ok) { node.isPrivate = old; refreshListBadges(id); showToast('Failed to update visibility', false); }
+  else showToast(checked ? 'Marked private' : 'Marked public', true);
+}
+
+// ── Links ──────────────────────────────────────────────────────────────────
 function showCreateLink(id) {
   document.getElementById(`create-link-form-${id}`).style.display = 'block';
   document.getElementById(`create-link-toggle-${id}`).style.display = 'none';
@@ -1165,109 +1005,122 @@ function hideCreateLink(id) {
   document.getElementById(`create-link-toggle-${id}`).style.display = '';
   document.getElementById(`link-driveid-${id}`).value = '';
   document.getElementById(`link-type-${id}`).value = '';
+  document.getElementById(`link-details-${id}`).value = '';
 }
-function submitLink(id) {
-  const driveIdEl = document.getElementById(`link-driveid-${id}`);
-  const linkTypeEl = document.getElementById(`link-type-${id}`);
-  const linkedDriveId = driveIdEl.value.trim();
-  const linkType = linkTypeEl.value.trim();
 
+async function submitLink(id) {
+  const linkedId = document.getElementById(`link-driveid-${id}`).value.trim();
+  const linkType = document.getElementById(`link-type-${id}`).value.trim();
+  const linkDetails = document.getElementById(`link-details-${id}`).value.trim();
   let valid = true;
-  if (!linkedDriveId) { driveIdEl.classList.add('error'); valid = false; }
-  if (!linkType)      { linkTypeEl.classList.add('error'); valid = false; }
+  if (!linkedId) { document.getElementById(`link-driveid-${id}`).classList.add('error'); valid = false; }
+  if (!linkType)  { document.getElementById(`link-type-${id}`).classList.add('error'); valid = false; }
   if (!valid) return;
 
-  // Resolve name + url from local dataset if Drive ID matches a known node
-  const targetNode = Object.values(ALL_NODES).find(n => n.driveId === linkedDriveId);
-  addLinkEntry(id, {
-    linkedDriveId,
-    linkType,
-    name: targetNode ? targetNode.name : null,
-    url:  targetNode ? (targetNode.url || null) : null,
-    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+  const r = await apiPost('/api/kurukshetra/link', {
+    source_id: id, linked_id: linkedId,
+    link_type: linkType, link_details: linkDetails,
   });
-  renderFocus(id);
+  if (r.ok) {
+    const node = ALL_NODES[id];
+    if (node) {
+      node.links = node.links || [];
+      node.links.push({ linkedId, linkType, linkDetails, timestamp: r.timestamp, _zohoLinkId: r.link_id });
+    }
+    hideCreateLink(id);
+    renderFocus(id);
+    showToast('Link created', true);
+  } else {
+    showToast('Failed to create link: ' + (r.error || ''), false);
+  }
 }
 
-// ── ANNOTATION ACTIONS ─────────────────────────────────────────────────────
-function editAnn(id) {
-  document.getElementById('ann-static-' + id).style.display = 'none';
-  document.getElementById('ann-edit-' + id).classList.add('visible');
-  document.getElementById('btn-edit-' + id).style.display = 'none';
-  document.getElementById('btn-save-' + id).style.display = 'inline-block';
-  document.getElementById('btn-cancel-' + id).style.display = 'inline-block';
-  document.getElementById('ann-ta-' + id).focus();
+async function deleteLink(sourceId, linkedId, zohoLinkId) {
+  if (!zohoLinkId) { showToast('Cannot delete: link ID unknown (rebuild cache first)', false); return; }
+  const r = await apiDelete(`/api/kurukshetra/link/${encodeURIComponent(zohoLinkId)}`);
+  if (r.ok) {
+    const node = ALL_NODES[sourceId];
+    if (node) node.links = (node.links || []).filter(lk => lk.linkedId !== linkedId);
+    renderFocus(sourceId);
+    showToast('Link removed', true);
+  } else {
+    showToast('Failed to remove link', false);
+  }
 }
-function saveAnn(id) {
-  const val = document.getElementById('ann-ta-' + id).value;
-  patchNode(id, { annotation: val });
-  renderFocus(id);
-}
-function cancelAnn(id) { renderFocus(id); }
 
-// ── SEARCH ─────────────────────────────────────────────────────────────────
+// ── Rebuild cache ──────────────────────────────────────────────────────────
+async function rebuildCache() {
+  const btn = document.getElementById('btn-rebuild');
+  if (!btn) return;
+  btn.textContent = '⟳ Rebuilding…';
+  btn.classList.add('loading');
+  const r = await apiPost('/api/kurukshetra/rebuild-cache', {});
+  btn.textContent = '⟳ Rebuild';
+  btn.classList.remove('loading');
+  if (r.ok) showToast('Cache rebuilt — reload to see updates', true);
+  else showToast('Rebuild failed: ' + (r.error || ''), false);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SEARCH & FILTER
+// ═══════════════════════════════════════════════════════════════════════════
 function handleSearch(q) {
+  _activeSearch = q;
   q = q.toLowerCase().trim();
-  document.querySelectorAll('.tree-row').forEach(row => {
+  document.querySelectorAll('.list-item').forEach(row => {
     const id = row.id.replace('row-', '');
-    if (!id || !ALL_NODES[id]) return;
-    const name = ALL_NODES[id].name.toLowerCase();
-    const stored = getNode(id);
-    const acStr = (stored.authorityCodes || []).join(' ').toLowerCase();
-    const acFull = (stored.authorityCodes || []).map(c => (AUTHORITY_MAP[c] || '').toLowerCase()).join(' ');
-    const cl = (stored.customLabels || []).join(' ').toLowerCase();
-    const match = !q || name.includes(q) || acStr.includes(q) || acFull.includes(q) || cl.includes(q);
-    row.closest('li').style.display = match ? '' : 'none';
+    const node = ALL_NODES[id];
+    if (!node) return;
+    const name = node.name.toLowerCase();
+    const acStr = (node.authorityCodes || []).join(' ').toLowerCase();
+    const acFull = (node.authorityCodes || []).map(c => (AUTHORITY_MAP[c] || '').toLowerCase()).join(' ');
+    const cl = (node.customLabels || []).join(' ').toLowerCase();
+    const desc = (node.description || '').toLowerCase();
+    const match = !q || name.includes(q) || acStr.includes(q) || acFull.includes(q) || cl.includes(q) || desc.includes(q);
+    const li = row.closest('li');
+    if (li) li.classList.toggle('hidden', !match);
   });
 }
 
 function applyFilters(authCode, customLabel) {
-  document.querySelectorAll('.tree-row').forEach(row => {
+  document.querySelectorAll('.list-item').forEach(row => {
     const id = row.id.replace('row-', '');
-    if (!id || !ALL_NODES[id]) return;
-    const stored = getNode(id);
-    const authMatch = !authCode || (stored.authorityCodes || []).includes(authCode);
-    const labelMatch = !customLabel || (stored.customLabels || []).some(l => l === customLabel);
-    row.closest('li').style.display = (authMatch && labelMatch) ? '' : 'none';
+    const node = ALL_NODES[id];
+    if (!node) return;
+    const authMatch = !authCode || (node.authorityCodes || []).includes(authCode);
+    const labelMatch = !customLabel || (node.customLabels || []).some(l => l === customLabel);
+    const li = row.closest('li');
+    if (li) li.classList.toggle('hidden', !(authMatch && labelMatch));
   });
 }
 
 function handleAuthorityFilter(code) {
-  const labelFilter = document.getElementById('label-filter').value;
-  applyFilters(code, labelFilter);
+  _activeAuth = code;
+  applyFilters(code, _activeLabel);
 }
 function handleLabelFilter(label) {
-  const authFilter = document.getElementById('auth-filter').value;
-  applyFilters(authFilter, label);
+  _activeLabel = label;
+  applyFilters(_activeAuth, label);
 }
 
-// ── INIT ───────────────────────────────────────────────────────────────────
-renderTree();
-
-// Update entity count display
-(function () {
-  const count = NODES.length;
-  const el = document.getElementById('entity-count');
-  if (el) el.innerHTML = '<strong>' + count + '</strong> entities';
-})();
-
-// ── MOBILE DRAWER ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// MOBILE DRAWER
+// ═══════════════════════════════════════════════════════════════════════════
 function toggleSidebar() {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebar-overlay');
-  const isOpen  = sidebar.classList.toggle('open');
+  const isOpen = sidebar.classList.toggle('open');
   overlay.classList.toggle('visible', isOpen);
 }
 function closeSidebar() {
   document.querySelector('.sidebar').classList.remove('open');
   document.getElementById('sidebar-overlay').classList.remove('visible');
 }
-// Close drawer when a tree node is selected on mobile
-document.querySelector('.sidebar').addEventListener('click', function (e) {
-  if (window.innerWidth <= 768 && e.target.closest('.tree-row')) {
-    closeSidebar();
-  }
-});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+renderList();
 </script>
 </body>
 </html>
