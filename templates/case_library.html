@@ -411,16 +411,6 @@
       </div>
       <select class="filter-select" id="auth-filter" onchange="handleAuthorityFilter(this.value)">
         <option value="">All Authorities</option>
-        <option value="MOR">MOR — Tehsildar Vasai</option>
-        <option value="NPS">NPS — SDO Vasai</option>
-        <option value="DMD">DMD — Collector Palghar</option>
-        <option value="EAF">EAF — Arnala Police</option>
-        <option value="RPD">RPD — ACP Nalasopara</option>
-        <option value="AGD">AGD — MBVV Commissioner</option>
-        <option value="SIC">SIC — State Info Commission</option>
-        <option value="RPO">RPO — Passport Office</option>
-        <option value="JMC">JMC — 4th JMFC Vasai</option>
-        <option value="JDC">JDC — District Court</option>
       </select>
       <select class="filter-select" id="label-filter" onchange="handleLabelFilter(this.value)">
         <option value="">All Labels</option>
@@ -517,6 +507,19 @@ function getAllCustomLabels() {
   return [...set].sort();
 }
 
+function updateAuthorityFilter() {
+  const sel = document.getElementById('auth-filter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Authorities</option>';
+  Object.entries(AUTHORITY_MAP).sort((a, b) => a[0].localeCompare(b[0])).forEach(([code, name]) => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = `${code} — ${name}`;
+    if (code === cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
 function updateCustomLabelFilter() {
   const sel = document.getElementById('label-filter');
   const cur = sel.value;
@@ -585,7 +588,7 @@ function _renderTreeNode(treeNode, depth) {
   // Folders first, sorted
   for (const [name, child] of Object.entries(treeNode.children).sort((a, b) => a[0].localeCompare(b[0]))) {
     const fkey = child.fullPath.replace(/[^\w]/g, '_');
-    const isOpen = _folderOpen[child.fullPath] !== false;
+    const isOpen = _folderOpen[child.fullPath] === true;
     const count = _countFiles(child);
     html += `
       <div id="folder-${fkey}">
@@ -600,8 +603,10 @@ function _renderTreeNode(treeNode, depth) {
         </div>
       </div>`;
   }
-  // Files
-  for (const node of treeNode.files) {
+  // Files — sorted by name
+  const sortedFiles = [...treeNode.files].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+  for (const node of sortedFiles) {
     const badges = buildBadges(node);
     const dateStr = node.documentDate ? node.documentDate.slice(0, 10) : '';
     html += `
@@ -1262,6 +1267,7 @@ function closeSidebar() {
 // ═══════════════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
+updateAuthorityFilter();
 renderTree();
 </script>
 </body>
