@@ -114,6 +114,7 @@
     .list-badge-auth { background: rgba(212,82,28,0.18); color: var(--accent); }
     .list-badge-custom { background: rgba(138,131,123,0.18); color: var(--subtle); }
     .list-badge-private { background: rgba(239,68,68,0.15); color: #EF4444; }
+    .list-badge-nodate { background: rgba(234,179,8,0.12); color: #CA8A04; }
     .list-section-header {
       font-size: 9px; font-weight: 600; text-transform: uppercase;
       letter-spacing: 0.1em; color: var(--subtle);
@@ -522,6 +523,7 @@ function buildBadges(node) {
   acs.forEach(ac => { html += `<span class="list-badge list-badge-auth">${ac}</span>`; });
   cl.slice(0, 2).forEach(l => { html += `<span class="list-badge list-badge-custom">${escHtml(l)}</span>`; });
   if (IS_AUTH && node.isPrivate) html += `<span class="list-badge list-badge-private">PRIVATE</span>`;
+  if (!node.documentDate) html += `<span class="list-badge list-badge-nodate" title="Document date missing — set it in the focus pane">⚠ No date</span>`;
   return html;
 }
 

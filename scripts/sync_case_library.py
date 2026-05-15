@@ -264,46 +264,54 @@ def rows_to_tsv(rows: list[dict]) -> str:
 
 # ── Date extraction from filenames ────────────────────────────────────────────
 
-_DATE_PATTERNS = [
-    (r'^(\d{4})-(\d{2})-(\d{2})', '%Y-%m-%d'),   # 2024-03-01 prefix
-    (r'^(\d{2})-(\d{2})-(\d{4})', None),           # 01-03-2024 prefix (DD-MM-YYYY)
-    (r'^(\d{4})\.(\d{2})\.(\d{2})', '%Y.%m.%d'),  # 2024.03.01 prefix
-    (r'^(\d{8})', None),                            # 20240301 compact
-    (r'(\d{4})-(\d{2})-(\d{2})', '%Y-%m-%d'),     # YYYY-MM-DD anywhere in name
-]
+_MARATHI_MONTHS = {
+    'जानेवारी': '01', 'फेब्रुवारी': '02', 'मार्च': '03',
+    'एप्रिल': '04', 'मे': '05', 'जून': '06',
+    'जुलै': '07', 'ऑगस्ट': '08', 'सप्टेंबर': '09',
+    'ऑक्टोबर': '10', 'नोव्हेंबर': '11', 'डिसेंबर': '12',
+}
+
+_DEV_DIGITS = str.maketrans('०१२३४५६७८९', '0123456789')
 
 
 def extract_date_from_filename(name: str) -> str | None:
-    """Try to extract a YYYY-MM-DD date string from a filename. Returns ISO date or None."""
+    """Extract YYYY-MM-DD from a filename. Returns ISO ASCII date or None.
+
+    Handles: Devanagari YYYY-MM-DD prefix, Marathi month-name format
+    (DD MonthName YYYY), DD-MM-YYYY, and year-only fallback.
+    Zero month/day values (e.g. 2014-00-00) fall through to year-only.
+    """
     if not name:
         return None
 
-    # Pattern: YYYY-MM-DD
-    m = re.search(r'(\d{4})-(\d{2})-(\d{2})', name)
-    if m:
-        y, mo, d = m.group(1), m.group(2), m.group(3)
-        if 1980 <= int(y) <= 2100 and 1 <= int(mo) <= 12 and 1 <= int(d) <= 31:
-            return f'{y}-{mo}-{d}'
+    # Translate Devanagari digits to ASCII once; run all patterns on this.
+    name_ascii = name.translate(_DEV_DIGITS)
 
-    # Pattern: DD-MM-YYYY
-    m = re.search(r'(\d{2})-(\d{2})-(\d{4})', name)
+    # Pattern 1: YYYY-MM-DD (most common — Devanagari prefix filenames)
+    m = re.search(r'(\d{4})-(\d{2})-(\d{2})', name_ascii)
     if m:
-        d, mo, y = m.group(1), m.group(2), m.group(3)
-        if 1980 <= int(y) <= 2100 and 1 <= int(mo) <= 12 and 1 <= int(d) <= 31:
-            return f'{y}-{mo}-{d}'
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if 1900 <= y <= 2100 and 1 <= mo <= 12 and 1 <= d <= 31:
+            return f'{y:04d}-{mo:02d}-{d:02d}'
 
-    # Pattern: Devanagari date pattern like दि. १२-१०-२०२२
-    # Convert Devanagari digits to ASCII first
-    dev_digits = str.maketrans('०१२३४५६७८९', '0123456789')
-    name_ascii = name.translate(dev_digits)
+    # Pattern 2: DD-MM-YYYY
     m = re.search(r'(\d{2})-(\d{2})-(\d{4})', name_ascii)
     if m:
-        d, mo, y = m.group(1), m.group(2), m.group(3)
-        if 1980 <= int(y) <= 2100 and 1 <= int(mo) <= 12 and 1 <= int(d) <= 31:
-            return f'{y}-{mo}-{d}'
+        d, mo, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if 1900 <= y <= 2100 and 1 <= mo <= 12 and 1 <= d <= 31:
+            return f'{y:04d}-{mo:02d}-{d:02d}'
 
-    # Year only: return Jan 1 of that year
-    m = re.search(r'\b(19[8-9]\d|20[0-2]\d)\b', name)
+    # Pattern 3: Marathi month names — "DD MonthName YYYY" embedded in filename
+    # Month names stay untranslated; only surrounding digits are ASCII after translate.
+    for mname, mnum in _MARATHI_MONTHS.items():
+        m = re.search(r'(\d{1,2})\s+' + re.escape(mname) + r'\s+(\d{4})', name_ascii)
+        if m:
+            d, y = int(m.group(1)), int(m.group(2))
+            if 1900 <= y <= 2100 and 1 <= d <= 31:
+                return f'{y:04d}-{int(mnum):02d}-{d:02d}'
+
+    # Fallback: year only → YYYY-01-01 (blank day/month is flagged in UI)
+    m = re.search(r'\b(19\d{2}|20[0-2]\d)\b', name_ascii)
     if m:
         return f'{m.group(1)}-01-01'
 
@@ -324,13 +332,17 @@ def insert_new_table_b_rows(new_ids: list[str], sheets_rows_by_id: dict[str, dic
         row = sheets_rows_by_id.get(drive_id, {})
         filename = row.get('file_name', row.get('Name', ''))
         doc_date = extract_date_from_filename(filename) or ''
+        # Shared=TRUE → visible to public (is_private=false); Shared=FALSE → private.
+        # This only applies on first insert; HITL manages the flag via UI thereafter.
+        shared = str(row.get('Shared', 'TRUE')).strip().upper()
+        is_private = 'false' if shared == 'TRUE' else 'true'
         try:
             zoho_post(f'form/{FORM_ENRICHMENT}', {
                 'drive_file_id': drive_id,
                 'document_date': doc_date,
                 'authority_codes': '',
                 'custom_labels': '',
-                'is_private': 'false',
+                'is_private': is_private,
                 'context_findings': '',
             })
             inserted += 1
@@ -478,12 +490,14 @@ def write_seed_csv_locally(sheets_rows: list[dict]):
         name = str(row.get('Name', '')).strip()
         if not fid:
             continue
+        shared = str(row.get('Shared', 'TRUE')).strip().upper()
+        is_private = 'false' if shared == 'TRUE' else 'true'
         rows.append({
             'drive_file_id': fid,
             'document_date': extract_date_from_filename(name) or '',
             'authority_codes': '',
             'custom_labels': '',
-            'is_private': 'false',
+            'is_private': is_private,
             'context_findings': '',
             'document_type': '',
             'saraswati_processed': 'false',
