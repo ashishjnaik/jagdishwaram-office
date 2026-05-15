@@ -121,6 +121,29 @@
       padding: 10px 12px 4px;
     }
 
+    /* ── VIEW TOGGLE ── */
+    .view-toggle { display: flex; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; flex-shrink: 0; }
+    .view-btn {
+      background: none; border: none; padding: 4px 9px;
+      color: var(--subtle); cursor: pointer; font-size: 13px; line-height: 1;
+    }
+    .view-btn:hover { color: var(--ink); background: rgba(255,255,255,0.04); }
+    .view-btn.active { background: var(--surface); color: var(--ink); }
+
+    /* ── DRIVE FOLDER TREE ── */
+    .tree-folder-header {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 8px 5px 0; cursor: pointer; user-select: none;
+      font-size: 11px; color: var(--subtle); border-radius: 4px;
+    }
+    .tree-folder-header:hover { color: var(--ink); background: rgba(212,82,28,0.05); }
+    .tree-arrow { font-size: 9px; width: 14px; text-align: center; flex-shrink: 0; opacity: 0.7; }
+    .tree-folder-icon { flex-shrink: 0; font-size: 12px; }
+    .tree-folder-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .tree-folder-count { font-size: 10px; color: var(--subtle); opacity: 0.5; flex-shrink: 0; padding-right: 6px; }
+    .tree-folder-body { }
+    .tree-file-wrap { }
+
     /* ── FOCUS PANE ── */
     .focus-pane { overflow-y: auto; padding: 32px 40px; background: var(--surface); }
     .focus-empty {
@@ -382,6 +405,10 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="filter-strip">
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-tree" title="Folder tree view" onclick="setView('tree')">📁</button>
+        <button class="view-btn" id="btn-list" title="Flat list view" onclick="setView('list')">≡</button>
+      </div>
       <select class="filter-select" id="auth-filter" onchange="handleAuthorityFilter(this.value)">
         <option value="">All Authorities</option>
         <option value="MOR">MOR — Tehsildar Vasai</option>
@@ -398,7 +425,7 @@
       <select class="filter-select" id="label-filter" onchange="handleLabelFilter(this.value)">
         <option value="">All Labels</option>
       </select>
-      <select class="filter-select" id="sort-select" onchange="renderList()">
+      <select class="filter-select" id="sort-select" style="display:none" onchange="renderList()">
         <option value="date-desc">Newest first</option>
         <option value="date-asc">Oldest first</option>
         <option value="name-asc">Name A–Z</option>
@@ -506,6 +533,113 @@ function sortDate(a, b, asc) {
   const da = a.documentDate || a.modified || '';
   const db = b.documentDate || b.modified || '';
   return asc ? da.localeCompare(db) : db.localeCompare(da);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VIEW MODE
+// ═══════════════════════════════════════════════════════════════════════════
+let _viewMode = 'tree'; // 'tree' | 'list'
+const _folderOpen = {}; // folderPath → true/false (default open)
+
+function setView(mode) {
+  _viewMode = mode;
+  document.getElementById('btn-tree').classList.toggle('active', mode === 'tree');
+  document.getElementById('btn-list').classList.toggle('active', mode === 'list');
+  const sortSel = document.getElementById('sort-select');
+  if (sortSel) sortSel.style.display = mode === 'list' ? '' : 'none';
+  mode === 'tree' ? renderTree() : renderList();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DRIVE FOLDER TREE
+// ═══════════════════════════════════════════════════════════════════════════
+function buildDriveTree(nodes) {
+  // Build nested structure from node.path (separator: ' > ')
+  // Skips the root Drive folder (first segment — common to all files).
+  const root = { name: '', fullPath: '', children: {}, files: [] };
+  for (const node of nodes) {
+    const parts = (node.path || '').split(' > ').map(p => p.trim()).filter(p => p);
+    const segments = parts.length > 1 ? parts.slice(1) : parts;
+    let cur = root; let curPath = '';
+    for (const seg of segments) {
+      curPath = curPath ? curPath + '\x1f' + seg : seg;
+      if (!cur.children[seg]) {
+        cur.children[seg] = { name: seg, fullPath: curPath, children: {}, files: [] };
+      }
+      cur = cur.children[seg];
+    }
+    cur.files.push(node);
+  }
+  return root;
+}
+
+function _countFiles(treeNode) {
+  let n = treeNode.files.length;
+  for (const c of Object.values(treeNode.children)) n += _countFiles(c);
+  return n;
+}
+
+function _renderTreeNode(treeNode, depth) {
+  let html = '';
+  const indent = depth * 14;
+  // Folders first, sorted
+  for (const [name, child] of Object.entries(treeNode.children).sort((a, b) => a[0].localeCompare(b[0]))) {
+    const fkey = child.fullPath.replace(/[^\w]/g, '_');
+    const isOpen = _folderOpen[child.fullPath] !== false;
+    const count = _countFiles(child);
+    html += `
+      <div id="folder-${fkey}">
+        <div class="tree-folder-header" style="padding-left:${indent + 6}px" onclick="toggleFolder('${escSQ(child.fullPath)}','${fkey}')">
+          <span class="tree-arrow">${isOpen ? '▾' : '▸'}</span>
+          <span class="tree-folder-icon">📁</span>
+          <span class="tree-folder-name" title="${escHtml(name)}">${escHtml(name)}</span>
+          <span class="tree-folder-count">${count}</span>
+        </div>
+        <div class="tree-folder-body" id="fbody-${fkey}" ${isOpen ? '' : 'style="display:none"'}>
+          ${_renderTreeNode(child, depth + 1)}
+        </div>
+      </div>`;
+  }
+  // Files
+  for (const node of treeNode.files) {
+    const badges = buildBadges(node);
+    const dateStr = node.documentDate ? node.documentDate.slice(0, 10) : '';
+    html += `
+      <div class="tree-file-wrap" id="li-${node.id}" style="padding-left:${indent}px">
+        <div class="list-item" id="row-${node.id}" onclick="onNodeClick('${escSQ(node.id)}')">
+          <span class="list-icon">${typeIcon(node.mime)}</span>
+          <span class="list-text">
+            <span class="list-name" title="${escHtml(node.name)}">${escHtml(node.name)}</span>
+            ${dateStr ? `<span class="list-date">${dateStr}</span>` : ''}
+            ${badges ? `<span class="list-badges">${badges}</span>` : ''}
+          </span>
+        </div>
+      </div>`;
+  }
+  return html;
+}
+
+function renderTree() {
+  const wrap = document.getElementById('list-wrap');
+  const tree = buildDriveTree(NODES);
+  wrap.innerHTML = _renderTreeNode(tree, 0);
+  applyFilters(_activeAuth, _activeLabel);
+  if (_activeSearch) handleSearch(_activeSearch);
+  updateCustomLabelFilter();
+  if (selectedId && document.getElementById('row-' + selectedId))
+    document.getElementById('row-' + selectedId).classList.add('selected');
+  const el = document.getElementById('entity-count');
+  if (el) el.innerHTML = '<strong>' + NODES.length + '</strong> entities';
+}
+
+function toggleFolder(fullPath, fkey) {
+  const body = document.getElementById('fbody-' + fkey);
+  const arrow = document.querySelector('#folder-' + fkey + ' .tree-arrow');
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  _folderOpen[fullPath] = !isOpen;
+  body.style.display = isOpen ? 'none' : '';
+  if (arrow) arrow.textContent = isOpen ? '▸' : '▾';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -646,7 +780,7 @@ function renderFocus(id) {
         <span class="meta-key">Drive Modified</span><span class="meta-val">${node.modified || '—'}</span>
         <span class="meta-key">Size</span><span class="meta-val">${node.size || '—'}</span>
         <span class="meta-key">MD5 Checksum</span>
-        <span class="meta-val mono">${node.md5 ? node.md5.slice(0,20) + '…' : '—'}</span>
+        <span class="meta-val mono">${node.md5 || '—'}</span>
       </div>
     </div>
 
@@ -727,7 +861,7 @@ function renderFocus(id) {
       <div class="meta-title">Identifiers</div>
       <div class="meta-grid">
         <span class="meta-key">Drive ID</span>
-        <span class="meta-val mono" title="${escHtml(node.id)}">${node.id ? node.id.slice(0,24) + '…' : '—'}</span>
+        <span class="meta-val mono">${node.id || '—'}</span>
         <span class="meta-key">MIME Type</span>
         <span class="meta-val mono">${escHtml(node.mime || '—')}</span>
         <span class="meta-key">Drive Path</span>
@@ -1066,6 +1200,11 @@ async function rebuildCache() {
 // ═══════════════════════════════════════════════════════════════════════════
 // SEARCH & FILTER
 // ═══════════════════════════════════════════════════════════════════════════
+function _itemWrapper(row) {
+  // Works in both flat list (<li>) and tree (<div class="tree-file-wrap">)
+  return row.closest('li') || row.closest('.tree-file-wrap');
+}
+
 function handleSearch(q) {
   _activeSearch = q;
   q = q.toLowerCase().trim();
@@ -1079,20 +1218,21 @@ function handleSearch(q) {
     const cl = (node.customLabels || []).join(' ').toLowerCase();
     const desc = (node.description || '').toLowerCase();
     const match = !q || name.includes(q) || acStr.includes(q) || acFull.includes(q) || cl.includes(q) || desc.includes(q);
-    const li = row.closest('li');
-    if (li) li.classList.toggle('hidden', !match);
+    const wrap = _itemWrapper(row);
+    if (wrap) wrap.classList.toggle('hidden', !match);
   });
 }
 
 function applyFilters(authCode, customLabel) {
+  _activeAuth = authCode; _activeLabel = customLabel;
   document.querySelectorAll('.list-item').forEach(row => {
     const id = row.id.replace('row-', '');
     const node = ALL_NODES[id];
     if (!node) return;
     const authMatch = !authCode || (node.authorityCodes || []).includes(authCode);
     const labelMatch = !customLabel || (node.customLabels || []).some(l => l === customLabel);
-    const li = row.closest('li');
-    if (li) li.classList.toggle('hidden', !(authMatch && labelMatch));
+    const wrap = _itemWrapper(row);
+    if (wrap) wrap.classList.toggle('hidden', !(authMatch && labelMatch));
   });
 }
 
@@ -1122,7 +1262,7 @@ function closeSidebar() {
 // ═══════════════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
-renderList();
+renderTree();
 </script>
 </body>
 </html>

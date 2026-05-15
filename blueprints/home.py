@@ -292,7 +292,9 @@ def kurukshetra():
 
     nodes, _ = _load_cache()
     _audit('page_load_auth')
-    return render_template('case_library.html', nodes=nodes, is_authenticated=is_auth)
+    # No passphrase configured = open staging mode → grant full edit access to all visitors.
+    is_full_access = is_auth or not _KURUKSHETRA_PASSPHRASE
+    return render_template('case_library.html', nodes=nodes, is_authenticated=is_full_access)
 
 
 @home_bp.route('/kurukshetra/auth', methods=['POST'])
