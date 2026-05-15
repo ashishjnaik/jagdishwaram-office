@@ -38,7 +38,8 @@ _ZOHO_CLIENT_SECRET = os.environ.get('ZOHO_CLIENT_SECRET', '')
 _ZOHO_REFRESH_TOKEN = os.environ.get('ZOHO_REFRESH_TOKEN', '')
 _ZOHO_OWNER         = os.environ.get('ZOHO_OWNER', '')
 _ZOHO_APP_NAME      = os.environ.get('ZOHO_APP_NAME', '')
-_ZOHO_ACCOUNTS_URL  = 'https://accounts.zoho.com/oauth/v2/token'
+_ZOHO_DOMAIN        = os.environ.get('ZOHO_DOMAIN', 'zoho.in')
+_ZOHO_ACCOUNTS_URL  = f'https://accounts.{_ZOHO_DOMAIN}/oauth/v2/token'
 
 _FORM_ENRICHMENT = 'Case_Library_Enrichment'
 _REPORT_ENRICHMENT = 'Case_Library_Enrichment_Report'
@@ -88,7 +89,7 @@ def _get_zoho_token() -> str:
 
 
 def _zoho_api_base() -> str:
-    return f'https://creator.zoho.com/api/v2/{_ZOHO_OWNER}/{_ZOHO_APP_NAME}'
+    return f'https://creator.{_ZOHO_DOMAIN}/creator/v2.1/data/{_ZOHO_OWNER}/{_ZOHO_APP_NAME}'
 
 
 def _zoho_get(path: str, params: dict = None) -> dict:
@@ -137,12 +138,21 @@ def _zoho_delete(path: str) -> dict:
 
 
 def _zoho_fetch_all(report_name: str) -> list:
-    """Fetch all records from a Zoho report (handles pagination)."""
+    """Fetch all records from a Zoho report (handles pagination).
+    Guards against Zoho's wrap-around bug (returns same page when from > total_records).
+    """
     records, page_from, limit = [], 0, 200
+    total_known = None
     while True:
         resp = _zoho_get(f'report/{report_name}', {'from': page_from, 'limit': limit})
         page = resp.get('data', [])
+        if not page:
+            break
+        if total_known is None and 'total_records' in resp:
+            total_known = int(resp['total_records'])
         records.extend(page)
+        if total_known is not None and len(records) >= total_known:
+            break
         if len(page) < limit:
             break
         page_from += limit
@@ -176,8 +186,7 @@ def _get_drive_service():
         from google.oauth2.credentials import Credentials
         from google.auth.transport.requests import Request
         from googleapiclient.discovery import build
-        scopes = ['https://www.googleapis.com/auth/drive']
-        creds = Credentials.from_authorized_user_info(json.loads(_GOOGLE_USER_TOKEN), scopes)
+        creds = Credentials.from_authorized_user_info(json.loads(_GOOGLE_USER_TOKEN))
         if creds.expired and creds.refresh_token:
             creds.refresh(Request())
         return build('drive', 'v3', credentials=creds)
